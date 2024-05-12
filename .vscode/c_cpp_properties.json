@@ -1,0 +1,21 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "C:\\Users\\rexko\\OneDrive\\Desktop\\NUS\\html practice\\Orbital_website\\mysql-connector-c++-8.4.0-winx64\\include\\mysqlx" // Path to MySQL Connector/C++ header files
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "compilerPath": "C:\\msys64\\ucrt64\\bin\\g++.exe",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "clang-x64"
+        }
+    ],
+    "version": 4
+}
