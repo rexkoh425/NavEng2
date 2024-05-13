@@ -32,6 +32,7 @@ class GraphEdge {
   int weight() const { return _weight; }
   int dir() const { return _dir; } 
   bool operator>(const GraphEdge& e) const { return _weight > e._weight; }
+  bool operator<(const GraphEdge& e) const { return _weight < e._weight; }
   bool operator==(const GraphEdge& e) const { return _dest == e._dest; }
 };
 

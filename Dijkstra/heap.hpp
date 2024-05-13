@@ -21,7 +21,6 @@ class Heap {
   }
 
   int size() const {
-    // TODO: implement this
     return heap_size;
   }
 
@@ -48,7 +47,7 @@ class Heap {
       return;
     }
     T val = _heap[index];
-    if(val > _heap[new_index]){
+    if(val < _heap[new_index]){
       swap(new_index,index);
       bubble_up(new_index);
     }
@@ -67,13 +66,13 @@ class Heap {
     bool right = false;
 
     if(index*2+1 < heap_size){
-      left = (_heap[index*2+1] > _heap[index]);
+      left = (_heap[index*2+1] < _heap[index]);
     }
     if(index*2+2 < heap_size){
-      right = (_heap[index*2+2] > _heap[index]);
+      right = (_heap[index*2+2] < _heap[index]);
     }
     if(left && right){
-      if(_heap[index*2+1] > _heap[index*2+2]){
+      if(_heap[index*2+1] < _heap[index*2+2]){
         new_index = index*2+1;
       }else{
         new_index = index*2+2;
@@ -112,7 +111,6 @@ void Heap<T>::insert(const T& item){
 
 template <class T>
 T Heap<T>::extractMax() {
-  // TODO: implement this
     if(heap_size == 0){
       throw std::out_of_range("no elements in heap");
     }
@@ -150,7 +148,7 @@ void Heap<T>::changeKey(const T& from, const T& to) {
 
   int new_index = (index-1)/2;
 
-  if(new_index >= 0 && _heap[index] > _heap[new_index]){
+  if(new_index >= 0 && _heap[index] < _heap[new_index]){
     bubble_up(index);
   }else{
     bubble_down(index);
@@ -165,11 +163,10 @@ void Heap<T>::deleteItem(const T& x) {
     throw std::out_of_range("no such element");
   }
   swap(index , heap_size-1);
-  //_heap[heap_size-1] = _heap[heap_size];
-   heap_size--;
+  heap_size--;
   int new_index = (index-1)/2;
  
-  if(new_index >= 0 && _heap[index] > _heap[new_index]){
+  if(new_index >= 0 && _heap[index] < _heap[new_index]){
     bubble_up(index);
   }else{
     bubble_down(index);

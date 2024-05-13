@@ -2,7 +2,7 @@
 #include "shortest_path.h"
 #include "heap.hpp"
 
-#define INFINITY_SELF -999999
+#define INFINITY_SELF 999999
 #define NORTH 123456
 #define SOUTH -123456
 #define EAST 654321
@@ -21,10 +21,9 @@ Path shortestPath(const Graph& g, int source, int dest) {
   Heap<GraphEdge> table;
   vector<int> path;
   vector<int> direction;
-  int total_dist = 0;
   int dist_from_source = 0;
   int num_of_nodes = g.num_vertices();
-  int VISITED = num_of_nodes + 1;
+  int VISITED = -(num_of_nodes + 1);
   int *heap_table = new int[num_of_nodes];
   int *parent = new int[num_of_nodes];
   int *parent_path = new int[num_of_nodes];
@@ -42,10 +41,9 @@ Path shortestPath(const Graph& g, int source, int dest) {
     GraphEdge current_node = table.extractMax();
     int current_dest = current_node.dest();
     int current_weight = current_node.weight();
-    total_dist = current_weight;
     heap_table[current_dest] = VISITED;
     if(current_dest == dest){
-      dist_from_source = 0 - current_weight;
+      dist_from_source = current_weight;
       break;
     }
     forward_list<GraphEdge> neighbours = g.edges_from(current_dest);
@@ -54,15 +52,15 @@ Path shortestPath(const Graph& g, int source, int dest) {
       GraphEdge current = *i;
       int node = current.dest();
       int smallest_dist = heap_table[node];
-      if(smallest_dist != VISITED &&  (0 - total_dist + current.weight()) < (0 - smallest_dist)){
+      if(smallest_dist != VISITED &&  (current_weight + current.weight()) < smallest_dist){
         if(smallest_dist != INFINITY_SELF){
           table.deleteItem(current);
         }
-        smallest_dist = total_dist - current.weight();
+        smallest_dist = current_weight + current.weight();
         int dir = current.dir();
         GraphEdge new_node = GraphEdge(node , smallest_dist , dir);
         heap_table[node] = smallest_dist;
-        //table.changeKey(current  , updated_node);
+        //table.changeKey(current  , new_node);
         table.insert(new_node);
         parent[node] = current_dest;
         parent_path[current_dest] = dir;

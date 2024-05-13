@@ -69,17 +69,18 @@ app.post('/formPost' , (req ,res) => {
 
     cppProcess.stdout.on('data', (data) => {
         const outputData = data.toString().split("|");
+        console.log(outputData[0]);
         let nodes = outputData[0].split(",");
         const directions = outputData[1].split(",");
-        console.log(directions);
+        //console.log(directions);
         nodes[0] += "9";
         for(i = 1 ; i < directions.length ; i ++){
             nodes[i] += direction_img(directions[i]);
         }
         nodes[directions.length] += "9";
         const id_string = nodes.join(",");
-        console.log(id_string);
-        
+        //console.log(id_string);
+        /*
         const query = `SELECT direction,filepath FROM pictures WHERE unique_id IN (${id_string}) ORDER BY FIELD(node_id,${outputData[0]})`;
         let final = "";
         
@@ -96,7 +97,7 @@ app.post('/formPost' , (req ,res) => {
             });
             res.send(final);
         });
-        
+        */
     });
       
     // Handle errors and exit events
