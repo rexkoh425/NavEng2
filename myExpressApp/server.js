@@ -6,10 +6,14 @@ const path = require('path');
 const { spawn } = require('child_process');
 const { defaultMaxListeners } = require('events');
 const app = express();
- 
+
 app.use(express.json());
 app.use(express.urlencoded({ extended : false}));
-app.use('/Pictures' , express.static(path.join(__dirname,'../Pictures')));
+app.use('/Pictures/North' , express.static(path.join(__dirname,'../Pictures/North')));
+app.use('/Pictures/South' , express.static(path.join(__dirname,'../Pictures/South')));
+app.use('/Pictures/East' , express.static(path.join(__dirname,'../Pictures/East')));
+app.use('/Pictures/West' , express.static(path.join(__dirname,'../Pictures/West')));
+app.use('/Pictures/None' , express.static(path.join(__dirname,'../Pictures/None')));
 
 const connection = mysql.createConnection({
     host: 'localhost',
@@ -32,23 +36,22 @@ function template_img(img_path){
 }
 
 function direction_img(direction_num){
-    const NORTH =  123456;
-    const SOUTH = -123456;
-    const EAST  = 654321;
-    const WEST  = -654321;
-    let local_workspace = `http://localhost:5500/Pictures`;
+    const NORTH =  "123456";
+    const SOUTH = "-123456";
+    const EAST  = "654321";
+    const WEST  = "-654321";
     switch(direction_num){
         
         case NORTH:
-            return local_workspace + "north.png";
+            return "1";
         case SOUTH:
-            return local_workspace + "south.png";
+            return "2";
         case EAST:
-            return local_workspace + "east.png";
+            return "3";
         case WEST:
-            return local_workspace + "west.png";
+            return "4";
         default : 
-            return local_workspace + "north.png";
+            return "1";
     }
 }
 
@@ -66,22 +69,34 @@ app.post('/formPost' , (req ,res) => {
 
     cppProcess.stdout.on('data', (data) => {
         const outputData = data.toString().split("|");
-        //console.log(outputData);
-        const query = `SELECT id,filepath FROM pictures WHERE id IN (${outputData[0]}) ORDER BY FIELD(id,${outputData[0]})`;
+        let nodes = outputData[0].split(",");
+        const directions = outputData[1].split(",");
+        console.log(directions);
+        nodes[0] += "9";
+        for(i = 1 ; i < directions.length ; i ++){
+            nodes[i] += direction_img(directions[i]);
+        }
+        nodes[directions.length] += "9";
+        const id_string = nodes.join(",");
+        console.log(id_string);
+        
+        const query = `SELECT direction,filepath FROM pictures WHERE unique_id IN (${id_string}) ORDER BY FIELD(node_id,${outputData[0]})`;
         let final = "";
         
         let workspace = `http://localhost:5500/Pictures`;
 
         connection.query(query, (err, results) => {
+            console.log(results);
             if (err) {
               console.error('Error querying MySQL:', err);
               return;
             }
             results.forEach(result => {
-                final += template_img(workspace + "/" + result.filepath);
+                final += template_img(workspace + `/${result.direction}/` + result.filepath + ".png");
             });
             res.send(final);
         });
+        
     });
       
     // Handle errors and exit events
