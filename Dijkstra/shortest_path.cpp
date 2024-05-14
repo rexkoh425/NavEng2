@@ -63,7 +63,7 @@ Path shortestPath(const Graph& g, int source, int dest) {
         //table.changeKey(current  , new_node);
         table.insert(new_node);
         parent[node] = current_dest;
-        parent_path[current_dest] = dir;
+        parent_path[node] = dir;
       }
     }
   }
@@ -76,8 +76,8 @@ Path shortestPath(const Graph& g, int source, int dest) {
   path.insert(path.begin() , parent_node);
 
   while(parent_node != source){
-    parent_node = parent[parent_node];
     direction.insert(direction.begin(), parent_path[parent_node]);
+    parent_node = parent[parent_node];
     path.insert(path.begin() , parent_node);
   }
 

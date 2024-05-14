@@ -148,12 +148,11 @@ void Heap<T>::changeKey(const T& from, const T& to) {
 
   int new_index = (index-1)/2;
 
-  if(new_index >= 0 && _heap[index] < _heap[new_index]){
+  if(new_index >= 0 && _heap[index] > _heap[new_index]){
     bubble_up(index);
   }else{
     bubble_down(index);
   }
-
 }
 
 template <class T>
