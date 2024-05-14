@@ -1,23 +1,27 @@
 #pragma once
 #include <math.h>
 #include <iostream>
+#include "graph.h"
 using namespace std;
 
 #ifndef HEAPHPP
 #define HEAPHPP
 
-#define DEFAULTHEAPSIZE 10001
-
-template <class T>
 class Heap {
  protected:
-  T* _heap;
+  GraphEdge* _heap;
+  int *_index_table;
   int heap_size;
 
  public:
-  Heap() { 
-    _heap = new T[DEFAULTHEAPSIZE]; 
+  Heap(int num_of_nodes) { 
+    _heap = new GraphEdge[num_of_nodes]; 
+    _index_table = new int[num_of_nodes];
     heap_size = 0;
+
+    for(int i = 0 ; i < num_of_nodes ; i++){
+      _index_table[i] = 0;
+    }
   }
 
   int size() const {
@@ -30,15 +34,17 @@ class Heap {
     }
     return false;
   }
-  void insert(const T&);
-  T extractMax();
-  T peekMax() const;
+  void insert(const GraphEdge&);
+  GraphEdge extractMin();
+  GraphEdge peekMax() const;
   void printHeapArray() const;
-  void printTree() const;
-  void changeKey(const T& from, const T& to);
-  void deleteItem(const T&);
+  void changeKey(const GraphEdge& from, const GraphEdge& to);
+  void deleteItem(const GraphEdge&);
 
-  ~Heap() { delete[] _heap; };
+  ~Heap() { 
+    delete[] _heap; 
+    delete[] _index_table;
+  };
 
   void bubble_up(int index){
     int new_index = (index-1)/2;
@@ -46,7 +52,7 @@ class Heap {
     if(new_index < 0){
       return;
     }
-    T val = _heap[index];
+    GraphEdge val = _heap[index];
     if(val < _heap[new_index]){
       swap(new_index,index);
       bubble_up(new_index);
@@ -54,9 +60,13 @@ class Heap {
   }
 
   void swap(int index1 , int index2){
-    T temp = _heap[index2];   
-    _heap[index2] = _heap[index1];
-    _heap[index1] = temp;
+    GraphEdge e1 = _heap[index1];
+    GraphEdge e2 = _heap[index2]; 
+    _heap[index2] = e1;
+    _heap[index1] = e2;
+    int temp = _index_table[e1.dest()];
+    _index_table[e1.dest()] = _index_table[e2.dest()];
+    _index_table[e2.dest()] = temp;
   }
 
   void bubble_down(int index){
@@ -91,7 +101,7 @@ class Heap {
     }
   }
 
-  int element_index(T value){
+  int element_index(GraphEdge value){
           
     for(int i = 0 ; i < heap_size ; i++){
       if(_heap[i] == value){
@@ -102,49 +112,50 @@ class Heap {
   }
 };
 
-template <class T>
-void Heap<T>::insert(const T& item){
+void Heap::insert(const GraphEdge& item){
   _heap[heap_size] = item;
+  _index_table[item.dest()] = heap_size;
   bubble_up(heap_size);
   heap_size++;
 }
 
-template <class T>
-T Heap<T>::extractMax() {
+GraphEdge Heap::extractMin() {
     if(heap_size == 0){
       throw std::out_of_range("no elements in heap");
     }
-    T temp = _heap[0];
+    GraphEdge temp = _heap[0];
     swap(0,heap_size-1);
     heap_size--;
     bubble_down(0);
     return temp;
 }
 
-template <class T>
-T Heap<T>::peekMax() const {
+
+GraphEdge Heap::peekMax() const {
   if(heap_size <= 0){
     throw std::out_of_range("empty heap");
   }
   return _heap[0];
 };
 
-template <class T>
-void Heap<T>::printHeapArray() const {
+
+void Heap::printHeapArray() const {
   for (int i = 0; i < size(); i++) {
     cout << _heap[i] << " ";
   }
   cout << endl;
 }
 
-template <class T>
-void Heap<T>::changeKey(const T& from, const T& to) {
+
+void Heap::changeKey(const GraphEdge& from, const GraphEdge& to) {
   // TODO: implement this
-  int index = element_index(from);
+  int index = _index_table[from.dest()];
   if(index == -1){
     throw std::out_of_range("no such element");
   }
+  _index_table[from.dest()] = 0;
   _heap[index] = to;
+  _index_table[to.dest()] = index;
 
   int new_index = (index-1)/2;
 
@@ -155,9 +166,9 @@ void Heap<T>::changeKey(const T& from, const T& to) {
   }
 }
 
-template <class T>
-void Heap<T>::deleteItem(const T& x) {
-  int index = element_index(x);
+
+void Heap::deleteItem(const GraphEdge& x) {
+  int index = _index_table[x.dest()];
   if(index == -1){
     throw std::out_of_range("no such element");
   }
@@ -169,51 +180,6 @@ void Heap<T>::deleteItem(const T& x) {
     bubble_up(index);
   }else{
     bubble_down(index);
-  }
- 
-
-}
-
-template <class T>
-void Heap<T>::printTree() const {
-  int parity = 0;
-  if (size() == 0) return;
-  int space = pow(2, 1 + (int)log2f(size())), i;
-  int nLevel = (int)log2f(size()) + 1;
-  int index = 0, endIndex;
-  int tempIndex;
-
-  for (int l = 0; l < nLevel; l++) {
-    index = 1;
-    parity = 0;
-    for (i = 0; i < l; i++) index *= 2;
-    endIndex = index * 2 - 1;
-    index--;
-    tempIndex = index;
-    while (index < size() && index < endIndex) {
-      for (i = 0; i < space - 1; i++) cout << " ";
-      if (index == 0)
-        cout << "|";
-      else if (parity)
-        cout << "\\";
-      else
-        cout << "/";
-      parity = !parity;
-      for (i = 0; i < space; i++) cout << " ";
-      index++;
-    }
-    cout << endl;
-    index = tempIndex;
-    while (index < size() && index < endIndex) {
-      for (i = 0; i < (space - 1 - ((int)log10(_heap[index]))); i++)
-        cout << " ";
-      cout << _heap[index];
-      for (i = 0; i < space; i++) cout << " ";
-      index++;
-    }
-
-    cout << endl;
-    space /= 2;
   }
 }
 

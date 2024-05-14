@@ -18,7 +18,7 @@ Path shortestPath(const Graph& g, int source, int dest) {
     throw std::out_of_range("no such nodes");
   }
   
-  Heap<GraphEdge> table;
+  Heap table(g.num_vertices());
   vector<int> path;
   vector<int> direction;
   int dist_from_source = 0;
@@ -38,7 +38,7 @@ Path shortestPath(const Graph& g, int source, int dest) {
   table.insert(temp);
 
   while(!table.empty()){
-    GraphEdge current_node = table.extractMax();
+    GraphEdge current_node = table.extractMin();
     int current_dest = current_node.dest();
     int current_weight = current_node.weight();
     heap_table[current_dest] = VISITED;
