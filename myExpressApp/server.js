@@ -61,7 +61,10 @@ app.get('/' , (req ,res) => {
 
 app.post('/formPost' , (req ,res) => { 
     const inputData = req.body;
-    //console.log(inputData);
+    //checking for empty input
+    if(!inputData.source || !inputData.destination){
+        return;
+    }
     const serializedData = JSON.stringify(inputData);
     const cppProcess = spawn(__dirname + '/../Dijkstra/main.exe' , []);
     cppProcess.stdin.write(serializedData);
