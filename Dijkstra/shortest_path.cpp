@@ -29,13 +29,16 @@ Path shortestPath(const Graph& g, int source, int dest) {
   int *parent_path = new int[num_of_nodes];
   
   for(int i = 0 ; i < num_of_nodes; i++){
-    heap_table[i] = INFINITY_SELF;
+    if(i != source){
+      heap_table[i] = INFINITY_SELF;
+      table.insert(GraphEdge(i , INFINITY_SELF , 0));
+    }else{
+      heap_table[source] = 0;
+      table.insert(GraphEdge(source ,0 , 0));
+    }
     parent[i] = i;
     parent_path[i] = 0;
   }
-  GraphEdge temp =  GraphEdge(source , 0 , 0);
-  heap_table[source] = 0;
-  table.insert(temp);
 
   while(!table.empty()){
     GraphEdge current_node = table.extractMin();
@@ -52,16 +55,13 @@ Path shortestPath(const Graph& g, int source, int dest) {
       GraphEdge current = *i;
       int node = current.dest();
       int smallest_dist = heap_table[node];
+      //int smallest_dist = table[node];
       if(smallest_dist != VISITED &&  (current_weight + current.weight()) < smallest_dist){
-        if(smallest_dist != INFINITY_SELF){
-          table.deleteItem(current);
-        }
         smallest_dist = current_weight + current.weight();
         int dir = current.dir();
         GraphEdge new_node = GraphEdge(node , smallest_dist , dir);
         heap_table[node] = smallest_dist;
-        //table.changeKey(current  , new_node);
-        table.insert(new_node);
+        table.changeKey(current  , new_node);
         parent[node] = current_dest;
         parent_path[node] = dir;
       }

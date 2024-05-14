@@ -69,7 +69,7 @@ app.post('/formPost' , (req ,res) => {
     const cppProcess = spawn(__dirname + '/../Dijkstra/main.exe' , []);
     cppProcess.stdin.write(serializedData);
     cppProcess.stdin.end();
-
+    
     cppProcess.stdout.on('data', (data) => {
         const outputData = data.toString().split("|");
         let nodes = outputData[0].split(",");

@@ -40,6 +40,7 @@ class Heap {
   void printHeapArray() const;
   void changeKey(const GraphEdge& from, const GraphEdge& to);
   void deleteItem(const GraphEdge&);
+  GraphEdge operator[](int);
 
   ~Heap() { 
     delete[] _heap; 
@@ -159,7 +160,7 @@ void Heap::changeKey(const GraphEdge& from, const GraphEdge& to) {
 
   int new_index = (index-1)/2;
 
-  if(new_index >= 0 && _heap[index] > _heap[new_index]){
+  if(new_index >= 0 && _heap[index] < _heap[new_index]){
     bubble_up(index);
   }else{
     bubble_down(index);
@@ -181,6 +182,10 @@ void Heap::deleteItem(const GraphEdge& x) {
   }else{
     bubble_down(index);
   }
+}
+
+GraphEdge Heap::operator[](int dest){
+  return _heap[_index_table[dest]];
 }
 
 #endif
