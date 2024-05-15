@@ -23,17 +23,14 @@ Path shortestPath(const Graph& g, int source, int dest) {
   vector<int> direction;
   int dist_from_source = 0;
   int num_of_nodes = g.num_vertices();
-  int VISITED = -(num_of_nodes + 1);
-  int *heap_table = new int[num_of_nodes];
+  bool *visit_table = new bool[num_of_nodes];
   int *parent = new int[num_of_nodes];
   int *parent_path = new int[num_of_nodes];
   
   for(int i = 0 ; i < num_of_nodes; i++){
     if(i != source){
-      heap_table[i] = INFINITY_SELF;
       table.insert(GraphEdge(i , INFINITY_SELF , 0));
     }else{
-      heap_table[source] = 0;
       table.insert(GraphEdge(source ,0 , 0));
     }
     parent[i] = i;
@@ -44,7 +41,7 @@ Path shortestPath(const Graph& g, int source, int dest) {
     GraphEdge current_node = table.extractMin();
     int current_dest = current_node.dest();
     int current_weight = current_node.weight();
-    heap_table[current_dest] = VISITED;
+    visit_table[current_dest] = true;
     if(current_dest == dest){
       dist_from_source = current_weight;
       break;
@@ -54,13 +51,11 @@ Path shortestPath(const Graph& g, int source, int dest) {
     for(auto i = neighbours.begin() ; i != neighbours.end() ; i++){
       GraphEdge current = *i;
       int node = current.dest();
-      int smallest_dist = heap_table[node];
-      //int smallest_dist = table[node];
-      if(smallest_dist != VISITED &&  (current_weight + current.weight()) < smallest_dist){
-        smallest_dist = current_weight + current.weight();
+      int table_dist = table[node].weight();
+      if(!visit_table[node] &&  (current_weight + current.weight()) < table_dist){
+        table_dist = current_weight + current.weight();
         int dir = current.dir();
-        GraphEdge new_node = GraphEdge(node , smallest_dist , dir);
-        heap_table[node] = smallest_dist;
+        GraphEdge new_node = GraphEdge(node , table_dist , dir);
         table.changeKey(current  , new_node);
         parent[node] = current_dest;
         parent_path[node] = dir;
@@ -68,7 +63,7 @@ Path shortestPath(const Graph& g, int source, int dest) {
     }
   }
 
-  if(heap_table[dest] == INFINITY_SELF){
+  if(!visit_table[dest]){
     throw std::out_of_range("cannot reach dest");
   }
 
@@ -82,7 +77,7 @@ Path shortestPath(const Graph& g, int source, int dest) {
   }
 
   delete parent;
-  delete heap_table;
+  delete visit_table;
   delete parent_path;
   return Path(dist_from_source, path , direction);
 }

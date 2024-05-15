@@ -131,7 +131,6 @@ GraphEdge Heap::extractMin() {
     return temp;
 }
 
-
 GraphEdge Heap::peekMax() const {
   if(heap_size <= 0){
     throw std::out_of_range("empty heap");
