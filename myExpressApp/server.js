@@ -34,12 +34,13 @@ connection.connect((err) => {
 function template_img(img_path){
     return `<img src = "${img_path}" alt = "cannot be displayed" width = "100" height = "100"><br> `;
 }
+//north = 0 ; east = 90 ; south = 180 ; west = -90
 
 function direction_img(direction_num){
-    const NORTH =  "123456";
-    const SOUTH = "-123456";
-    const EAST  = "654321";
-    const WEST  = "-654321";
+    const NORTH =  "0";
+    const EAST  = "90";
+    const SOUTH = "180";
+    const WEST  = "-90";
     switch(direction_num){
         
         case NORTH:
@@ -74,6 +75,7 @@ app.post('/formPost' , (req ,res) => {
         const outputData = data.toString().split("|");
         let nodes = outputData[0].split(",");
         const directions = outputData[1].split(",");
+        console.log(directions);
         nodes[0] += "9";
         for(i = 1 ; i < directions.length ; i ++){
             nodes[i] += direction_img(directions[i]);

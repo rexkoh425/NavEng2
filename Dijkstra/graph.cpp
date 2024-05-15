@@ -22,5 +22,5 @@ ostream& operator<<(ostream& os, const Graph& g) {
 void Graph::addEdge(int source, int dest, int weight , int dir) {
   // Assumes that an edge doesn't already exist!
   _vertices[source].emplace_front(dest, weight , dir);
-  _vertices[dest].emplace_front(source,weight , -dir);
+  _vertices[dest].emplace_front(source,weight , 180-dir);
 }
