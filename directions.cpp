@@ -43,7 +43,7 @@ int opposite(int dir){
 int main(){
 
   int map[4] = {NORTH , EAST , SOUTH , WEST};
-  bool enter[4] = {1,1,0,1};//relative to abo north
+  bool enter[4] = {1,1,1,1};//relative to abo north
   bool exit[4] = {false};//relative to abo north
   for(int i = 0 ; i < 4 ; i++){
     if(enter[i]){
