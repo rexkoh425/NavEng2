@@ -36,6 +36,9 @@ function direction_map(direction_num){
     const EAST  = "90";
     const SOUTH = "180";
     const WEST  = "-90";
+    const UP = "45";
+    const DOWN = "-45";
+
     switch(direction_num){
         
         case NORTH:
@@ -46,12 +49,34 @@ function direction_map(direction_num){
             return "3";
         case WEST:
             return "4";
+        
         default : 
             return "1";
     }
 }
 
+function filter_elevator(incoming , outgoing){
+    const UP = "45";
+    const DOWN = "-45";
+    if(incoming != outgoing){
+        if(outgoing == UP){
+            return "5";
+        }
+        if(outgoing == DOWN){
+            return "6";
+        }
+        if(incoming == UP || incoming == DOWN){
+            return '7';
+        }
+        return "0";
+    }
+    return "0";
+}
 function direction_img(incoming_str , outgoing_str){
+    const respond = filter_elevator(incoming_str,outgoing_str);
+    if(respond != "0"){
+        return respond;
+    }
     let incoming = Number(incoming_str);
     let outgoing = Number(outgoing_str);
     outgoing -= incoming;
@@ -71,7 +96,7 @@ function direction_img(incoming_str , outgoing_str){
         case -90:
             return "4";
         default : 
-            return "3";
+            return "0";
     }
 }
 
@@ -96,12 +121,12 @@ app.post('/formPost' , (req ,res) => {
         let nodes = outputData[0].split(",");
         const directions = outputData[1].split(",");
         //console.log(directions);
-        nodes[0] += "66";
+        nodes[0] += "67";
         for(i = 1 ; i < directions.length ; i ++){
             nodes[i] += direction_map(directions[i-1]);//pov
-            nodes[i] += direction_img(directions[i-1] , directions[i]);
+            nodes[i] += direction_img(directions[i-1] , directions[i]);//direction
         }
-        nodes[directions.length] += "66";
+        nodes[directions.length] += "67";
         const id_string = nodes.join(",");
         console.log(id_string);
         const query = `SELECT pov , direction,filepath FROM pictures WHERE unique_id IN (${id_string}) ORDER BY FIELD(node_id,${outputData[0]})`;

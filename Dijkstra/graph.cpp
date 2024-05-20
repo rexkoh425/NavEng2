@@ -1,5 +1,4 @@
 #include "graph.h"
-
 #include <fstream>
 
 using std::endl;
@@ -23,7 +22,7 @@ void Graph::addEdge(int source, int dest, int weight , int dir) {
   // Assumes that an edge doesn't already exist!
   _vertices[source].emplace_front(dest, weight , dir);
   int opposite_dir = 180 - dir;
-  if(dir == EAST || dir == WEST){
+  if(dir == EAST || dir == WEST || dir == UP || dir == DOWN){
     opposite_dir = -dir;
   }
   _vertices[dest].emplace_front(source,weight , opposite_dir);

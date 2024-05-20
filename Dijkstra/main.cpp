@@ -14,11 +14,11 @@ using namespace std;
 using namespace rapidjson;
 
 Graph createComplexGraph(){
-  Graph g(20);
+  Graph g(23);
   g.addEdge(0, 1, 3 , NORTH);
   g.addEdge(1, 2, 3 , EAST);
   g.addEdge(2, 4, 4 , NORTH);
-  g.addEdge(2, 3, 1 , SOUTH);
+  g.addEdge(2, 3, 6 , SOUTH);
   g.addEdge(2, 7, 2 , EAST);
   g.addEdge(3, 9, 3 , EAST);
   g.addEdge(3, 18, 5 ,SOUTH);
@@ -35,11 +35,14 @@ Graph createComplexGraph(){
   g.addEdge(13, 14, 6 , SOUTH);
   g.addEdge(14, 16, 3 , SOUTH);
   g.addEdge(15, 16, 3 , NORTH);
+  g.addEdge(15,20 , 2 , SOUTH);
+  g.addEdge(20, 21 , 1 , UP);
+  g.addEdge(21, 22 , 8, WEST);
   return g;
 }
 
 int main(){
-  
+    
     std::string inputData;
     std::getline(std::cin, inputData);
 
@@ -69,10 +72,10 @@ int main(){
         std::cerr << "Input is not a JSON object" << std::endl;
         return 1;
     }
-
-    Graph test1 = createComplexGraph();
-    Path result = shortestPath(test1 , source  , dest);
     
+    Graph test1 = createComplexGraph();
+    Path result = shortestPath(test1 , 4 , 22);
+    //source  , dest
     vector<int> final_path = result.path();
     vector<int> final_directions = result.direction();
     int distance = result.total_distance();
