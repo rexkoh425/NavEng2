@@ -14,7 +14,7 @@ using namespace std;
 using namespace rapidjson;
 
 Graph createComplexGraph(){
-  Graph g(23);
+  Graph g(24);
   g.addEdge(0, 1, 3 , NORTH);
   g.addEdge(1, 2, 3 , EAST);
   g.addEdge(2, 4, 4 , NORTH);
@@ -38,11 +38,12 @@ Graph createComplexGraph(){
   g.addEdge(15,20 , 2 , SOUTH);
   g.addEdge(20, 21 , 1 , UP);
   g.addEdge(21, 22 , 8, WEST);
+  g.addEdge(22, 23 , 3, WEST);
   return g;
 }
 
 int main(){
-    
+  
     std::string inputData;
     std::getline(std::cin, inputData);
 
@@ -74,7 +75,7 @@ int main(){
     }
     
     Graph test1 = createComplexGraph();
-    Path result = shortestPath(test1 , 4 , 22);
+    Path result = shortestPath(test1 , source , dest);
     //source  , dest
     vector<int> final_path = result.path();
     vector<int> final_directions = result.direction();
