@@ -1,7 +1,34 @@
 ORBITAL PROJECT BY REX AND RAVI
 
-When you update the graph
+Photo taking 
 
-1) add edges in main.cpp
-2) add inputs to mysql server
-3) upload pictures and name them in local
+1) Explore level first to identify potential nodes
+2) Open space = Cross junction 
+3) ok to be T-junction but only 2 nodes connected in data e.g. toliet is the remaining side.Put as T-junction
+4) Take in a rough pov and ok angle
+
+
+When you want to add new nodes
+
+1) get all inputs from form
+2) add edges in main.cpp from Edgeinput.txt
+3) add inputs to mysql server from mysql_input.txt
+4) update the coordinates and vector in desmos
+5) upload pictures and name them in local
+
+When you want to add nodes between existing nodes
+
+1) Generate statements using form
+2) Remove orginal edges and add two more edge between new and original in mai.cpp / Edgeinput.txt
+3) Remove original desmos vector only 
+4) add coordinates and vector of each of the two connections
+
+When you add nodes wrongly
+
+1) delete node from mysql using form
+2) remove the edges from main.cpp / Edgeinput.txt
+3) remove inputs from mysql_inputs.txt
+4) remove from desmos 
+
+
+
