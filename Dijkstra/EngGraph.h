@@ -25,4 +25,6 @@ Graph createEngGraph(){
     g.addEdge(17, 19, 10 , WEST);
     g.addEdge(17, 20, 65 , SOUTH);
     g.addEdge(20, 21, 20 , SOUTH);
+    g.addEdge(5, 22, 40 , NORTH);
+    g.addEdge(22, 23, 20 , WEST);
 }
