@@ -14,7 +14,8 @@ When you want to add new nodes
 2) add edges in main.cpp from Edgeinput.txt
 3) add inputs to mysql server from mysql_input.txt
 4) update the coordinates and vector in desmos
-5) upload pictures and name them in local
+5) take photo of the directions and send them through telegram , save on computer and name them
+6) upload pictures and name them in local
 
 When you want to add nodes between existing nodes
 

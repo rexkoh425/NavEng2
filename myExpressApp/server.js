@@ -101,7 +101,8 @@ function direction_img(incoming_str , outgoing_str){
 }
 
 app.get('/' , (req ,res) => { 
-    res.sendFile(`C:\\Users\\rexko\\OneDrive\\Desktop\\NUS\\html practice\\Orbital_website` +  '/OrbWeb.htm');
+    const filepath = path.join(__dirname , '..' , 'OrbWeb.htm' );
+    res.sendFile(filepath);
 });
 
 app.post('/formPost' , (req ,res) => { 
