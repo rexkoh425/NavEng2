@@ -3,6 +3,7 @@
 #include "shortest_path.h"
 
 Graph createEngGraph(){
+    Graph g(1000);
     g.addEdge(0, 1, 50 , EAST);
     g.addEdge(1, 2, 110 , SOUTH);
     g.addEdge(2, 3, 30 , WEST);
