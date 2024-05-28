@@ -66,8 +66,21 @@ form {
 .description {
   padding:0px;
   margin: 0px;
+  margin-bottom: 10px;
+  color: "red"
 }
 
 .StartAndEndLocation {
   font-size:x-large;
+}
+
+.child1 {
+  width: 40%;
+  height: 100vh;
+  text-align: right;
+}
+
+.child2 {
+  width: 60%;
+  height: 100vh;
 }

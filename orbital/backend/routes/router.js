@@ -13,7 +13,7 @@ const connection = mysql.createConnection({
 });
 
 function template_img(img_path){
-  return `<img src = "${img_path}" alt = "cannot be displayed" width = "100" height = "100"></img><br></br> `;
+  return `<img src = "${img_path}" alt = "cannot be displayed" width = "600" height = "400"></img><br></br> `;
 }
 
 function direction_map(direction_num){
