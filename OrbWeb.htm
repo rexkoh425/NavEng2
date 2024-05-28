@@ -18,11 +18,21 @@
         <div>
         <form action = "/formPost" method = "post" id = "SDForm" enctype="application/x-www-form-urlencoded">
             <label for = "source">Current Location :</label><br>
-            <input type = "text" id = "source" name = "source" required><br>
+            <input type = "text" list = "room_list" id = "source" name = "source" required><br>
             <label for = "destination">Destination :</label><br>
-            <input type = "text" id = "destination" name = "destination" required><br>
+            <input type = "text" list = "room_list" id = "destination" name = "destination" required><br>
             <br>
             <button type = "submit" id = "submit" > Submit </button>
+            <datalist id="room_list">
+                <option value="EA-02-08">
+                <option value="EA-02-09">
+                <option value="EA-02-10">
+                <option value="EA-02-11">
+                <option value="EA-02-14">
+                <option value="EA-02-16">
+                <option value="EA-02-17">
+                <option value="EA-02-18">
+            </datalist>
         </form>
         </div>
         <div id = "image_path" class = 'img_container'></div>

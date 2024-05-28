@@ -1,6 +1,7 @@
 #include "shortest_path.cpp"
 #include "shortest_path.h"
 #include "graph.cpp"
+#include "EngGraph.h"
 #include <cstdlib>
 #include <stdlib.h>
 #include <iostream>
@@ -13,34 +14,6 @@
 using namespace std;
 using namespace rapidjson;
 
-Graph createComplexGraph(){
-  Graph g(24);
-  g.addEdge(0, 1, 3 , NORTH);
-  g.addEdge(1, 2, 3 , EAST);
-  g.addEdge(2, 4, 4 , NORTH);
-  g.addEdge(2, 3, 6 , SOUTH);
-  g.addEdge(2, 7, 2 , EAST);
-  g.addEdge(3, 9, 3 , EAST);
-  g.addEdge(3, 18, 5 ,SOUTH);
-  g.addEdge(5, 6, 2 , EAST);
-  g.addEdge(5, 19, 3 , WEST);
-  g.addEdge(6, 12, 3 , EAST);
-  g.addEdge(6, 7, 6 , SOUTH);
-  g.addEdge(7, 8, 3 , SOUTH);
-  g.addEdge(7, 14, 9 , EAST);
-  g.addEdge(9, 15, 8 , EAST);
-  g.addEdge(9, 17, 4 , EAST);
-  g.addEdge(10, 16, 6 , EAST);
-  g.addEdge(11, 12, 4 , NORTH);
-  g.addEdge(13, 14, 6 , SOUTH);
-  g.addEdge(14, 16, 3 , SOUTH);
-  g.addEdge(15, 16, 3 , NORTH);
-  g.addEdge(15,20 , 2 , SOUTH);
-  g.addEdge(20, 21 , 1 , UP);
-  g.addEdge(21, 22 , 8, WEST);
-  g.addEdge(22, 23 , 3, WEST);
-  return g;
-}
 
 int main(){
   
@@ -60,21 +33,18 @@ int main(){
     if (doc.IsObject()) {
         // Process JSON object
         // Example: Accessing a key named "example"
-        if (doc.HasMember("source") && doc["source"].IsString()) {
-            std::string value = doc["source"].GetString();
-            source = stoi(value) - 1;
+        if (doc.HasMember("source")) {
+          source = doc["source"].GetInt() - 1;
         }
-
-        if (doc.HasMember("destination") && doc["destination"].IsString()) {
-            std::string value = doc["destination"].GetString();
-            dest = stoi(value) - 1  ;
+        if (doc.HasMember("destination")) {
+          dest = doc["destination"].GetInt() - 1;
         }
     } else {
         std::cerr << "Input is not a JSON object" << std::endl;
         return 1;
     }
     
-    Graph test1 = createComplexGraph();
+    Graph test1 = createEngGraph();
     Path result = shortestPath(test1 , source , dest);
     //source  , dest
     vector<int> final_path = result.path();
