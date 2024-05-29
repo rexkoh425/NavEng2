@@ -1,11 +1,12 @@
 const express = require('express')
 const router = express.Router()
 const { spawn } = require('child_process');
+require('dotenv/config')
 
 const { createClient } = require('@supabase/supabase-js');
 
-const supabaseUrl = 'https://bdnczrzgqfqqcoxefvqa.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJkbmN6cnpncWZxcWNveGVmdnFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTY4NjY1ODAsImV4cCI6MjAzMjQ0MjU4MH0.jXT7lLJj87SBQkUYIfclbt2uA2ISW8XNBDBU8GM7wR0';
+const supabaseUrl = process.env.SUPABASE_URL
+const supabaseKey = process.env.SUPABASE_KEY
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 

@@ -2,6 +2,7 @@ const express = require('express')
 const cors = require('cors')
 const bodyParser = require('body-parser')
 const router = require('./routes/router')
+require('dotenv/config')
 
 const app = express()
 
@@ -17,7 +18,7 @@ const corsOptions = {
 app.use(cors(corsOptions))
 app.use('/', router)
 
-const port = 4000
+const port = process.env.PORT
 const server = app.listen(port, () => {
     console.log(`Server is running on port ${port}`)
 })

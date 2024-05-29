@@ -48,7 +48,6 @@ function PromptForm() {
         }
 
         await axios.post("http://localhost:4000/formPost", postData)
-        //.then(res => setMessageError(<p className="success">{res.data}</p>))
         .then(res => setMessageError(res.data))
         //console.log(messageError); // Log the HTML content
     }
@@ -68,7 +67,7 @@ function PromptForm() {
             axiosPostData()     
     }
     const locations = ['EA-02-08', 'EA-02-09', 'EA-02-10', 'EA-02-11', 'EA-02-14', 'EA-02-16', 'EA-02-17', 'EA-02-18'];
-    const myHTML = `<img src = "/Pictures/East/East/3_3_0_1_East_East_Cross_junction_NIL.png" alt = "cannot be displayed" width = "100" height = "100"></img><br></br>`;
+    const myHTML = `<img src = "/Pictures/East/East/3_3_0_1_East_East_Cross_junction_NIL.png" alt = "cannot be displayed" width = "100" height = "100"></img><br></br>`; //For debugging
 
     return (
         <>
