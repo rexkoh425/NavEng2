@@ -1,5 +1,10 @@
 ORBITAL PROJECT BY REX AND RAVI
 
+Using React App
+
+1) Start Frontend by entering frontend folder and typing npm start into terminal
+2) Start Backend by entering backend folder and typing npm start into terminal
+
 Photo taking 
 
 1) Explore level first to identify potential nodes
