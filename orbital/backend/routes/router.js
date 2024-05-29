@@ -1,19 +1,16 @@
 const express = require('express')
 const router = express.Router()
 const { spawn } = require('child_process');
-const mysql = require('mysql2');
 
+const { createClient } = require('@supabase/supabase-js');
 
-const connection = mysql.createConnection({
-  host: 'localhost',
-  port: '3306',
-  user: 'root',
-  password: 'Orbital!@34',
-  database: 'orbital'
-});
+const supabaseUrl = 'https://bdnczrzgqfqqcoxefvqa.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJkbmN6cnpncWZxcWNveGVmdnFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTY4NjY1ODAsImV4cCI6MjAzMjQ0MjU4MH0.jXT7lLJj87SBQkUYIfclbt2uA2ISW8XNBDBU8GM7wR0';
+
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 function template_img(img_path){
-  return `<img src = "${img_path}" alt = "cannot be displayed" width = "600" height = "400"></img><br></br> `;
+  return `<img src = "${img_path}" alt = "cannot be displayed" width = "300"><br> `;
 }
 
 function direction_map(direction_num){
@@ -21,6 +18,9 @@ function direction_map(direction_num){
   const EAST  = "90";
   const SOUTH = "180";
   const WEST  = "-90";
+  const UP = "45";
+  const DOWN = "-45";
+
   switch(direction_num){
       
       case NORTH:
@@ -36,7 +36,29 @@ function direction_map(direction_num){
   }
 }
 
+function filter_elevator(incoming , outgoing){
+  const UP = "45";
+  const DOWN = "-45";
+  if(incoming != outgoing){
+      if(outgoing == UP){
+          return "5";
+      }
+      if(outgoing == DOWN){
+          return "6";
+      }
+      if(incoming == UP || incoming == DOWN){
+          return '7';
+      }
+      return "0";
+  }
+  return "0";
+}
+
 function direction_img(incoming_str , outgoing_str){
+  const respond = filter_elevator(incoming_str,outgoing_str);
+  if(respond != "0"){
+      return respond;
+  }
   let incoming = Number(incoming_str);
   let outgoing = Number(outgoing_str);
   outgoing -= incoming;
@@ -56,9 +78,10 @@ function direction_img(incoming_str , outgoing_str){
       case -90:
           return "4";
       default : 
-          return "3";
+          return "0";
   }
 }
+
 
 router.post('/contact', (req, res) => {
   const {email, message} = req.body
@@ -67,7 +90,7 @@ router.post('/contact', (req, res) => {
   res.send("Message sent. Thank you.")
 })
 
-router.post('/formPost' , (req ,res) => { 
+router.post('/formPost' , async (req ,res) => { 
   const inputData = req.body;
   console.log(inputData)
   console.log(inputData.source)
@@ -77,42 +100,82 @@ router.post('/formPost' , (req ,res) => {
     console.log("data incorrectly labelled")  
     return;
   }
+
+  try {
+    // Query the 'users' table for a specific user by ID
+    const { data, error } = await supabase
+        .from('pictures')
+        .select('node_id')
+        .eq('room_num', inputData.source);
+    if (error) {
+        throw error;
+    }
+    inputData.source = data[0].node_id;
+} catch (error) {
+    res.status(500).json({ error: error.message });
+} 
+try {
+    // Query the 'users' table for a specific user by ID
+    const { data, error } = await supabase
+        .from('pictures')
+        .select('node_id')
+        .eq('room_num', inputData.destination);
+    if (error) {
+        throw error;
+    }
+    inputData.destination = data[0].node_id;
+} catch (error) {
+    res.status(500).json({ error: error.message });
+}
+console.log(inputData);
+
   const serializedData = JSON.stringify(inputData);
   console.log(serializedData)
   const cppProcess = spawn(__dirname + '/../Dijkstra/main.exe' , []);
   cppProcess.stdin.write(serializedData);
   cppProcess.stdin.end();
   
-  cppProcess.stdout.on('data', (data) => {
+  cppProcess.stdout.on('data', async (data) => {
       const outputData = data.toString().split("|");
       console.log(outputData);
       let nodes = outputData[0].split(",");
       const directions = outputData[1].split(",");
       //console.log(directions);
-      nodes[0] += "66";
+      nodes[0] += "67";
       for(i = 1 ; i < directions.length ; i ++){
           nodes[i] += direction_map(directions[i-1]);//pov
           nodes[i] += direction_img(directions[i-1] , directions[i]);
       }
-      nodes[directions.length] += "66";
-      const id_string = nodes.join(",");
-      console.log(id_string);
-      const query = `SELECT pov , direction,filepath FROM pictures WHERE unique_id IN (${id_string}) ORDER BY FIELD(node_id,${outputData[0]})`;
-      let final = "";
-      
-      let workspace = `http://localhost:4000/Pictures`;
-
-      connection.query(query, (err, results) => {
-          if (err){
-            console.error('Error querying MySQL:', err);
-            return;
-          }
-          results.forEach(result => {
-              final += template_img(`/Pictures` + `/${result.pov}/${result.direction}/` + result.filepath + `.png`);
-          });
-          res.send(final);
-      });
-      
+      nodes[directions.length] += "67";
+      console.log(nodes);
+      try {
+        // Query the 'users' table for a specific user by ID
+        const { data, error } = await supabase
+            .from('pictures')
+            .select('unique_id , filepath')
+            .in('unique_id', nodes)
+            .order('node_id', { ascending: true });
+        if (error) {
+            throw error;
+        }
+        const data_length  = data.length;
+        const fixedLengthArray = new Array(data_length).fill("");
+        
+        data.forEach(result => {
+            let index = 0;
+            for(let i = 0 ; i < data_length ; i ++){
+                if(result.unique_id == parseInt(nodes[i])){
+                    index = i;
+                    break;
+                }
+            }                
+            fixedLengthArray[index] = template_img(result.filepath);
+        });
+        const final = fixedLengthArray.join('');
+        res.send(final);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    } 
   });
     
   // Handle errors and exit events
@@ -125,81 +188,5 @@ router.post('/formPost' , (req ,res) => {
   });
   
 });
-
-router.get('/users', (req, res) => {
-    const userData = 
-    [
-        {
-          "id": 1,
-          "name": "Leanne Graham",
-          "username": "Bret",
-          "email": "Sincere@april.biz",
-          "address": {
-            "street": "Kulas Light",
-            "suite": "Apt. 556",
-            "city": "Gwenborough",
-            "zipcode": "92998-3874",
-            "geo": {
-              "lat": "-37.3159",
-              "lng": "81.1496"
-            }
-          },
-          "phone": "1-770-736-8031 x56442",
-          "website": "hildegard.org",
-          "company": {
-            "name": "Romaguera-Crona",
-            "catchPhrase": "Multi-layered client-server neural-net",
-            "bs": "harness real-time e-markets"
-          }
-        },
-        {
-          "id": 2,
-          "name": "Ervin Howell",
-          "username": "Antonette",
-          "email": "Shanna@melissa.tv",
-          "address": {
-            "street": "Victor Plains",
-            "suite": "Suite 879",
-            "city": "Wisokyburgh",
-            "zipcode": "90566-7771",
-            "geo": {
-              "lat": "-43.9509",
-              "lng": "-34.4618"
-            }
-          },
-          "phone": "010-692-6593 x09125",
-          "website": "anastasia.net",
-          "company": {
-            "name": "Deckow-Crist",
-            "catchPhrase": "Proactive didactic contingency",
-            "bs": "synergize scalable supply-chains"
-          }
-        },
-        {
-          "id": 3,
-          "name": "Clementine Bauch",
-          "username": "Samantha",
-          "email": "Nathan@yesenia.net",
-          "address": {
-            "street": "Douglas Extension",
-            "suite": "Suite 847",
-            "city": "McKenziehaven",
-            "zipcode": "59590-4157",
-            "geo": {
-              "lat": "-68.6102",
-              "lng": "-47.0653"
-            }
-          },
-          "phone": "1-463-123-4447",
-          "website": "ramiro.info",
-          "company": {
-            "name": "Romaguera-Jacobson",
-            "catchPhrase": "Face to face bifurcated interface",
-            "bs": "e-enable strategic applications"
-          }
-        }
-      ]
-      res.send(userData)
-})
 
 module.exports = router
