@@ -107,11 +107,13 @@ app.get('/' , (req ,res) => {
 
 app.post('/formPost' , (req ,res) => { 
     const inputData = req.body;
+    console.log(inputData)
     //checking for empty input
     if(!inputData.source || !inputData.destination){
         return;
     }
     const serializedData = JSON.stringify(inputData);
+    
     const cppProcess = spawn(__dirname + '/../Dijkstra/main.exe' , []);
     cppProcess.stdin.write(serializedData);
     cppProcess.stdin.end();
@@ -133,7 +135,8 @@ app.post('/formPost' , (req ,res) => {
         const query = `SELECT pov , direction,filepath FROM pictures WHERE unique_id IN (${id_string}) ORDER BY FIELD(node_id,${outputData[0]})`;
         let final = "";
         
-        let workspace = `http://localhost:5500/Pictures`;
+        
+        let workspace = `http://localhost:5500/Pictures`; 
 
         connection.query(query, (err, results) => {
             if (err){
@@ -142,6 +145,7 @@ app.post('/formPost' , (req ,res) => {
             }
             results.forEach(result => {
                 final += template_img(workspace + `/${result.pov}/${result.direction}/` + result.filepath + ".png");
+                //final += template_img("../Pictures" + `/${result.pov}/${result.direction}/` + result.filepath + ".png");
             });
             res.send(final);
         });
@@ -155,7 +159,7 @@ app.post('/formPost' , (req ,res) => {
 
     cppProcess.on('exit', (code) => {
         console.log('C++ process exited with code:', code);
-    });
+    }); 
     
 });
 
