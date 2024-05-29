@@ -1,6 +1,10 @@
 #include "graph.h"
-#include "shortest_path.cpp"
-#include "shortest_path.h"
+#define NORTH 0
+#define EAST 90
+#define SOUTH 180
+#define WEST -90
+#define UP 45
+#define DOWN -45
 
 Graph createEngGraph(){
     Graph g(1000);
@@ -27,4 +31,5 @@ Graph createEngGraph(){
     g.addEdge(20, 21, 20 , SOUTH);
     g.addEdge(5, 22, 40 , NORTH);
     g.addEdge(22, 23, 20 , WEST);
+    return g;
 }

@@ -1,5 +1,4 @@
 const express = require('express');
-const mysql = require('mysql2');
 const port = process.env.port || 5500;
 const path = require('path');
 
@@ -9,23 +8,14 @@ const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended : false}));
-app.use('/Pictures' , express.static(path.join(__dirname,'../Pictures')));
 
-const connection = mysql.createConnection({
-    host: 'localhost',
-    port: '3306',
-    user: 'root',
-    password: 'Orbital!@34',
-    database: 'orbital'
-});
+const { createClient } = require('@supabase/supabase-js');
 
-connection.connect((err) => {
-    if (err) {
-      console.error('Error connecting to MySQL:', err);
-      return;
-    }
-    console.log('Connected to MySQL');
-});
+// Replace 'your_supabase_url' and 'your_supabase_key' with your actual Supabase URL and API key
+const supabaseUrl = 'https://bdnczrzgqfqqcoxefvqa.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJkbmN6cnpncWZxcWNveGVmdnFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTY4NjY1ODAsImV4cCI6MjAzMjQ0MjU4MH0.jXT7lLJj87SBQkUYIfclbt2uA2ISW8XNBDBU8GM7wR0';
+
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 function template_img(img_path){
     return `<img src = "${img_path}" alt = "cannot be displayed" width = "100" height = "100"><br> `;
@@ -105,22 +95,50 @@ app.get('/' , (req ,res) => {
     res.sendFile(filepath);
 });
 
-app.post('/formPost' , (req ,res) => { 
+app.post('/formPost' , async (req ,res) => { 
     const inputData = req.body;
     console.log(inputData)
     //checking for empty input
     if(!inputData.source || !inputData.destination){
         return;
     }
+
+    try {
+        // Query the 'users' table for a specific user by ID
+        const { data, error } = await supabase
+            .from('pictures')
+            .select('node_id')
+            .eq('room_num', inputData.source);
+        if (error) {
+            throw error;
+        }
+        inputData.source = data[0].node_id;
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    } 
+    try {
+        // Query the 'users' table for a specific user by ID
+        const { data, error } = await supabase
+            .from('pictures')
+            .select('node_id')
+            .eq('room_num', inputData.destination);
+        if (error) {
+            throw error;
+        }
+        inputData.destination = data[0].node_id;
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+    console.log(inputData);
     const serializedData = JSON.stringify(inputData);
     
     const cppProcess = spawn(__dirname + '/../Dijkstra/main.exe' , []);
     cppProcess.stdin.write(serializedData);
     cppProcess.stdin.end();
-    
-    cppProcess.stdout.on('data', (data) => {
+
+    cppProcess.stdout.on('data', async (data) => {
         const outputData = data.toString().split("|");
-        console.log(outputData);
+        //console.log(outputData);
         let nodes = outputData[0].split(",");
         const directions = outputData[1].split(",");
         //console.log(directions);
@@ -135,8 +153,7 @@ app.post('/formPost' , (req ,res) => {
         const query = `SELECT pov , direction,filepath FROM pictures WHERE unique_id IN (${id_string}) ORDER BY FIELD(node_id,${outputData[0]})`;
         let final = "";
         
-        
-        let workspace = `http://localhost:5500/Pictures`; 
+        let workspace = `http://localhost:5500/Pictures`;
 
         connection.query(query, (err, results) => {
             if (err){
@@ -145,11 +162,11 @@ app.post('/formPost' , (req ,res) => {
             }
             results.forEach(result => {
                 final += template_img(workspace + `/${result.pov}/${result.direction}/` + result.filepath + ".png");
-                //final += template_img("../Pictures" + `/${result.pov}/${result.direction}/` + result.filepath + ".png");
             });
             res.send(final);
-        });
-        
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        } 
     });
       
     // Handle errors and exit events
