@@ -59,8 +59,8 @@
 }
 
 form {
-  margin-left: 25px;
-  margin-top: 25px;
+  margin-left: 100px;
+  margin-top: 50px;
 }
 
 .description {
@@ -75,12 +75,18 @@ form {
 }
 
 .child1 {
-  width: 40%;
+  width: 60%;
   height: 100vh;
   text-align: right;
 }
 
 .child2 {
-  width: 60%;
+  margin-left: 100px;
+  width: 40%;
   height: 100vh;
+  margin-top: 50px;
+}
+
+.InstructionsTitle {
+  color: #F05C2C
 }

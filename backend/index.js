@@ -3,8 +3,18 @@ const cors = require('cors')
 const bodyParser = require('body-parser')
 const router = require('./routes/router')
 require('dotenv/config')
+const helmet = require('helmet');
+
+
 
 const app = express()
+
+app.use(helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'", "https://naveng-backend-vercel.vercel.app"],
+      // Add more directives as needed
+    }
+  }));
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended:false}))

@@ -16,6 +16,7 @@ function PromptForm() {
     const [messageError, setMessageError] = useState(``)
     const [selectData, setSelectData] = useState([])
     const [selectValue, setSelectValue] = useState('')
+    const [formSubmitted, setFormSubmitted] = useState(false);
     let HTMLstuff = ``
 
     useEffect( () => {
@@ -25,9 +26,10 @@ function PromptForm() {
             processing = false
         }
     },[])
-
+    
     const axiosFetchData = async(processing) => {
-        await axios.get('http://localhost:4000/users')
+        await axios.get('https://naveng-backend-vercel.vercel.app/users')
+        //await axios.get('http://localhost:4000/users')
         .then(res => {
             if (processing) {
             setSelectData(res.data)
@@ -47,7 +49,8 @@ function PromptForm() {
             
         }
 
-        await axios.post("http://localhost:4000/formPost", postData)
+        await axios.post("https://naveng-backend-vercel.vercel.app/formPost", postData)
+        //await axios.post("http://localhost:4000/formPost", postData)
         .then(res => setMessageError(res.data))
         //console.log(messageError); // Log the HTML content
     }
@@ -63,19 +66,20 @@ function PromptForm() {
             {
                 setMessageError("")
             }
-            setMessageError("")
-            axiosPostData()     
+        setMessageError("")
+        setFormSubmitted(true);
+        axiosPostData()     
     }
     const locations = ['EA-02-08', 'EA-02-09', 'EA-02-10', 'EA-02-11', 'EA-02-14', 'EA-02-16', 'EA-02-17', 'EA-02-18'];
-    const myHTML = `<img src = "/Pictures/East/East/3_3_0_1_East_East_Cross_junction_NIL.png" alt = "cannot be displayed" width = "100" height = "100"></img><br></br>`; //For debugging
+    const myHTML = `<img src = "https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/11_30_-330_2_North_North_T_junction_NIL.png" alt = "cannot be displayed" width = "100" height = "100"></img><br></br>`; //For debugging
 
     return (
         <>
 <div style={{display: "flex", flexDirection: "row" }} >
-    <div class="child1"><center>
+    <div className="child1"><center>
         <form>
             <label className="StartAndEndLocation">Start Location</label>
-            <Typography  className="description">Search or select the location closest to you</Typography>
+            <Typography  className="description" sx={{marginBottom: "10px"}}>Search or select the location closest to you</Typography>
             <Autocomplete
             options={locations} sx={{ width: 250 }} renderInput={(params) => (
                 <TextField {...params} label="Start Location"></TextField>
@@ -93,7 +97,7 @@ function PromptForm() {
             <br></br>
             <br></br>
             <label className="StartAndEndLocation">End Location</label>
-            <Typography className="description">Search or select the location closest to your end point</Typography>
+            <Typography className="description" sx={{marginBottom: "10px"}}>Search or select the location closest to your end point</Typography>
             
             <Autocomplete
             options={locations} sx={{ width: 250 }} renderInput={(params) => (
@@ -114,11 +118,27 @@ function PromptForm() {
             <Button variant="contained" type="submit" onClick={handleSubmit} sx ={{ bgcolor: "#cdd8e6", "&:hover": { bgcolor: "#F05C2C"}, }}>Submit</Button>
             <br></br>
             <br></br>
+            <Box component="section" sx={{ p: 2, border: '1px grey', bgcolor: '#F5F5F5'}}>
+            <h1 className="InstructionsTitle">How to use</h1>
+            <p className="InstructionsContent">1) Simply select your closest starting and end location and click Submit!</p>
+            <p className="InstructionsContent">2) Wait for the pictures to load...</p>
+            <p className="InstructionsContent">3) The first and last picture show the doors to the starting location and end location respectively</p>
+            <p className="InstructionsContent">4) With your back facing towards the door of your starting location, refer to the second picture onwards and follow the arrows!</p>
+    </Box>
+            
+            
 
         </form>
         </center> </div>
-        <div class="child2">
-            <center><div dangerouslySetInnerHTML={{ __html: messageError }} /></center>
+        <div className="child2">
+            {!formSubmitted 
+            && <div><Box 
+            component="section"  
+            display="flex"
+            alignItems="center"
+            
+             sx={{ p: 2, border: '1px grey', bgcolor: '#F5F5F5', height: "68vh", marginRight:"100px" , textAlign: 'center', justifyContent: 'center', color: 'grey'}}>Please select the starting and ending <br></br> locations to view the pictures</Box></div>}
+            <div dangerouslySetInnerHTML={{ __html: messageError }} />
         </div>
         </div>
         </>
