@@ -60,6 +60,11 @@ function PromptForm() {
 
         console.log(email + ' | ' + selectValue + ' | ' + message)
         
+        if (email === message) {
+            alert('Entries cannot be the same');
+            return;
+        }
+
         if (!message) {
                 setMessageError("Destination is empty. Please enter a Destination.")
             } else 
