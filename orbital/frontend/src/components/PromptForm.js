@@ -1,12 +1,9 @@
 import { useState, useEffect} from "react"
 import axios from "axios"
-import logo from '../logo.svg'
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
-import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import { Typography } from "@mui/material";
-import Container from "@mui/material";
 import Autocomplete from '@mui/material/Autocomplete';
 
 function PromptForm() {
@@ -14,10 +11,9 @@ function PromptForm() {
     const [email, setEmail] = useState('')
     const [message, setMessage] = useState('')
     const [messageError, setMessageError] = useState(``)
-    const [selectData, setSelectData] = useState([])
     const [selectValue, setSelectValue] = useState('')
     const [formSubmitted, setFormSubmitted] = useState(false);
-    let HTMLstuff = ``
+    //let HTMLstuff = ``
 
     useEffect( () => {
         let processing = true
@@ -28,8 +24,8 @@ function PromptForm() {
     },[])
     
     const axiosFetchData = async(processing) => {
-        await axios.get('https://naveng-backend-vercel.vercel.app/users')
-        //await axios.get('http://localhost:4000/users')
+        //await axios.get('https://naveng-backend-vercel.vercel.app/users')
+        await axios.get('http://localhost:4000/users')
         .then(res => {
             if (processing) {
             setSelectData(res.data)
@@ -49,8 +45,8 @@ function PromptForm() {
             
         }
 
-        await axios.post("https://naveng-backend-vercel.vercel.app/formPost", postData)
-        //await axios.post("http://localhost:4000/formPost", postData)
+        //await axios.post("https://naveng-backend-vercel.vercel.app/formPost", postData)
+        await axios.post("http://localhost:4000/formPost", postData)
         .then(res => setMessageError(res.data))
         //console.log(messageError); // Log the HTML content
     }
