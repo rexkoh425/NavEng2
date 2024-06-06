@@ -90,3 +90,19 @@ form {
 .InstructionsTitle {
   color: #F05C2C
 }
+
+.ReturnLink {
+  color: #F05C2C;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.NotFoundPage {
+  margin-left: 100px;
+  margin-top: 50px;
+}
+
+.red {
+  text-decoration: bold;
+  color: red;
+}
