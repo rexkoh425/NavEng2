@@ -18,6 +18,8 @@ function PromptForm() {
     const [selectValue, setSelectValue] = useState('')
     const [formSubmitted, setFormSubmitted] = useState(false);
     let HTMLstuff = ``
+    let arrayFromString = messageError.split('<br>');
+    let arrayposition = 0;
 
     useEffect( () => {
         let processing = true
@@ -52,9 +54,15 @@ function PromptForm() {
         await axios.post("https://naveng-backend-vercel.vercel.app/formPost", postData)
         //await axios.post("http://localhost:4000/formPost", postData)
         .then(res => setMessageError(res.data))
+        arrayFromString = messageError.split('<img src');
         //console.log(messageError); // Log the HTML content
     }
-    
+
+    const increment = (e) => {
+        e.preventDefault()
+        e++
+    }
+ 
     const handleSubmit = (e) => {
         e.preventDefault()
 
@@ -129,6 +137,9 @@ function PromptForm() {
             <p className="InstructionsContent">2) Wait for the pictures to load...</p>
             <p className="InstructionsContent">3) The first and last picture show the doors to the starting location and end location respectively</p>
             <p className="InstructionsContent">4) With your back facing towards the door of your starting location, refer to the second picture onwards and follow the arrows!</p>
+            
+            {arrayFromString[1]}
+            <Button variant="contained" type="submit" onClick={handleSubmit}>Ree</Button>
     </Box>
             
             
@@ -143,7 +154,7 @@ function PromptForm() {
             alignItems="center"
             
              sx={{ p: 2, border: '1px grey', bgcolor: '#F5F5F5', height: "68vh", marginRight:"100px" , textAlign: 'center', justifyContent: 'center', color: 'grey'}}>Please select the starting and ending <br></br> locations to view the pictures</Box></div>}
-            <div dangerouslySetInnerHTML={{ __html: messageError }} />
+            <div dangerouslySetInnerHTML={{ __html: arrayFromString[arrayposition] }} />
         </div>
         </div>
         </>
