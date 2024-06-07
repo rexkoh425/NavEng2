@@ -3,10 +3,8 @@ import axios from "axios"
 import logo from '../logo.svg'
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
-import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import { Typography } from "@mui/material";
-import Container from "@mui/material";
 import Autocomplete from '@mui/material/Autocomplete';
 
 function PromptForm() {
@@ -17,9 +15,22 @@ function PromptForm() {
     const [selectData, setSelectData] = useState([])
     const [selectValue, setSelectValue] = useState('')
     const [formSubmitted, setFormSubmitted] = useState(false);
-    let HTMLstuff = ``
+    const [arrayposition, setCount] = useState(0);
     let arrayFromString = messageError.split('<br>');
-    let arrayposition = 0;
+
+    const incrementCounter = (e) => {
+        e.preventDefault();
+        if(arrayposition != (arrayFromString.length-2)) { //Using -2 due to nature of splitting string
+            setCount(arrayposition + 1);
+        }
+      };
+
+      const decrementCounter = (e) => {
+        e.preventDefault();
+        if(arrayposition != (0)) {
+            setCount(arrayposition - 1);
+        }
+      };
 
     useEffect( () => {
         let processing = true
@@ -55,12 +66,6 @@ function PromptForm() {
         //await axios.post("http://localhost:4000/formPost", postData)
         .then(res => setMessageError(res.data))
         arrayFromString = messageError.split('<img src');
-        //console.log(messageError); // Log the HTML content
-    }
-
-    const increment = (e) => {
-        e.preventDefault()
-        e++
     }
  
     const handleSubmit = (e) => {
@@ -84,7 +89,6 @@ function PromptForm() {
         axiosPostData()     
     }
     const locations = ['EA-02-08', 'EA-02-09', 'EA-02-10', 'EA-02-11', 'EA-02-14', 'EA-02-16', 'EA-02-17', 'EA-02-18'];
-    const myHTML = `<img src = "https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/11_30_-330_2_North_North_T_junction_NIL.png" alt = "cannot be displayed" width = "100" height = "100"></img><br></br>`; //For debugging
 
     return (
         <>
@@ -137,9 +141,9 @@ function PromptForm() {
             <p className="InstructionsContent">2) Wait for the pictures to load...</p>
             <p className="InstructionsContent">3) The first and last picture show the doors to the starting location and end location respectively</p>
             <p className="InstructionsContent">4) With your back facing towards the door of your starting location, refer to the second picture onwards and follow the arrows!</p>
+            <Button variant="contained" type="submit" onClick={decrementCounter} sx ={{ bgcolor: "#D95328" , "&:hover": { bgcolor: "#F05C2C"},}}>Previous Image</Button>
+            <Button variant="contained" type="submit" onClick={incrementCounter} sx ={{ bgcolor: "#D95328" , "&:hover": { bgcolor: "#F05C2C"},}}>Next Image</Button>
             
-            {arrayFromString[1]}
-            <Button variant="contained" type="submit" onClick={handleSubmit}>Ree</Button>
     </Box>
             
             
