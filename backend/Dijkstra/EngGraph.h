@@ -9,7 +9,8 @@
 Graph createEngGraph(){
     Graph g(1000);
     g.addEdge(0, 1, 50 , EAST);
-    g.addEdge(1, 2, 110 , SOUTH);
+    g.addEdge(1, 153, 70 , SOUTH);
+    g.addEdge(153, 2, 40 , SOUTH);
     g.addEdge(2, 3, 30 , WEST);
     g.addEdge(3, 4, 1 , UP);
     g.addEdge(4, 5, 10 , EAST);
