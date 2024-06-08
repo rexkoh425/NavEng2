@@ -106,3 +106,50 @@ form {
   text-decoration: bold;
   color: red;
 }
+
+.htmlContent {
+  display: inline-block;
+  padding: 0.5rem 0.5rem;
+  vertical-align: middle;
+}
+
+.pictureparent 
+{
+  display: flex;
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+}
+
+.container {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  margin-right: 100px;
+  height: 533px;
+  align-items: center;
+  width: 400px;
+}
+
+.leftArrow {
+  grid-column:1;
+  background-color: #f0f0f0;
+  padding: 10px;
+}
+
+.imageColumn {
+  grid-column:2;
+  padding: 10px;
+  
+}
+
+.rightArrow {
+  grid-column:3;
+  background-color: #f0f0f0;
+  padding: 10px;
+  width:100px;
+}
+
+.imageCount {
+  text-align: center;
+  margin-right: 250px;
+}

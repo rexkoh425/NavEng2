@@ -6,12 +6,14 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import { Typography } from "@mui/material";
 import Autocomplete from '@mui/material/Autocomplete';
+import ArrowRightIcon from '@mui/icons-material/ArrowRight';
+import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
 
 function PromptForm() {
 
-    const [email, setEmail] = useState('')
-    const [message, setMessage] = useState('')
-    const [messageError, setMessageError] = useState(``)
+    const [sourceLocation, setSourceLocation] = useState('')
+    const [destinationLocation, setDestinationLocation] = useState('')
+    const [messageError, setMessageError] = useState(``) //using messageError variable for html content as well
     const [selectData, setSelectData] = useState([])
     const [selectValue, setSelectValue] = useState('')
     const [formSubmitted, setFormSubmitted] = useState(false);
@@ -20,14 +22,14 @@ function PromptForm() {
 
     const incrementCounter = (e) => {
         e.preventDefault();
-        if(arrayposition != (arrayFromString.length-2)) { //Using -2 due to nature of splitting string
+        if(arrayposition !== (arrayFromString.length-2)) { //Using -2 due to nature of splitting string
             setCount(arrayposition + 1);
         }
       };
 
       const decrementCounter = (e) => {
         e.preventDefault();
-        if(arrayposition != (0)) {
+        if(arrayposition !== (0)) {
             setCount(arrayposition - 1);
         }
       };
@@ -54,11 +56,8 @@ function PromptForm() {
 
     const axiosPostData = async() => {
         const postData = {
-            /*source: email,
-            destination: selectValue,
-            message: message */
-            source: email,
-            destination: message
+            source: sourceLocation,
+            destination: destinationLocation
             
         }
 
@@ -71,14 +70,14 @@ function PromptForm() {
     const handleSubmit = (e) => {
         e.preventDefault()
 
-        console.log(email + ' | ' + selectValue + ' | ' + message)
+        console.log(sourceLocation + ' | ' + selectValue + ' | ' + destinationLocation)
         
-        if (email === message) {
+        if (sourceLocation === destinationLocation) {
             alert('Entries cannot be the same');
             return;
         }
 
-        if (!message) {
+        if (!destinationLocation) {
                 setMessageError("Destination is empty. Please enter a Destination.")
             } else 
             {
@@ -103,9 +102,9 @@ function PromptForm() {
             )}
             onChange={(event, value) => {
                 if (value) {
-                    setEmail(value);
+                    setSourceLocation(value);
                 } else {
-                    setEmail(""); // Handle case when value is cleared
+                    setSourceLocation(""); // Handle case when value is cleared
                 }
             }
         }
@@ -122,9 +121,9 @@ function PromptForm() {
             )}
             onChange={(event, value) => {
                 if (value) {
-                    setMessage(value);
+                    setDestinationLocation(value);
                 } else {
-                    setMessage(""); // Handle case when value is cleared
+                    setDestinationLocation(""); // Handle case when value is cleared
                 }
             }
         }
@@ -141,14 +140,12 @@ function PromptForm() {
             <p className="InstructionsContent">2) Wait for the pictures to load...</p>
             <p className="InstructionsContent">3) The first and last picture show the doors to the starting location and end location respectively</p>
             <p className="InstructionsContent">4) With your back facing towards the door of your starting location, refer to the second picture onwards and follow the arrows!</p>
-            <Button variant="contained" type="submit" onClick={decrementCounter} sx ={{ bgcolor: "#D95328" , "&:hover": { bgcolor: "#F05C2C"},}}>Previous Image</Button>
-            <Button variant="contained" type="submit" onClick={incrementCounter} sx ={{ bgcolor: "#D95328" , "&:hover": { bgcolor: "#F05C2C"},}}>Next Image</Button>
-            
     </Box>
             
             
 
         </form>
+        
         </center> </div>
         <div className="child2">
             {!formSubmitted 
@@ -156,9 +153,16 @@ function PromptForm() {
             component="section"  
             display="flex"
             alignItems="center"
-            
-             sx={{ p: 2, border: '1px grey', bgcolor: '#F5F5F5', height: "68vh", marginRight:"100px" , textAlign: 'center', justifyContent: 'center', color: 'grey'}}>Please select the starting and ending <br></br> locations to view the pictures</Box></div>}
-            <div dangerouslySetInnerHTML={{ __html: arrayFromString[arrayposition] }} />
+             sx={{ p: 2, border: '1px grey', bgcolor: '#F5F5F5', height: "68vh", marginRight:"100px" , 
+             textAlign: 'center', justifyContent: 'center', color: 'grey'}}>Please select the starting and ending <br></br> locations to view the pictures</Box></div>}
+            {formSubmitted && <p className="imageCount">{arrayposition+1}/{arrayFromString.length-1}</p>}
+             { formSubmitted && <div className="container">
+             <Button variant="contained" type="submit" onClick={decrementCounter} sx ={{ bgcolor: "#D95328" , "&:hover": { bgcolor: "#F05C2C"}, minWidth: 'unset', textAlign: 'center !important', justifyContent: 'center' , px: '0px', py: '0px', display: "inline-block", height: "100px", width: "50px"}}><ArrowLeftIcon></ArrowLeftIcon></Button>
+             <div className="htmlContent" dangerouslySetInnerHTML={{ __html: arrayFromString[arrayposition] }} />
+          <Button variant="contained" type="submit" onClick={incrementCounter} sx ={{ bgcolor: "#D95328" , "&:hover": { bgcolor: "#F05C2C"}, minWidth: 'unset', textAlign: 'center !important', justifyContent: 'center', px: '0px', py: '0px', display: "inline-block", height: "100px", width: "50px"}}><ArrowRightIcon></ArrowRightIcon></Button>
+
+        </div>}
+
         </div>
         </div>
         </>
