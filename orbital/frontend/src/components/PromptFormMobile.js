@@ -8,9 +8,9 @@ import { Typography } from "@mui/material";
 import Autocomplete from '@mui/material/Autocomplete';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
-import ContentOutsideForm from './ContentOutsideForm'
 
-function PromptForm() {
+function PromptFormMobile() {
+
     const [sourceLocation, setSourceLocation] = useState('')
     const [destinationLocation, setDestinationLocation] = useState('')
     const [messageError, setMessageError] = useState(``) //using messageError variable for html content as well
@@ -44,7 +44,7 @@ function PromptForm() {
     
     const axiosFetchData = async(processing) => {
         //await axios.get('https://naveng-backend-vercel.vercel.app/users')
-        await axios.get('http://localhost:4000/test')
+        await axios.get('http://localhost:4000/users')
         .then(res => {
             if (processing) {
             setSelectData(res.data)
@@ -91,9 +91,8 @@ function PromptForm() {
 
     return (
         <>
-    <div style={{display: "flex", flexDirection: "row" }} >
-    <div className="child1"><center>
-        <form className="desktopForm">
+        <form className="mobileForm">
+        <center>
             <label className="StartAndEndLocation">Start Location</label>
             <Typography  className="description" sx={{marginBottom: "10px"}}>Search or select the location closest to you</Typography>
             <Autocomplete
@@ -141,35 +140,36 @@ function PromptForm() {
             <p className="InstructionsContent">3) The first and last picture show the doors to the starting location and end location respectively</p>
             <p className="InstructionsContent">4) With your back facing towards the door of your starting location, refer to the second picture onwards and follow the arrows!</p>
     </Box>
-            
-            
-
+    </center>
         </form>
-        </center> </div>
-
-        <div className="child2">
+        
+        
+        <div className="child2mobile">
             {!formSubmitted 
             && <div><Box 
             component="section"  
             display="flex"
             alignItems="center"
-             sx={{ p: 2, border: '1px grey', bgcolor: '#F5F5F5', height: "68vh", marginRight:"10vh" , 
+             sx={{ p: 2, border: '1px grey', bgcolor: '#F5F5F5', height: "68vh", marginRight:"0px" , 
              textAlign: 'center', justifyContent: 'center', color: 'grey'}}>Please select the starting and ending <br></br> locations to view the pictures</Box></div>}
-             
-            {formSubmitted && <p className="imageCount">{arrayposition+1}/{arrayFromString.length-1}</p>}
-
-             { formSubmitted && <div className="container">
-             <Button variant="contained" type="submit" onClick={decrementCounter} sx ={{ bgcolor: "#D95328" , "&:hover": { bgcolor: "#F05C2C"}, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "10vh", width: "3vw"}}><ArrowLeftIcon></ArrowLeftIcon></Button>
+            
+            <center>
+            {formSubmitted && <p className="imageCountMobile">{arrayposition+1}/{arrayFromString.length-1}</p>}
+             { formSubmitted && <div className="containerMobile">
+             <Button variant="contained" type="submit" onClick={decrementCounter} 
+             sx ={{ bgcolor: "#D95328" , "&:hover": { bgcolor: "#F05C2C"}, minWidth: 'unset', 
+             textAlign: 'center !important', px: '0px', py: '0px', height: "15vh", width: "10vw"}}><ArrowLeftIcon></ArrowLeftIcon></Button>
              <div className="htmlContent" dangerouslySetInnerHTML={{ __html: arrayFromString[arrayposition] }} />
-             <div className="rightArrow">
-          <Button variant="contained" type="submit" onClick={incrementCounter} sx ={{ bgcolor: "#D95328" , "&:hover": { bgcolor: "#F05C2C"}, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "10vh", width: "3vw"}}><ArrowRightIcon></ArrowRightIcon></Button>
-          </div>
-        </div>}
+          <Button variant="contained" type="submit" onClick={incrementCounter} 
+          sx ={{ bgcolor: "#D95328" , "&:hover": { bgcolor: "#F05C2C"}, minWidth: 'unset', 
+          textAlign: 'center !important', px: '0px', py: '0px', height: "15vh", width: "10vw"}}><ArrowRightIcon></ArrowRightIcon></Button>
 
+        </div>}
+        </center>
         </div>
-        </div>
+        
         </>
     )
 }
 
-export default PromptForm
+export default PromptFormMobile
