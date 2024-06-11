@@ -7,7 +7,6 @@ const { createClient } = require('@supabase/supabase-js');
 
 const supabaseUrl = process.env.SUPABASE_URL
 const supabaseKey = process.env.SUPABASE_KEY
-
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 function template_img(img_path){
@@ -62,19 +61,43 @@ function handle_up_down(incoming , outgoing){
 
 function get_arrow_dir(incoming_str , outgoing_str){
 
-  const response = handle_up_down(incoming_str,outgoing_str);
-  if(response != "not up down"){
-    return response;
-  }
-  let incoming = Number(incoming_str);
-  let outgoing = Number(outgoing_str);
-  outgoing -= incoming;
-  if(outgoing <= -180){
-    outgoing += 180;
-  }else if(outgoing >= 270){
-    outgoing -= 360;
-  }
-  return NESW_ENUM(`${outgoing}`);
+    const response = handle_up_down(incoming_str,outgoing_str);
+    if(response != "not up down"){
+        return response;
+    }
+
+    const North = { North : '1' , East : '2' , South : '3' , West : '4'};
+    const East = { North : '4' , East : '1' , South : '2' , West : '3'};
+    const South = { North : '3' , East : '4' , South : '1' , West : '2'};
+    const West = { North : '2' , East : '3' , South : '4' , West : '1'};
+    
+    switch(outgoing_str){
+        case "0" :
+            outgoing_str = 'North';
+            break;
+        case "90" :
+            outgoing_str = 'East';
+            break;
+        case "180" :
+            outgoing_str = 'South';
+            break;
+        case "-90" :
+            outgoing_str = 'West';
+            break;
+    }
+
+    switch(incoming_str){
+        case "0" :
+            return North[outgoing_str];
+        case "90" :
+            return East[outgoing_str];
+        case "180" :
+            return South[outgoing_str];
+        case "-90" :
+            return West[outgoing_str];
+
+    }
+    return NESW_ENUM(outgoing_str);
 }
 
 function is_moving_up_down(incoming , outgoing){
@@ -118,6 +141,18 @@ async function get_filepaths(res , nodes , supabase){
     } 
 }
 
+async function get_diff(expected , query){
+    const  queried = query.map(num => num.toString());
+    const set1 = new Set(expected);
+    const set2 = new Set(queried);
+
+    for (let item of set2) {
+        set1.delete(item);
+    }
+    return Array.from(set1);
+}
+
+
 router.get('/test', (req, res) => {
     const userData = 
     [
@@ -159,19 +194,26 @@ router.post('/locations' , async(req,res) => {
 router.post('/formPost' , async (req ,res) => { 
 
     const inputData = req.body;
+
+    function debug_log(input){
+        if(inputData.Debugging){
+            console.log(input);
+        }
+    }
+
     //checking for empty input
     if(!inputData.source || !inputData.destination){
         console.log("data incorrectly labelled or source and destination not filled")  
         return;
     }
-
+    debug_log(inputData);
     inputData.source = await room_num_to_node_id(res , inputData.source , supabase);
     inputData.destination = await room_num_to_node_id(res , inputData.destination , supabase);
     const serializedData = JSON.stringify(inputData);
     const cppProcess = spawn(__dirname + '/../Dijkstra/main' , []);
     cppProcess.stdin.write(serializedData);
     cppProcess.stdin.end();
-  
+    debug_log(inputData);
     cppProcess.stdout.on('data', async (data) => {
         const outputData = data.toString().split("|");
         let nodes = outputData[0].split(",");
@@ -192,6 +234,9 @@ router.post('/formPost' , async (req ,res) => {
             }
         }
         nodes[directions.length] += "67";
+        debug_log(directions);
+        debug_log(nodes);
+        debug_log(`Expected : ${nodes.length}`);
         try {
             // Query the 'users' table for a specific user by ID
             const { data, error } = await supabase
@@ -215,10 +260,12 @@ router.post('/formPost' , async (req ,res) => {
                     }
                 }                
                 fixedLengthArray[index] = template_img(result.filepath);
-                //debug_array[debug_array_index] = result.unique_id;
-                //debug_array_index++;
+                debug_array[debug_array_index] = result.unique_id;
+                debug_array_index++;
             });
-            //console.log(debug_array);
+            debug_log(debug_array);
+            debug_log(`Queried : ${debug_array.length}`);
+            debug_log(get_diff(nodes , debug_array));
             const final = fixedLengthArray.join('');
             const FinalResults = {
                 Expected : nodes.length ,
@@ -233,11 +280,11 @@ router.post('/formPost' , async (req ,res) => {
     
   // Handle errors and exit events
   cppProcess.on('error', (error) => {
-      console.error('Error executing C++ process:', error);
+    console.error('Error executing C++ process:', error);
   });
 
   cppProcess.on('exit', (code) => {
-      //console.log('C++ process exited with code:', code);
+    debug_log(`C++ process exited with code: ${code}`);
   });
   
 });

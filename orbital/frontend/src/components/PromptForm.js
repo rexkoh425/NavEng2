@@ -10,12 +10,13 @@ import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
 
 function PromptForm() {
 
-const [sourceLocation, setSourceLocation] = useState('')
+    const [sourceLocation, setSourceLocation] = useState('')
     const [destinationLocation, setDestinationLocation] = useState('')
     const [messageError, setMessageError] = useState(``) //using messageError variable for html content as well
     const [selectData, setSelectData] = useState([])
     const [selectValue, setSelectValue] = useState('')
     const [selectLocations, setSelectLocations] = useState([])
+    const [debug , SetDebug ] = useState(false);
     const [formSubmitted, setFormSubmitted] = useState(false);
     const [arrayposition, setCount] = useState(0);
     let arrayFromString = messageError.split('<br>');
@@ -38,6 +39,7 @@ const [sourceLocation, setSourceLocation] = useState('')
         let processing = true
         axiosFetchData(processing)
         axiosFetchLocations(processing)
+        SetDebug(true);
         return () => {
             processing = false
         }
@@ -67,8 +69,8 @@ const [sourceLocation, setSourceLocation] = useState('')
     const axiosPostData = async() => {
         const postData = {
             source: sourceLocation,
-            destination: destinationLocation
-            
+            destination: destinationLocation,
+            Debugging : debug
         }
 
         //await axios.post("https://naveng-backend-vercel.vercel.app/formPost", postData)
@@ -93,9 +95,9 @@ const [sourceLocation, setSourceLocation] = useState('')
             {
                 setMessageError("")
             }
-        setMessageError("")
+        setMessageError("");
         setFormSubmitted(true);
-        axiosPostData()     
+        axiosPostData();   
     }
 
     return (

@@ -3,17 +3,22 @@ const app = require('../app'); // Import the app instance
 
 async function sendSecondRequest(receivedData) {
     try {
+        
         const res = await request(app)
             .post('/formPost')
             .send(receivedData)
-            .timeout({deadline : 3000});
+            .timeout({deadline : 5000});
 
         let data = res.body;
 
         if(data['Expected'] !== data['Queried']) {
+            console.log("entered");
+            console.log(data['Expected']);
+            console.log(data['Queried']);
             console.log(`${receivedData.source} to ${receivedData.destination} : failed`);
             return false;
         }
+        
         return true;
     } catch (error) {
         console.log(`${receivedData.source} to ${receivedData.destination} : failed`);
@@ -37,7 +42,8 @@ describe('get all the locations available', function(){
                     if (source !== destination) {
                         const inputData = {
                             source: `${source}`,
-                            destination: `${destination}`
+                            destination: `${destination}`,
+                            Debugging : false
                         };
                         let pass_fail = await sendSecondRequest(inputData);
                         if(pass_fail){

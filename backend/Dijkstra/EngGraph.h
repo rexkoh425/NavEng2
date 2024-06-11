@@ -67,8 +67,8 @@ Graph createEngGraph(){
     g.addEdge(52, 53, 20 , WEST);
     g.addEdge(52, 54, 50 , SOUTH);
     g.addEdge(54, 55, 20 , WEST);
-    g.addEdge(54, 56, 25 , SOUTH);
-    g.addEdge(56, 57, 20 , WEST);
+    g.addEdge(54, 56, 25 , SOUTH);////////
+    g.addEdge(56, 57, 20 , WEST);////////
     g.addEdge(56, 58, 130 , SOUTH);
     g.addEdge(58, 59, 20 , WEST);
     g.addEdge(58, 60, 35 , SOUTH);
