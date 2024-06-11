@@ -97,7 +97,7 @@ Graph createEngGraph(){
     g.addEdge(82, 83, 40 , SOUTH);
     g.addEdge(83, 84, 20 , WEST);
     g.addEdge(83, 85, 20 , EAST);
-    g.addEdge(78, 86, 20 , EAST);
+    g.addEdge(78, 86, 20 , WEST);
     g.addEdge(83, 87, 35 , SOUTH);
     g.addEdge(87, 88, 20 , EAST);
     g.addEdge(87, 89, 40 , SOUTH);

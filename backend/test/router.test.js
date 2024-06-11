@@ -7,20 +7,20 @@ async function sendSecondRequest(receivedData) {
         const res = await request(app)
             .post('/formPost')
             .send(receivedData)
-            .timeout({deadline : 5000});
+            .timeout({deadline : 3000});
 
         let data = res.body;
 
-        if(data['Expected'] !== data['Queried']) {
-            console.log("entered");
-            //console.log(data['Expected']);
-            //console.log(data['Queried']);
-            console.log(`${receivedData.source} to ${receivedData.destination} : fail`);
+        if(data['Expected'] !==  data['Queried']) {
+            console.log(data['Expected']);
+            console.log(data['Queried']);
+            console.log(`${receivedData.source} to ${receivedData.destination} : failed`);
             return false;
         }
         
         return true;
     } catch (error) {
+        console.log(`${error}`);
         console.log(`${receivedData.source} to ${receivedData.destination} : failed`);
     }
 }
