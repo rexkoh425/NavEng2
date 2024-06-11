@@ -12,9 +12,10 @@ async function sendSecondRequest(receivedData) {
         let data = res.body;
 
         if(data['Expected'] !== data['Queried']) {
-            console.log("entered");
-            console.log(data['Expected']);
-            console.log(data['Queried']);
+            console.log(data);
+            //console.log("entered");
+            //console.log(data['Expected']);
+            //console.log(data['Queried']);
             console.log(`${receivedData.source} to ${receivedData.destination} : failed`);
             return false;
         }
