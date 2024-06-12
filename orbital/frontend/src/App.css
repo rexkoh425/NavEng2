@@ -58,9 +58,15 @@
   color: #0d47a1
 }
 
-form {
-  margin-left: 100px;
-  margin-top: 50px;
+.desktopForm {
+  margin-left: 6vw;
+  margin-top: 5vh;
+}
+
+.mobileForm {
+  margin-left: 5vw;
+  margin-right: 5vw;
+  margin-top: 5vw;
 }
 
 .description {
@@ -81,10 +87,18 @@ form {
 }
 
 .child2 {
-  margin-left: 100px;
+  margin-left: 6vw;
   width: 40%;
+  height: 80vh;
+  margin-top: 5vh;
+  margin-right: 5vw;
+}
+
+.child2mobile {
+  margin-left: 5vw;
+  margin-right: 5vw;
+  margin-top: 5vw;
   height: 100vh;
-  margin-top: 50px;
 }
 
 .InstructionsTitle {
@@ -123,17 +137,20 @@ form {
 
 .container {
   display: grid;
+  grid-template-columns: auto auto auto;
+  height: 40vh;
+  align-items: center;
+  width: 40vw;
+  justify-content: center;
+}
+
+.containerMobile {
+  display: grid;
   grid-template-columns: auto 1fr auto;
-  margin-right: 100px;
   height: 533px;
   align-items: center;
   width: 400px;
-}
-
-.leftArrow {
-  grid-column:1;
-  background-color: #f0f0f0;
-  padding: 10px;
+  justify-content:center
 }
 
 .imageColumn {
@@ -142,14 +159,20 @@ form {
   
 }
 
-.rightArrow {
-  grid-column:3;
-  background-color: #f0f0f0;
-  padding: 10px;
-  width:100px;
+.imageCount {
+  text-align: right;
+  margin-right: calc(20vw);
 }
 
-.imageCount {
+.imageCountMobile {
   text-align: center;
-  margin-right: 250px;
+}
+
+.htmlData {
+  height: 75vh;
+  width: 42vh;
+}
+
+.rightArrow {
+  justify-self: start;
 }
