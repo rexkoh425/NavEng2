@@ -1,6 +1,5 @@
 import { useState, useEffect} from "react"
 import axios from "axios"
-import logo from '../logo.svg'
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
@@ -16,6 +15,8 @@ function PromptForm() {
     const [messageError, setMessageError] = useState(``) //using messageError variable for html content as well
     const [selectData, setSelectData] = useState([])
     const [selectValue, setSelectValue] = useState('')
+    const [selectLocations, setSelectLocations] = useState([])
+    const [debug , SetDebug ] = useState(false);
     const [formSubmitted, setFormSubmitted] = useState(false);
     const [arrayposition, setCount] = useState(0);
     let arrayFromString = messageError.split('<br>');
@@ -37,6 +38,8 @@ function PromptForm() {
     useEffect( () => {
         let processing = true
         axiosFetchData(processing)
+        axiosFetchLocations(processing)
+        SetDebug(true);
         return () => {
             processing = false
         }
@@ -44,7 +47,9 @@ function PromptForm() {
     
     const axiosFetchData = async(processing) => {
         //await axios.get('https://naveng-backend-vercel.vercel.app/users')
+
         await axios.get('http://localhost:4000/test')
+
         .then(res => {
             if (processing) {
             setSelectData(res.data)
@@ -54,16 +59,26 @@ function PromptForm() {
 
     }
 
+    const axiosFetchLocations = async(processing) => {
+        //await axios.post('https://naveng-backend-vercel.vercel.app/locations')
+        await axios.post('http://localhost:4000/locations')
+        .then(res => {
+            setSelectLocations(res.data)
+        })
+        .catch(err => console.log("Fetch Location Error!!"))
+    }
+    
     const axiosPostData = async() => {
         const postData = {
             source: sourceLocation,
-            destination: destinationLocation
-            
+            destination: destinationLocation,
+            Debugging : debug
         }
 
         //await axios.post("https://naveng-backend-vercel.vercel.app/formPost", postData)
         await axios.post("http://localhost:4000/formPost", postData)
-        .then(res => setMessageError(res.data))
+        .then(res => setMessageError(res.data['HTML']));
+
         arrayFromString = messageError.split('<img src');
     }
  
@@ -83,11 +98,10 @@ function PromptForm() {
             {
                 setMessageError("")
             }
-        setMessageError("")
+        setMessageError("");
         setFormSubmitted(true);
-        axiosPostData()     
+        axiosPostData();   
     }
-    const locations = ['EA-02-08', 'EA-02-09', 'EA-02-10', 'EA-02-11', 'EA-02-14', 'EA-02-16', 'EA-02-17', 'EA-02-18'];
 
     return (
         <>
@@ -97,7 +111,7 @@ function PromptForm() {
             <label className="StartAndEndLocation">Start Location</label>
             <Typography  className="description" sx={{marginBottom: "10px"}}>Search or select the location closest to you</Typography>
             <Autocomplete
-            options={locations} sx={{ width: 250 }} renderInput={(params) => (
+            options={selectLocations} sx={{ width: 250 }} renderInput={(params) => (
                 <TextField {...params} label="Start Location"></TextField>
             )}
             onChange={(event, value) => {
@@ -116,7 +130,7 @@ function PromptForm() {
             <Typography className="description" sx={{marginBottom: "10px"}}>Search or select the location closest to your end point</Typography>
             
             <Autocomplete
-            options={locations} sx={{ width: 250 }} renderInput={(params) => (
+            options={selectLocations} sx={{ width: 250 }} renderInput={(params) => (
                 <TextField {...params} label="End Location"></TextField>
             )}
             onChange={(event, value) => {
