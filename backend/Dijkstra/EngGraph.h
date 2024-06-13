@@ -7,7 +7,7 @@
 #define DOWN -45
 
 Graph createEngGraph(){
-    Graph g(250);
+    Graph g(249);
     g.addEdge(0, 1, 50 , EAST);
     g.addEdge(1, 153, 70 , SOUTH);
     g.addEdge(153, 2, 40 , SOUTH);
@@ -54,9 +54,9 @@ Graph createEngGraph(){
     g.addEdge(41, 42, 135 , WEST);
     g.addEdge(42, 43, 20 , NORTH);
     g.addEdge(42, 44, 60 , SOUTH);
-    g.addEdge(44, 45, 40 , WEST);
-    g.addEdge(45, 46, 30 , NORTH);
-    g.addEdge(45, 47, 50 , SOUTH);
+    g.addEdge(44, 45, 40 , WEST);////////
+    g.addEdge(45, 46, 30 , SOUTH);//////
+    g.addEdge(45, 47, 50 , NORTH);///////
     g.addEdge(47, 48, 20 , WEST);
     g.addEdge(45, 49, 20 , WEST);
     g.addEdge(23, 48, 1 , UP); //extra
