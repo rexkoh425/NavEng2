@@ -1,5 +1,6 @@
 import { useState, useEffect} from "react"
 import axios from "axios"
+import logo from '../logo.svg'
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
@@ -7,16 +8,14 @@ import { Typography } from "@mui/material";
 import Autocomplete from '@mui/material/Autocomplete';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
-import ContentOutsideForm from './ContentOutsideForm'
 
-function PromptForm() {
+function PromptFormMobile() {
+
     const [sourceLocation, setSourceLocation] = useState('')
     const [destinationLocation, setDestinationLocation] = useState('')
     const [messageError, setMessageError] = useState(``) //using messageError variable for html content as well
     const [selectData, setSelectData] = useState([])
     const [selectValue, setSelectValue] = useState('')
-    const [selectLocations, setSelectLocations] = useState([])
-    const [debug , SetDebug ] = useState(false);
     const [formSubmitted, setFormSubmitted] = useState(false);
     const [arrayposition, setCount] = useState(0);
     let arrayFromString = messageError.split('<br>');
@@ -38,8 +37,6 @@ function PromptForm() {
     useEffect( () => {
         let processing = true
         axiosFetchData(processing)
-        axiosFetchLocations(processing)
-        SetDebug(true);
         return () => {
             processing = false
         }
@@ -47,9 +44,7 @@ function PromptForm() {
     
     const axiosFetchData = async(processing) => {
         //await axios.get('https://naveng-backend-vercel.vercel.app/users')
-
-        await axios.get('http://localhost:4000/test')
-
+        await axios.get('http://localhost:4000/users')
         .then(res => {
             if (processing) {
             setSelectData(res.data)
@@ -59,26 +54,16 @@ function PromptForm() {
 
     }
 
-    const axiosFetchLocations = async(processing) => {
-        //await axios.post('https://naveng-backend-vercel.vercel.app/locations')
-        await axios.post('http://localhost:4000/locations')
-        .then(res => {
-            setSelectLocations(res.data)
-        })
-        .catch(err => console.log("Fetch Location Error!!"))
-    }
-    
     const axiosPostData = async() => {
         const postData = {
             source: sourceLocation,
-            destination: destinationLocation,
-            Debugging : debug
+            destination: destinationLocation
+            
         }
 
         //await axios.post("https://naveng-backend-vercel.vercel.app/formPost", postData)
         await axios.post("http://localhost:4000/formPost", postData)
-        .then(res => setMessageError(res.data['HTML']));
-
+        .then(res => setMessageError(res.data))
         arrayFromString = messageError.split('<img src');
     }
  
@@ -98,20 +83,20 @@ function PromptForm() {
             {
                 setMessageError("")
             }
-        setMessageError("");
+        setMessageError("")
         setFormSubmitted(true);
-        axiosPostData();   
+        axiosPostData()     
     }
+    const locations = ['EA-02-08', 'EA-02-09', 'EA-02-10', 'EA-02-11', 'EA-02-14', 'EA-02-16', 'EA-02-17', 'EA-02-18'];
 
     return (
         <>
-    <div style={{display: "flex", flexDirection: "row" }} >
-    <div className="child1"><center>
-        <form className="desktopForm">
+        <form className="mobileForm">
+        <center>
             <label className="StartAndEndLocation">Start Location</label>
             <Typography  className="description" sx={{marginBottom: "10px"}}>Search or select the location closest to you</Typography>
             <Autocomplete
-            options={selectLocations} sx={{ width: 250 }} renderInput={(params) => (
+            options={locations} sx={{ width: 250 }} renderInput={(params) => (
                 <TextField {...params} label="Start Location"></TextField>
             )}
             onChange={(event, value) => {
@@ -130,7 +115,7 @@ function PromptForm() {
             <Typography className="description" sx={{marginBottom: "10px"}}>Search or select the location closest to your end point</Typography>
             
             <Autocomplete
-            options={selectLocations} sx={{ width: 250 }} renderInput={(params) => (
+            options={locations} sx={{ width: 250 }} renderInput={(params) => (
                 <TextField {...params} label="End Location"></TextField>
             )}
             onChange={(event, value) => {
@@ -155,35 +140,36 @@ function PromptForm() {
             <p className="InstructionsContent">3) The first and last picture show the doors to the starting location and end location respectively</p>
             <p className="InstructionsContent">4) With your back facing towards the door of your starting location, refer to the second picture onwards and follow the arrows!</p>
     </Box>
-            
-            
-
+    </center>
         </form>
-        </center> </div>
-
-        <div className="child2">
+        
+        
+        <div className="child2mobile">
             {!formSubmitted 
             && <div><Box 
             component="section"  
             display="flex"
             alignItems="center"
-             sx={{ p: 2, border: '1px grey', bgcolor: '#F5F5F5', height: "68vh", marginRight:"10vh" , 
+             sx={{ p: 2, border: '1px grey', bgcolor: '#F5F5F5', height: "68vh", marginRight:"0px" , 
              textAlign: 'center', justifyContent: 'center', color: 'grey'}}>Please select the starting and ending <br></br> locations to view the pictures</Box></div>}
-             
-            {formSubmitted && <p className="imageCount">{arrayposition+1}/{arrayFromString.length-1}</p>}
-
-             { formSubmitted && <div className="container">
-             <Button variant="contained" type="submit" onClick={decrementCounter} sx ={{ bgcolor: "#D95328" , "&:hover": { bgcolor: "#F05C2C"}, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "10vh", width: "3vw"}}><ArrowLeftIcon></ArrowLeftIcon></Button>
+            
+            <center>
+            {formSubmitted && <p className="imageCountMobile">{arrayposition+1}/{arrayFromString.length-1}</p>}
+             { formSubmitted && <div className="containerMobile">
+             <Button variant="contained" type="submit" onClick={decrementCounter} 
+             sx ={{ bgcolor: "#D95328" , "&:hover": { bgcolor: "#F05C2C"}, minWidth: 'unset', 
+             textAlign: 'center !important', px: '0px', py: '0px', height: "15vh", width: "10vw"}}><ArrowLeftIcon></ArrowLeftIcon></Button>
              <div className="htmlContent" dangerouslySetInnerHTML={{ __html: arrayFromString[arrayposition] }} />
-             <div className="rightArrow">
-          <Button variant="contained" type="submit" onClick={incrementCounter} sx ={{ bgcolor: "#D95328" , "&:hover": { bgcolor: "#F05C2C"}, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "10vh", width: "3vw"}}><ArrowRightIcon></ArrowRightIcon></Button>
-          </div>
-        </div>}
+          <Button variant="contained" type="submit" onClick={incrementCounter} 
+          sx ={{ bgcolor: "#D95328" , "&:hover": { bgcolor: "#F05C2C"}, minWidth: 'unset', 
+          textAlign: 'center !important', px: '0px', py: '0px', height: "15vh", width: "10vw"}}><ArrowRightIcon></ArrowRightIcon></Button>
 
+        </div>}
+        </center>
         </div>
-        </div>
+        
         </>
     )
 }
 
-export default PromptForm
+export default PromptFormMobile

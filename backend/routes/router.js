@@ -10,7 +10,7 @@ const supabaseKey = process.env.SUPABASE_KEY
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 function template_img(img_path){
-  return `<img src = "${img_path}" alt = "cannot be displayed" width = "300" height = "533"><br> `;
+  return `<img src = "${img_path}" alt = "cannot be displayed" class="htmlData"><br> `;
 }
 
 function NESW_ENUM(input){
