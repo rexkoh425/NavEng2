@@ -7,7 +7,7 @@
 #define DOWN -45
 
 Graph createEngGraph(){
-    Graph g(1000);
+    Graph g(250);
     g.addEdge(0, 1, 50 , EAST);
     g.addEdge(1, 153, 70 , SOUTH);
     g.addEdge(153, 2, 40 , SOUTH);
@@ -242,7 +242,7 @@ Graph createEngGraph(){
     g.addEdge(196, 199 , 1 , UP);//E1A FLOOR 4-5 stairs
     g.addEdge(199, 202 , 1 , UP);//E1A FLOOR 5-6 stairs
     g.addEdge(202, 205 , 1 , UP);//E1A FLOOR 6-7 stairs
-    ///////////////////////////////////////////////////
+    //////////////////////////alleyside//////////////////////
     g.addEdge(237, 226 , 1 , UP);//E1A FLOOR 5-6 stairs
     g.addEdge(226, 221 , 1 , UP);//E1A FLOOR 6-7 stairs
     g.addEdge(207, 209, 30 , NORTH);

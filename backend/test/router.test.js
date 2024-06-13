@@ -1,6 +1,12 @@
 const request = require('supertest');
 const app = require('../app'); // Import the app instance
 
+if (global.gc) {
+    global.gc(); // Expose garbage collection if enabled
+} else {
+    console.warn('No GC hook! Start your program with `node --expose-gc file.js`.');
+}
+
 async function sendSecondRequest(receivedData) {
     try {
         
@@ -35,7 +41,7 @@ describe('get all the locations available', function(){
 
             let locations = response.body;
             let no_of_locations = locations.length;
-            let test_cases = no_of_locations*(no_of_locations - 1) / 2;
+            let test_cases = no_of_locations*(no_of_locations - 1);
             let passed = 0;
             for (let source of locations) {
                 for (let destination of locations) {
@@ -48,6 +54,10 @@ describe('get all the locations available', function(){
                         let pass_fail = await sendSecondRequest(inputData);
                         if(pass_fail){
                             passed ++;
+                        }
+                        if(passed > 0 && passed % 100 == 0){ console.log(`${passed} out of ${test_cases} test cases passed`)}
+                        if (global.gc) {
+                            global.gc(); // Force garbage collection
                         }
                     }
                 }

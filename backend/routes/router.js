@@ -207,14 +207,19 @@ router.post('/formPost' , async (req ,res) => {
         return;
     }
     debug_log(inputData);
+    debug_log(typeof(inputData.source));
     inputData.source = await room_num_to_node_id(res , inputData.source , supabase);
     inputData.destination = await room_num_to_node_id(res , inputData.destination , supabase);
+    debug_log(inputData);
+    debug_log(typeof(inputData.source));
     const serializedData = JSON.stringify(inputData);
     const cppProcess = spawn(__dirname + '/../Dijkstra/main' , []);
     cppProcess.stdin.write(serializedData);
     cppProcess.stdin.end();
-    debug_log(inputData);
+    
     cppProcess.stdout.on('data', async (data) => {
+        debug_log("ok");
+        debug_log(data.toString());
         const outputData = data.toString().split("|");
         let nodes = outputData[0].split(",");
         const directions = outputData[1].split(",");
