@@ -182,7 +182,7 @@ router.post('/locations' , async(req,res) => {
         let locations_array = [];
         data.forEach(result => {
             if(result.room_num != "NIL" && result.room_num != "duplicate"){
-            locations_array.push(`${result.room_num}`);
+                locations_array.push(`${result.room_num}`);
             }
         });
         res.send(locations_array);

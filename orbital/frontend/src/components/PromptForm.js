@@ -78,7 +78,6 @@ function PromptForm() {
         //await axios.post("https://naveng-backend-vercel.vercel.app/formPost", postData)
         await axios.post("http://localhost:4000/formPost", postData)
         .then(res => setMessageError(res.data['HTML']));
-
         arrayFromString = messageError.split('<img src');
     }
  
