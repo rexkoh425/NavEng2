@@ -33,42 +33,40 @@ async function sendSecondRequest(receivedData) {
     }
 }
 
-describe('Testing all location pairs now', function(){
+describe('Testing Failed Locations', function(){
 
-    this.timeout(500000);
-    it('all location pairs tested', async function(){
+    this.timeout(100000);
+    it('Testing Failed Locations From Full Test', async function(){
         try {
             const response = await request(app)
-            .post('/locations')
+            .post('/FailedLocations')
 
-            let locations = response.body;
-            let no_of_locations = locations.length;
-            let test_cases = no_of_locations*(no_of_locations - 1);
-            let failed_locations = [];
+            let location_pairs = response.body;
+            let test_cases = location_pairs.length;
             let passed = 0;
-            for (let source of locations) {
-                for (let destination of locations) {
-                    if (source !== destination) {
-                        const inputData = {
-                            source: `${source}`,
-                            destination: `${destination}`,
-                            Debugging : false
-                        };
-                        const result = await sendSecondRequest(inputData);
-                        if(result.passed){
-                            passed ++;
-                        }else{
-                            failed_locations.push( {source : result.source , destination : result.destination});
-                            console.log("inserted failed location");
-                        }
-                        if(passed > 0 && passed % 100 == 0){ console.log(`${passed} out of ${test_cases} test cases passed`)}
-                        if (global.gc) {
-                            global.gc(); // Force garbage collection
-                        }
+            let failed_locations = [];
+            location_pairs.forEach(async element => {
+                const source = element.source;
+                const destination = element.destination;
+                if (source !== destination) {
+                    const inputData = {
+                        source: `${source}`,
+                        destination: `${destination}`,
+                        Debugging : false
+                    };
+                    const result = await sendSecondRequest(inputData);
+                    if(result.passed){
+                        passed ++;
+                    }else{
+                        failed_locations.push( {source : result.source , destination : result.destination});
+                        console.log("inserted failed location");
+                    }
+                    if (global.gc) {
+                        global.gc(); // Force garbage collection
                     }
                 }
-            }
-
+            });
+            
             try {
                 const response = await request(app)
                 .post('/InsertFailedLocations')

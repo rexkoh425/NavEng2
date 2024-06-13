@@ -1,9 +1,12 @@
 const express = require('express')
 const router = express.Router()
 const { spawn } = require('child_process');
+const path = require('path');
+const fs = require('fs');
 require('dotenv/config')
 
 const { createClient } = require('@supabase/supabase-js');
+const { fail } = require('assert');
 
 const supabaseUrl = process.env.SUPABASE_URL
 const supabaseKey = process.env.SUPABASE_KEY
@@ -190,6 +193,44 @@ router.post('/locations' , async(req,res) => {
         res.status(500).json({ error: error.message });
     }
 })
+
+router.post('/FailedLocations' , async(req,res) => {
+    try {
+        const { data, error } = await supabase
+            .from('failedtest')
+            .select('*');
+        if (error) {
+            throw error;
+        }
+        
+        let failed_pairs = [];
+        data.forEach(result => {
+            const pair_object = { source : result.source , destination : result.destination};
+            failed_pairs.push(pair_object);
+        });
+        res.send(failed_pairs);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+})
+
+router.post('/InsertFailedLocations', async (req, res) => {
+    const AllFailedLocations = req.body;
+    const filePath = path.join(__dirname, '..' , 'test' , 'FailedTest_input.txt');
+
+    try {
+        for (const element of AllFailedLocations) {
+            const line = `('${element.source}', '${element.destination}'),\n`;
+            fs.appendFileSync(filePath, line); // Append line synchronously
+        }
+
+        console.log('Data appended to file successfully.');
+        res.send('Data appended to file successfully.'); // Send response to client
+    } catch (err) {
+        console.error('Error appending data to file:', err);
+        res.status(500).send('Failed to append data to file.'); // Handle error response
+    }
+});
 
 router.post('/formPost' , async (req ,res) => { 
 
