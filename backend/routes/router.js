@@ -216,19 +216,43 @@ router.post('/FailedLocations' , async(req,res) => {
 
 router.post('/InsertFailedLocations', async (req, res) => {
     const AllFailedLocations = req.body;
-    const filePath = path.join(__dirname, '..' , 'test' , 'FailedTest_input.txt');
 
     try {
         for (const element of AllFailedLocations) {
-            const line = `('${element.source}', '${element.destination}'),\n`;
-            fs.appendFileSync(filePath, line); // Append line synchronously
+        
+            const { error } = await supabase
+                .from('failedtest')
+                .insert([{ source: `${element.source}`, destination: `${element.destination}` }]);
+            if (error) {
+                throw error;
+            }
         }
 
-        console.log('Data appended to file successfully.');
-        res.send('Data appended to file successfully.'); // Send response to client
+        console.log('Data added to database successfully.');
+        res.send('Data added to database successfully.'); 
     } catch (err) {
-        console.error('Error appending data to file:', err);
-        res.status(500).send('Failed to append data to file.'); // Handle error response
+        console.error('Error appending data to database:', err);
+        res.status(500).send('Failed to append data to database.'); 
+    }
+});
+
+router.post('/DeleteFailedLocations', async (req, res) => {
+
+    try {
+        const { error } = await supabase
+            .from('failedtest')
+            .delete()
+            .gt('id', 0); // Condition equivalent to 'id > 0'
+
+        if (error) {
+            throw error;
+        }
+
+        console.log('Data deleted from database successfully.');
+        res.send('Data deleted from database successfully.'); 
+    } catch (err) {
+        console.error('Error deleting data from database:', err);
+        res.status(500).send('Failed to delete data from database.'); 
     }
 });
 

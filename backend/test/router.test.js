@@ -68,6 +68,13 @@ describe('Testing all location pairs now', function(){
                     }
                 }
             }
+            
+            try {
+                const response = await request(app)
+                .post('/DeleteFailedLocations')
+            } catch (error){
+                throw error;
+            }
 
             try {
                 const response = await request(app)

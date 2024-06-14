@@ -45,7 +45,7 @@ describe('Testing Failed Locations', function(){
             let test_cases = location_pairs.length;
             let passed = 0;
             let failed_locations = [];
-            location_pairs.forEach(async element => {
+            for(const element of location_pairs){
                 const source = element.source;
                 const destination = element.destination;
                 if (source !== destination) {
@@ -65,12 +65,21 @@ describe('Testing Failed Locations', function(){
                         global.gc(); // Force garbage collection
                     }
                 }
-            });
+            };
+            
+            try {
+                const response = await request(app)
+                .post('/DeleteFailedLocations')
+            } catch (error){
+                throw error;
+            }
             
             try {
                 const response = await request(app)
                 .post('/InsertFailedLocations')
                 .send(failed_locations)
+
+                console.log(response.body);
             } catch (error){
                 throw error;
             }
