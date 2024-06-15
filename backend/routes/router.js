@@ -1,8 +1,6 @@
 const express = require('express')
 const router = express.Router()
 const { spawn } = require('child_process');
-const path = require('path');
-const fs = require('fs');
 require('dotenv/config')
 
 const { createClient } = require('@supabase/supabase-js');
@@ -12,11 +10,11 @@ const supabaseUrl = process.env.SUPABASE_URL
 const supabaseKey = process.env.SUPABASE_KEY
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-function template_img(img_path){
+async function template_img(img_path){
   return `<img src = "${img_path}" alt = "cannot be displayed" class="htmlData"><br> `;
 }
 
-function NESW_ENUM(input){
+async function NESW_ENUM(input){
     const NORTH =  "0";
     const EAST  = "90";
     const SOUTH = "180";
@@ -35,16 +33,16 @@ function NESW_ENUM(input){
     }
 }
 
-function get_pov(pov , arrow_direction){
-    let incoming = NESW_ENUM(pov);
+async function get_pov(pov , arrow_direction){
+    let incoming = await NESW_ENUM(pov);
     if(incoming == "not NESW"){
-        return NESW_ENUM(arrow_direction);
+        return await NESW_ENUM(arrow_direction);
     }else{
         return incoming;
     }
 }
 
-function handle_up_down(incoming , outgoing){
+async function handle_up_down(incoming , outgoing){
   const UP = "45";
   const DOWN = "-45";
   if(incoming != outgoing){
@@ -62,9 +60,9 @@ function handle_up_down(incoming , outgoing){
   return "not up down";
 }
 
-function get_arrow_dir(incoming_str , outgoing_str){
+async function get_arrow_dir(incoming_str , outgoing_str){
 
-    const response = handle_up_down(incoming_str,outgoing_str);
+    const response = await handle_up_down(incoming_str,outgoing_str);
     if(response != "not up down"){
         return response;
     }
@@ -100,16 +98,16 @@ function get_arrow_dir(incoming_str , outgoing_str){
             return West[outgoing_str];
 
     }
-    return NESW_ENUM(outgoing_str);
+    return await NESW_ENUM(outgoing_str);
 }
 
-function is_moving_up_down(incoming , outgoing){
+async function is_moving_up_down(incoming , outgoing){
     const UP = "45";
     const DOWN = "-45";
     return (incoming == UP && outgoing == UP) || (incoming == DOWN && outgoing == DOWN);
 }
 
-async function room_num_to_node_id(res, room_number , supabase){
+async function room_num_to_node_id(room_number){
     
     try {
         // Query the 'users' table for a specific user by ID
@@ -142,7 +140,7 @@ async function get_filepaths(res , nodes , supabase){
     } catch (error) {
         res.status(500).json({ error: error.message }); 
     } 
-}
+} // not used
 
 async function get_diff(expected , query){
     const  queried = query.map(num => num.toString());
@@ -230,7 +228,7 @@ router.post('/InsertFailedLocations', async (req, res) => {
 
         console.log('Data added to database successfully.');
         res.send('Data added to database successfully.'); 
-    } catch (err) {
+    } catch (error) {
         console.error('Error appending data to database:', err);
         res.status(500).send('Failed to append data to database.'); 
     }
@@ -250,7 +248,7 @@ router.post('/DeleteFailedLocations', async (req, res) => {
 
         console.log('Data deleted from database successfully.');
         res.send('Data deleted from database successfully.'); 
-    } catch (err) {
+    } catch (error) {
         console.error('Error deleting data from database:', err);
         res.status(500).send('Failed to delete data from database.'); 
     }
@@ -273,8 +271,8 @@ router.post('/formPost' , async (req ,res) => {
     }
     debug_log(inputData);
     debug_log(typeof(inputData.source));
-    inputData.source = await room_num_to_node_id(res , inputData.source , supabase);
-    inputData.destination = await room_num_to_node_id(res , inputData.destination , supabase);
+    inputData.source = await room_num_to_node_id(inputData.source);
+    inputData.destination = await room_num_to_node_id(inputData.destination);
     debug_log(inputData);
     debug_log(typeof(inputData.source));
     const serializedData = JSON.stringify(inputData);
@@ -297,8 +295,8 @@ router.post('/formPost' , async (req ,res) => {
                 i --;
                 directions_array_len --;
             }else{
-                let pov = get_pov(directions[i-1] , directions[i]); 
-                let direction = get_arrow_dir(directions[i-1] , directions[i]);
+                let pov = await get_pov(directions[i-1] , directions[i]); 
+                let direction = await get_arrow_dir(directions[i-1] , directions[i]);
                 nodes[i] += pov;
                 nodes[i] += direction;
             }
@@ -321,7 +319,7 @@ router.post('/formPost' , async (req ,res) => {
             const fixedLengthArray = new Array(data_length).fill("");
             const debug_array = new Array(data_length).fill("");//for debug only
             let debug_array_index = 0;
-            data.forEach(result => {
+            data.forEach(async result => {
                 let index = 0;
                 for(let i = 0 ; i < data_length ; i ++){
                     if(result.unique_id == parseInt(nodes[i])){
@@ -329,7 +327,7 @@ router.post('/formPost' , async (req ,res) => {
                         break;
                     }
                 }                
-                fixedLengthArray[index] = template_img(result.filepath);
+                fixedLengthArray[index] = await template_img(result.filepath);
                 debug_array[debug_array_index] = result.unique_id;
                 debug_array_index++;
             });
@@ -359,4 +357,160 @@ router.post('/formPost' , async (req ,res) => {
   
 });
 
-module.exports = router
+router.post('/template_img' , async (req , res) => {
+    const inputs = req.body;
+    const response = await template_img(inputs);
+    res.send(response);
+});
+
+router.post('/NESW_ENUM' , async (req , res) => {
+    const inputs = req.body.Input;
+    const expected = req.body.Expected;
+    const test_cases = inputs.length;
+    let passed = 0;
+    for(let i = 0 ; i < test_cases ; i ++){
+        const result = await NESW_ENUM(inputs[i]);
+        if(result == expected[i]){
+            passed ++;
+        }
+    }
+    if(passed == test_cases){
+        res.send({ passed : true });
+    }else{
+        res.send({ passed : false});
+    }
+});
+
+router.post('/get_pov' , async (req , res) => {
+    const inputs = req.body.Input;
+    const expected = req.body.Expected;
+    const test_cases = inputs.length;
+    let passed = 0;
+    for(let i = 0 ; i < test_cases ; i ++){
+        const result = await get_pov(inputs[i].pov , inputs[i].arrow_direction);
+        if(result == expected[i]){
+            passed ++;
+        }
+    }
+    if(passed == test_cases){
+        res.send({ passed : true });
+    }else{
+        res.send({ passed : false});
+    }
+});
+
+router.post('/handle_up_down' , async (req , res) => {
+    const inputs = req.body.Input;
+    const expected = req.body.Expected;
+    const test_cases = inputs.length;
+    let passed = 0;
+    for(let i = 0 ; i < test_cases ; i ++){
+        if(await handle_up_down(inputs[i].incoming , inputs[i].outgoing) == expected[i]){
+            passed ++;
+        }
+    }
+    if(passed == test_cases){
+        res.send({ passed : true });
+    }else{
+        res.send({ passed : false});
+    }
+});
+
+router.post('/get_arrow_dir' , async (req , res) => {
+    const inputs = req.body.Input;
+    const expected = req.body.Expected;
+    const test_cases = inputs.length;
+    let passed = 0;
+    for(let i = 0 ; i < test_cases ; i ++){
+        if(await get_arrow_dir(inputs[i].incoming_str , inputs[i].outgoing_str) == expected[i]){
+            passed ++;
+        }
+    }
+    if(passed == test_cases){
+        res.send({ passed : true });
+    }else{
+        res.send({ passed : false});
+    }
+});
+
+router.post('/is_moving_up_down' , async (req , res) => {
+    const inputs = req.body.Input;
+    const expected = req.body.Expected;
+    const test_cases = inputs.length;
+    let passed = 0;
+    for(let i = 0 ; i < test_cases ; i ++){
+        const result = await is_moving_up_down(inputs[i].incoming , inputs[i].outgoing);
+        if(result == expected[i]){
+            passed ++;
+        }
+    }
+    if(passed == test_cases){
+        res.send({ passed : true });
+    }else{
+        res.send({ passed : false});
+    }
+});
+
+router.post('/room_num_to_node_id' , async (req , res) => {
+    const inputs = req.body.Input;
+    const expected = req.body.Expected;
+    const test_cases = inputs.length;
+    let passed = 0;
+    for(let i = 0 ; i < test_cases ; i ++){
+        const result = await room_num_to_node_id(inputs[i]);
+        if(result == expected[i]){
+            passed ++;
+        }
+    }
+    if(passed == test_cases){
+        res.send({ passed : true });
+    }else{
+        res.send({ passed : false});
+    }
+});
+
+router.post('/get_diff' , async (req , res) => {
+    const inputs = req.body.Input;
+    const expected = req.body.Expected;
+    const test_cases = inputs.length;
+    let passed = 0;
+
+    async function arraysEqual(arr1, arr2) {
+        if (arr1.length !== arr2.length) return false;
+        for (let i = 0; i < arr1.length; i++) {
+          if (arr1[i] !== arr2[i]) return false;
+        }
+        return true;
+    }
+
+    for(let i = 0 ; i < test_cases ; i ++){
+        const result = await get_diff(inputs[i].arr1 , inputs[i].arr2);
+        const isEqual = await arraysEqual(result , expected[i]);
+     
+        if(isEqual){
+            passed ++;
+        }
+    }
+    if(passed == test_cases){
+        res.send({ passed : true });
+    }else{
+        res.send({ passed : false});
+    }
+});
+
+
+module.exports = router;
+/*
+module.exports = {
+    router,
+    template_img,
+    NESW_ENUM,
+    get_pov , 
+    handle_up_down,
+    get_arrow_dir,
+    is_moving_up_down,
+    room_num_to_node_id,
+    get_diff
+};
+*/
+
