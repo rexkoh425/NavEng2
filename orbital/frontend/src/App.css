@@ -72,6 +72,12 @@
   margin-top: 5vw;
 }
 
+.feedbackForm {
+  margin-left: 5vw;
+  margin-right: 5vw;
+  margin-top: 2vw;
+}
+
 .description2 {
   padding:0px;
   margin: 0px;
@@ -103,7 +109,7 @@
 .child2mobile {
   margin-left: 5vw;
   margin-right: 5vw;
-  margin-top: 5vw;
+  margin-top: 0vw;
   height: 100vh;
 }
 
@@ -213,4 +219,32 @@
 .MuiAutocomplete-root
 {
   font-family: "Lexend";
+}
+
+.typeofFeedback
+{
+  padding:0px;
+  margin: 0px;
+  margin-bottom: 40px;
+  color: "red";
+  font-family: "Lexend";
+  font-weight: lighter;
+}
+
+.bugDetails
+{
+  font-family: "Lexend";
+  margin-bottom: 10px;
+}
+
+.blockedNodeLocation
+{
+  font-family: "Lexend";
+  margin-bottom: 10px;
+}
+
+.feedbackUserInfo
+{
+  font-family: "Lexend";
+  color: #D95228;
 }

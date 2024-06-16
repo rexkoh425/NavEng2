@@ -49,7 +49,7 @@ function PromptFormMobile() {
     
     const axiosFetchData = async(processing) => {
         //await axios.get('https://naveng-backend-vercel.vercel.app/users')
-        await axios.get('http://localhost:4000/users')
+        await axios.get('http://localhost:4000/test')
         .then(res => {
             if (processing) {
             setSelectData(res.data)
@@ -110,7 +110,7 @@ function PromptFormMobile() {
         <form className="mobileForm">
         <center>
             <label className="StartAndEndLocation">Start Location</label>
-            <Typography  className="description" sx={{marginBottom: "10px"}}>Search or select the location closest to you</Typography>
+            <Typography  className="description" sx={{marginBottom: "10px" , fontFamily: "Lexend"}}>Search or select the location closest to you</Typography>
             <Autocomplete
             options={selectLocations} sx={{ width: 250 }} renderInput={(params) => (
                 <TextField {...params} label="Start Location"></TextField>
@@ -128,7 +128,7 @@ function PromptFormMobile() {
             <br></br>
             <br></br>
             <label className="StartAndEndLocation">End Location</label>
-            <Typography className="description" sx={{marginBottom: "10px"}}>Search or select the location closest to your end point</Typography>
+            <Typography className="description" sx={{marginBottom: "10px" , fontFamily: "Lexend"}}>Search or select the location closest to your end point</Typography>
             
             <Autocomplete
             options={selectLocations} sx={{ width: 250 }} renderInput={(params) => (
