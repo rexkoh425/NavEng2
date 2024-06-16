@@ -180,7 +180,7 @@ router.post('/locations' , async(req,res) => {
             throw error;
         }
         
-        let locations_array = [];
+        let locations_array = [""];
         data.forEach(result => {
             if(result.room_num != "NIL" && result.room_num != "duplicate"){
                 locations_array.push(`${result.room_num}`);
@@ -190,6 +190,20 @@ router.post('/locations' , async(req,res) => {
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
+})
+
+
+router.post('/feedback' , async(req,res) => {
+    const {feedbackType, bugDetails, blockedNode, sourceLocation, destinationLocation, nodes} = req.body
+
+    console.log('feedback type:' + feedbackType)
+    console.log('bug details:' + bugDetails)
+    console.log('blocked node:'+ blockedNode)
+    console.log('source location:'+ sourceLocation)
+    console.log('destination location: '+ destinationLocation)
+    console.log('path nodes: '+ nodes)
+
+    res.send("Thank you for your feedback!") //sending conformation message back to frontend
 })
 
 router.post('/FailedLocations' , async(req,res) => {
@@ -254,6 +268,7 @@ router.post('/DeleteFailedLocations', async (req, res) => {
     }
 });
 
+
 router.post('/formPost' , async (req ,res) => { 
 
     const inputData = req.body;
@@ -286,6 +301,7 @@ router.post('/formPost' , async (req ,res) => {
         const outputData = data.toString().split("|");
         let nodes = outputData[0].split(",");
         const directions = outputData[1].split(",");
+        let distance = outputData[2].split(",")
         nodes[0] += "67";
         let directions_array_len = directions.length;
         for(i = 1 ; i < directions_array_len ; i ++){
@@ -338,7 +354,8 @@ router.post('/formPost' , async (req ,res) => {
             const FinalResults = {
                 Expected : nodes.length ,
                 Queried : data_length , 
-                HTML : final
+                HTML : final,
+                Distance : distance
             }
             res.send(FinalResults);
         } catch (error) {

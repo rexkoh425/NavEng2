@@ -1,7 +1,6 @@
 import PromptForm from "../components/PromptForm"
 import ButtonAppBar from "../components/ButtonAppBar"
 import { Grid, Hidden, Typography } from '@mui/material';
-import ContentOutsideForm from "../components/ContentOutsideForm";
 import PromptFormMobile from "../components/PromptFormMobile";
 
 export default function Home() 

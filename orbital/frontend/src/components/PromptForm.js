@@ -7,7 +7,12 @@ import { Typography } from "@mui/material";
 import Autocomplete from '@mui/material/Autocomplete';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
-import ContentOutsideForm from './ContentOutsideForm'
+import "@fontsource/lexend"; // Defaults to weight 400
+import "@fontsource/lexend/400.css";
+import "@fontsource/lexend/300.css";
+
+
+
 
 function PromptForm() {
     const [sourceLocation, setSourceLocation] = useState('')
@@ -16,6 +21,7 @@ function PromptForm() {
     const [selectData, setSelectData] = useState([])
     const [selectValue, setSelectValue] = useState('')
     const [selectLocations, setSelectLocations] = useState([])
+    const [distance, setDistance] = useState(``)
     const [debug , SetDebug ] = useState(false);
     const [formSubmitted, setFormSubmitted] = useState(false);
     const [arrayposition, setCount] = useState(0);
@@ -77,7 +83,12 @@ function PromptForm() {
 
         //await axios.post("https://naveng-backend-vercel.vercel.app/formPost", postData)
         await axios.post("http://localhost:4000/formPost", postData)
-        .then(res => setMessageError(res.data['HTML']));
+
+        .then(res => {
+            setMessageError(res.data['HTML']);
+            setDistance(res.data['Distance']/10);
+        })
+
         arrayFromString = messageError.split('<img src');
     }
  
@@ -102,16 +113,20 @@ function PromptForm() {
         axiosPostData();   
     }
 
+
+    
+
     return (
         <>
     <div style={{display: "flex", flexDirection: "row" }} >
     <div className="child1"><center>
         <form className="desktopForm">
             <label className="StartAndEndLocation">Start Location</label>
-            <Typography  className="description" sx={{marginBottom: "10px"}}>Search or select the location closest to you</Typography>
+            <Typography  className="description" sx={{marginBottom: "10px", fontFamily: "Lexend"}}>Search or select the location closest to you</Typography>
             <Autocomplete
-            options={selectLocations} sx={{ width: 250 }} renderInput={(params) => (
-                <TextField {...params} label="Start Location"></TextField>
+            
+            options={selectLocations} sx={{ width: 250 , fontFamily: 'Georgia, serif' }} renderInput={(params) => (
+                <TextField {...params} label="Start Location" ></TextField>
             )}
             onChange={(event, value) => {
                 if (value) {
@@ -126,7 +141,7 @@ function PromptForm() {
             <br></br>
             <br></br>
             <label className="StartAndEndLocation">End Location</label>
-            <Typography className="description" sx={{marginBottom: "10px"}}>Search or select the location closest to your end point</Typography>
+            <Typography className="description2" sx={{marginBottom: "10px", fontFamily: "Lexend"}}>Search or select the location closest to your end point</Typography>
             
             <Autocomplete
             options={selectLocations} sx={{ width: 250 }} renderInput={(params) => (
@@ -144,7 +159,7 @@ function PromptForm() {
             </Autocomplete>
             <br></br>
             <br></br>
-            <Button variant="contained" type="submit" onClick={handleSubmit} sx ={{ bgcolor: "#cdd8e6", "&:hover": { bgcolor: "#F05C2C"}, }}>Submit</Button>
+            <Button variant="contained" type="submit" onClick={handleSubmit} sx ={{ bgcolor: "#cdd8e6", "&:hover": { bgcolor: "#F05C2C"}, fontFamily: "Lexend" }}>Submit</Button>
             <br></br>
             <br></br>
             <Box component="section" sx={{ p: 2, border: '1px grey', bgcolor: '#F5F5F5'}}>
@@ -167,8 +182,15 @@ function PromptForm() {
             display="flex"
             alignItems="center"
              sx={{ p: 2, border: '1px grey', bgcolor: '#F5F5F5', height: "68vh", marginRight:"10vh" , 
-             textAlign: 'center', justifyContent: 'center', color: 'grey'}}>Please select the starting and ending <br></br> locations to view the pictures</Box></div>}
-             
+             textAlign: 'center', justifyContent: 'center', color: 'grey', fontFamily: "Lexend"}}>Please select the starting and ending <br></br> locations to view the pictures</Box></div>}
+            <center>
+            {formSubmitted && <p className= "parametricsDescription">Distance: </p>}
+            {formSubmitted && <p className= "parametricsContent">{distance}m</p>}
+            <div></div>
+            
+            {formSubmitted && <p className= "parametricsDescription">Time Taken: </p>}
+            {formSubmitted && <p className= "parametricsContent">{Math.round((distance/1.4)/60)} minutes</p>}
+            </center>
             {formSubmitted && <p className="imageCount">{arrayposition+1}/{arrayFromString.length-1}</p>}
 
              { formSubmitted && <div className="container">

@@ -1,6 +1,5 @@
 import { useState, useEffect} from "react"
 import axios from "axios"
-import logo from '../logo.svg'
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
@@ -8,6 +7,9 @@ import { Typography } from "@mui/material";
 import Autocomplete from '@mui/material/Autocomplete';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
+import "@fontsource/lexend"; // Defaults to weight 400
+import "@fontsource/lexend/400.css";
+import "@fontsource/lexend/300.css";
 
 function PromptFormMobile() {
 
@@ -16,8 +18,9 @@ function PromptFormMobile() {
     const [messageError, setMessageError] = useState(``) //using messageError variable for html content as well
     const [selectData, setSelectData] = useState([])
     const [selectValue, setSelectValue] = useState('')
-    const [debug , SetDebug ] = useState(false);
     const [selectLocations, setSelectLocations] = useState([])
+    const [distance, setDistance] = useState(``)
+    const [debug , SetDebug ] = useState(false);
     const [formSubmitted, setFormSubmitted] = useState(false);
     const [arrayposition, setCount] = useState(0);
     let arrayFromString = messageError.split('<br>');
@@ -48,7 +51,7 @@ function PromptFormMobile() {
     
     const axiosFetchData = async(processing) => {
         //await axios.get('https://naveng-backend-vercel.vercel.app/users')
-        await axios.get('http://localhost:4000/users')
+        await axios.get('http://localhost:4000/test')
         .then(res => {
             if (processing) {
             setSelectData(res.data)
@@ -77,10 +80,14 @@ function PromptFormMobile() {
 
         //await axios.post("https://naveng-backend-vercel.vercel.app/formPost", postData)
         await axios.post("http://localhost:4000/formPost", postData)
-        .then(res => setMessageError(res.data['HTML']))
+
+        .then(res => {
+            setMessageError(res.data['HTML']);
+            setDistance(res.data['Distance']);
+        })
+
         arrayFromString = messageError.split('<img src');
     }
- 
     const handleSubmit = (e) => {
         e.preventDefault()
 
@@ -107,7 +114,7 @@ function PromptFormMobile() {
         <form className="mobileForm">
         <center>
             <label className="StartAndEndLocation">Start Location</label>
-            <Typography  className="description" sx={{marginBottom: "10px"}}>Search or select the location closest to you</Typography>
+            <Typography  className="description" sx={{marginBottom: "10px" , fontFamily: "Lexend"}}>Search or select the location closest to you</Typography>
             <Autocomplete
             options={selectLocations} sx={{ width: 250 }} renderInput={(params) => (
                 <TextField {...params} label="Start Location"></TextField>
@@ -125,7 +132,7 @@ function PromptFormMobile() {
             <br></br>
             <br></br>
             <label className="StartAndEndLocation">End Location</label>
-            <Typography className="description" sx={{marginBottom: "10px"}}>Search or select the location closest to your end point</Typography>
+            <Typography className="description" sx={{marginBottom: "10px" , fontFamily: "Lexend"}}>Search or select the location closest to your end point</Typography>
             
             <Autocomplete
             options={selectLocations} sx={{ width: 250 }} renderInput={(params) => (
@@ -167,6 +174,12 @@ function PromptFormMobile() {
              textAlign: 'center', justifyContent: 'center', color: 'grey'}}>Please select the starting and ending <br></br> locations to view the pictures</Box></div>}
             
             <center>
+            {formSubmitted && <p className= "parametricsDescription">Distance: </p>}
+            {formSubmitted && <p className= "parametricsContent">{distance}m</p>}
+            <div></div>
+            
+            {formSubmitted && <p className= "parametricsDescription">Time Taken: </p>}
+            {formSubmitted && <p className= "parametricsContent">{Math.round((distance/1.4)/60)} minutes</p>}
             {formSubmitted && <p className="imageCountMobile">{arrayposition+1}/{arrayFromString.length-1}</p>}
              { formSubmitted && <div className="containerMobile">
              <Button variant="contained" type="submit" onClick={decrementCounter} 
