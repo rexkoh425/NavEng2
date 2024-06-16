@@ -16,7 +16,7 @@ using namespace rapidjson;
 
 
 int main(){
-  
+    
     std::string inputData;
     std::getline(std::cin, inputData);
 
@@ -31,8 +31,6 @@ int main(){
 
     // Access JSON data
     if (doc.IsObject()) {
-        // Process JSON object
-        // Example: Accessing a key named "example"
         if (doc.HasMember("source")) {
           source = doc["source"].GetInt() - 1;
         }
@@ -46,6 +44,7 @@ int main(){
     
     Graph test1 = createEngGraph();
     Path result = shortestPath(test1 , source , dest);
+
     //source  , dest
     vector<int> final_path = result.path();
     vector<int> final_directions = result.direction();

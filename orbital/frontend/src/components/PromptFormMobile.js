@@ -20,6 +20,7 @@ function PromptFormMobile() {
     const [selectValue, setSelectValue] = useState('')
     const [selectLocations, setSelectLocations] = useState([])
     const [distance, setDistance] = useState(``)
+    const [debug , SetDebug ] = useState(false);
     const [formSubmitted, setFormSubmitted] = useState(false);
     const [arrayposition, setCount] = useState(0);
     let arrayFromString = messageError.split('<br>');
@@ -42,6 +43,7 @@ function PromptFormMobile() {
         let processing = true
         axiosFetchData(processing)
         axiosFetchLocations(processing)
+        SetDebug(true);
         return () => {
             processing = false
         }
@@ -71,12 +73,14 @@ function PromptFormMobile() {
     const axiosPostData = async() => {
         const postData = {
             source: sourceLocation,
-            destination: destinationLocation
+            destination: destinationLocation , 
+            Debugging : debug
             
         }
 
         //await axios.post("https://naveng-backend-vercel.vercel.app/formPost", postData)
         await axios.post("http://localhost:4000/formPost", postData)
+
         .then(res => {
             setMessageError(res.data['HTML']);
             setDistance(res.data['Distance']);

@@ -4,7 +4,9 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon index.js",
-    "test": "mocha test/router.test.js"
+    "test": "node --expose-gc ./node_modules/mocha/bin/mocha test/router.test.js",
+    "failed": "node --expose-gc ./node_modules/mocha/bin/mocha test/Failed_test.test.js",
+    "specific": "node --expose-gc ./node_modules/mocha/bin/mocha test/TestSpecificPath.test.js"
   },
   "keywords": [],
   "author": "",
@@ -12,6 +14,7 @@
   "description": "",
   "dependencies": {
     "@supabase/supabase-js": "^2.43.4",
+    "async": "^3.2.5",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
