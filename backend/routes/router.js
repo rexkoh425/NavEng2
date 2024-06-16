@@ -180,7 +180,7 @@ router.post('/locations' , async(req,res) => {
             throw error;
         }
         
-        let locations_array = [""];
+        let locations_array = [];
         data.forEach(result => {
             if(result.room_num != "NIL" && result.room_num != "duplicate"){
                 locations_array.push(`${result.room_num}`);

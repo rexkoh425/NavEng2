@@ -325,6 +325,7 @@ describe('Testing all location pairs now', function () {
             for (let source of locations) {
                 for (let destination of locations) {
                     if (source !== destination) {
+                        
                         tasks.push(async () => {
                             const result = await performTest(source, destination);
                             if (result.passed) {
