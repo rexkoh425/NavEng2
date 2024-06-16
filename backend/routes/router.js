@@ -10,8 +10,8 @@ const supabaseUrl = process.env.SUPABASE_URL
 const supabaseKey = process.env.SUPABASE_KEY
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-async function template_img(img_path){
-  return `<img src = "${img_path}" alt = "cannot be displayed" class="htmlData"><br> `;
+function template_img(img_path){
+  return `<img src = "${img_path}" alt = "cannot be displayed" class="htmlData"><br>`;
 }
 
 async function NESW_ENUM(input){
@@ -192,16 +192,38 @@ router.post('/locations' , async(req,res) => {
     }
 })
 
-
 router.post('/feedback' , async(req,res) => {
     const {feedbackType, bugDetails, blockedNode, sourceLocation, destinationLocation, nodes} = req.body
+    try {
+        const input = [{feedback_type : null , bug_details : null , blocked_node : null , source_location : null , destination_location : null , nodes : null}];
 
-    console.log('feedback type:' + feedbackType)
-    console.log('bug details:' + bugDetails)
-    console.log('blocked node:'+ blockedNode)
-    console.log('source location:'+ sourceLocation)
-    console.log('destination location: '+ destinationLocation)
-    console.log('path nodes: '+ nodes)
+        if(feedbackType == "Report bug with website"){
+            input = [{feedback_type : feedbackType , bug_details : bugDetails , blocked_node : null , source_location : null , destination_location : null , nodes : null}];    
+        }else if(feedbackType == "Suggest a better path"){
+            input = [{feedback_type : feedbackType , bug_details : null , blocked_node : null , source_location : null , destination_location : null , nodes : nodes}];    
+        }else if(feedbackType == "Report blocked location"){
+            input = [{feedback_type : feedbackType , bug_details : null , blocked_node : blockedNode , source_location : sourceLocation , destination_location : destinationLocation , nodes : null}];    
+        }
+
+        const { error } = await supabase
+            .from('feedback')
+            .insert(input);
+        if (error) {
+            throw error;
+        }
+        console.log('Data added to database successfully.');
+        res.send('Data added to database successfully.'); 
+    } catch (error) {
+        console.error('Error appending data to database:', err);
+        res.status(500).send('Failed to append data to database.'); 
+    }
+
+    //console.log('feedback type:' + feedbackType)
+    //console.log('bug details:' + bugDetails)
+    //console.log('blocked node:'+ blockedNode)
+    //console.log('source location:'+ sourceLocation)
+    //console.log('destination location: '+ destinationLocation)
+    //console.log('path nodes: '+ nodes)
 
     res.send("Thank you for your feedback!") //sending conformation message back to frontend
 })
@@ -268,7 +290,6 @@ router.post('/DeleteFailedLocations', async (req, res) => {
     }
 });
 
-
 router.post('/formPost' , async (req ,res) => { 
 
     const inputData = req.body;
@@ -296,7 +317,6 @@ router.post('/formPost' , async (req ,res) => {
     cppProcess.stdin.end();
     
     cppProcess.stdout.on('data', async (data) => {
-        debug_log("ok");
         debug_log(data.toString());
         const outputData = data.toString().split("|");
         let nodes = outputData[0].split(",");
@@ -305,7 +325,8 @@ router.post('/formPost' , async (req ,res) => {
         nodes[0] += "67";
         let directions_array_len = directions.length;
         for(i = 1 ; i < directions_array_len ; i ++){
-            if(is_moving_up_down(directions[i-1] , directions[i])){
+            const is_up_down = await is_moving_up_down(directions[i-1] , directions[i])
+            if(is_up_down){
                 nodes.splice(i,1);
                 directions.splice(i,1);
                 i --;
@@ -342,11 +363,14 @@ router.post('/formPost' , async (req ,res) => {
                         index = i;
                         break;
                     }
-                }                
-                fixedLengthArray[index] = await template_img(result.filepath);
+                }
+                const imgHTML = template_img(result.filepath);
+                //debug_log(imgHTML);              
+                fixedLengthArray[index] = imgHTML;
                 debug_array[debug_array_index] = result.unique_id;
                 debug_array_index++;
             });
+            //debug_log(`this is fixedlengtharray : ${fixedLengthArray}`);
             debug_log(debug_array);
             debug_log(`Queried : ${debug_array.length}`);
             debug_log(get_diff(nodes , debug_array));
@@ -375,9 +399,14 @@ router.post('/formPost' , async (req ,res) => {
 });
 
 router.post('/template_img' , async (req , res) => {
-    const inputs = req.body;
-    const response = await template_img(inputs);
-    res.send(response);
+    const inputs = req.body.Input;
+    const expected = req.body.Expected;
+    const response = template_img(inputs);
+    if(response == expected) { 
+        res.send({ passed : true }) 
+    }else{
+        res.send({ passed : false });
+    }
 });
 
 router.post('/NESW_ENUM' , async (req , res) => {

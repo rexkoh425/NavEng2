@@ -132,12 +132,15 @@ describe('Testing Functions..........', function () {
 
     it('template_img converts image path to HTML usable code', async function () {
         try {
-            const input = "test_image.jpg"
+            const input = { 
+                Input : 'test_image.jpg', 
+                Expected : `<img src = "test_image.jpg" alt = "cannot be displayed" class="htmlData"><br>` 
+            }
             const response = await request(app)
                 .post('/template_img')
                 .send(input);
 
-            if(response.body == "failed"){
+            if(response.body.passed == false){
                 throw new Error("template_img function failed")
             }
         } catch (error){
