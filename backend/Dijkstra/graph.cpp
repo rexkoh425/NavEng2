@@ -19,7 +19,12 @@ ostream& operator<<(ostream& os, const Graph& g) {
 }
 
 void Graph::addEdge(int source, int dest, int weight , int dir) {
-  // Assumes that an edge doesn't already exist!
+  
+  for(int i = 0 ; i < blocked_nodes.size() ; i++){
+    if(dest == blocked_nodes[i] || source == blocked_nodes[i]){
+      return;
+    }
+  }
   _vertices[source].emplace_front(dest, weight , dir);
   int opposite_dir = 180 - dir;
   if(dir == EAST || dir == WEST || dir == UP || dir == DOWN){

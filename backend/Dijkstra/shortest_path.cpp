@@ -27,7 +27,8 @@ Path shortestPath(const Graph& g, int source, int dest) {
   int num_of_nodes = g.num_vertices();
   bool *visit_table = new bool[num_of_nodes];
   int *parent = new int[num_of_nodes];
-  int *parent_path = new int[num_of_nodes];
+  int *parent_direction = new int[num_of_nodes];
+  bool reached_dest = false;
   
   for(int i = 0 ; i < num_of_nodes; i++){
     if(i != source){
@@ -36,9 +37,9 @@ Path shortestPath(const Graph& g, int source, int dest) {
       table.insert(GraphEdge(source ,0 , 0));
     }
     parent[i] = i;
-    parent_path[i] = 0;
+    parent_direction[i] = 0;
   }
-
+  int count = 0 ;
   while(!table.empty()){
     GraphEdge current_node = table.extractMin();
     int current_dest = current_node.dest();
@@ -46,6 +47,7 @@ Path shortestPath(const Graph& g, int source, int dest) {
     visit_table[current_dest] = true;
     if(current_dest == dest){
       dist_from_source = current_weight;
+      reached_dest = true;
       break;
     }
     forward_list<GraphEdge> neighbours = g.edges_from(current_dest);
@@ -60,7 +62,7 @@ Path shortestPath(const Graph& g, int source, int dest) {
         GraphEdge new_node = GraphEdge(node , table_dist , dir);
         table.changeKey(current  , new_node);
         parent[node] = current_dest;
-        parent_path[node] = dir;
+        parent_direction[node] = dir;
       }
     }
   }
@@ -71,15 +73,14 @@ Path shortestPath(const Graph& g, int source, int dest) {
 
   int parent_node = dest;
   path.insert(path.begin() , parent_node);
-
   while(parent_node != source){
-    direction.insert(direction.begin(), parent_path[parent_node]);
+    direction.insert(direction.begin(), parent_direction[parent_node]);
     parent_node = parent[parent_node];
     path.insert(path.begin() , parent_node);
   }
 
   delete parent;
   delete visit_table;
-  delete parent_path;
+  delete parent_direction;
   return Path(dist_from_source, path , direction);
 }

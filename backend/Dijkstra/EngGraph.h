@@ -6,8 +6,8 @@
 #define UP 45
 #define DOWN -45
 
-Graph createEngGraph(){
-    Graph g(249);
+Graph createEngGraph(vector<int> blocked_nodes){
+    Graph g(249  ,blocked_nodes);
     g.addEdge(0, 1, 50 , EAST);
     g.addEdge(1, 153, 70 , SOUTH);
     g.addEdge(153, 2, 40 , SOUTH);
@@ -125,7 +125,7 @@ Graph createEngGraph(){
     g.addEdge(107, 108, 20 , WEST);
     g.addEdge(107, 109, 40 , SOUTH);
     g.addEdge(62, 108 , 1 , UP); //extra
-    g.addEdge(66, 105 , 1 , UP); //extra
+    g.addEdge(66, 106 , 1 , UP); //extra
     g.addEdge(85, 97 , 1 , UP); //extra
     g.addEdge(108, 110, 1 , UP); //free56
     g.addEdge(106, 113, 1 , UP); //extra

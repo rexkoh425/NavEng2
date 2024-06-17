@@ -47,10 +47,12 @@ class Graph {
   // The forward_list (a singly-linked list) for each vertex
   // contains all of the edges from that vertex.
   vector<forward_list<GraphEdge>> _vertices;
-
+  vector<int> blocked_nodes;
  public:
   // Create an empty graph with n vertices
-  Graph(int n) : _vertices(n) {}
+  Graph(int n , vector<int> blocked_array) : _vertices(n) {
+    blocked_nodes = blocked_array;
+  }
 
   int num_vertices() const { return _vertices.size(); }
 

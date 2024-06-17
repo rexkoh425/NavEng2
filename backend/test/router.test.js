@@ -128,7 +128,7 @@ async function limitConcurrency(tasks, limit) {
 }
 
 describe('Testing Functions..........', function () {
-    this.timeout(500000);
+    this.timeout(10000);
 
     it('template_img converts image path to HTML usable code', async function () {
         try {
