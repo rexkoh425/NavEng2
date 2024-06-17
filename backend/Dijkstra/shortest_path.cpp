@@ -23,11 +23,13 @@ Path shortestPath(const Graph& g, int source, int dest) {
   Heap table(g.num_vertices());
   vector<int> path;
   vector<int> direction;
+  vector<int> dist_array;
   int dist_from_source = 0;
   int num_of_nodes = g.num_vertices();
   bool *visit_table = new bool[num_of_nodes];
   int *parent = new int[num_of_nodes];
   int *parent_direction = new int[num_of_nodes];
+  int *parent_dist = new int[num_of_nodes];//
   bool reached_dest = false;
   
   for(int i = 0 ; i < num_of_nodes; i++){
@@ -63,6 +65,7 @@ Path shortestPath(const Graph& g, int source, int dest) {
         table.changeKey(current  , new_node);
         parent[node] = current_dest;
         parent_direction[node] = dir;
+        parent_dist[node] = current.weight();//
       }
     }
   }
@@ -75,6 +78,7 @@ Path shortestPath(const Graph& g, int source, int dest) {
   path.insert(path.begin() , parent_node);
   while(parent_node != source){
     direction.insert(direction.begin(), parent_direction[parent_node]);
+    dist_array.insert(dist_array.begin(), parent_dist[parent_node]);
     parent_node = parent[parent_node];
     path.insert(path.begin() , parent_node);
   }
@@ -82,5 +86,5 @@ Path shortestPath(const Graph& g, int source, int dest) {
   delete parent;
   delete visit_table;
   delete parent_direction;
-  return Path(dist_from_source, path , direction);
+  return Path(dist_from_source, path , direction , dist_array);
 }

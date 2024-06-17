@@ -55,11 +55,13 @@ int main(){
       return 1;
     }
     
+    //vector<int> blocked_nodes;
     Graph test1 = createEngGraph(blocked_nodes);
     Path result = shortestPath(test1 , source ,  dest);
 
     vector<int> final_path = result.path();
     vector<int> final_directions = result.direction();
+    vector<int> dist_between = result.dist_array();
     int distance = result.total_distance();
 
     int size = final_path.size();
@@ -78,5 +80,16 @@ int main(){
     }
 
     cout << "|" << distance;
+
+    cout << "|";
+    //int total = 0;
+    for(int i = 0 ; i < size-1 ; i++){
+      cout << dist_between[i];
+      //total += dist_between[i];
+      if(i != size-2){
+        cout << ",";
+      }
+    }
+    //cout << "|" << total; //for debug addition of dist
     return 0 ;
 }
