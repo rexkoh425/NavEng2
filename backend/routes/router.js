@@ -348,7 +348,8 @@ router.post('/formPost' , async (req ,res) => {
         const outputData = data.toString().split("|");
         let nodes = outputData[0].split(",");
         const directions = outputData[1].split(",");
-        let distance = outputData[2].split(",")
+        let distance = outputData[2].split(",");
+        let dist_array = outputData[3].split(",");
         nodes[0] += "67";
         let directions_array_len = directions.length;
         for(i = 1 ; i < directions_array_len ; i ++){
@@ -405,8 +406,9 @@ router.post('/formPost' , async (req ,res) => {
             const FinalResults = {
                 Expected : nodes.length ,
                 Queried : data_length , 
-                HTML : final,
-                Distance : distance
+                HTML : final ,
+                Distance : distance ,
+                Dist_array : dist_array
             }
             res.send(FinalResults);
         } catch (error) {
