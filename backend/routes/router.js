@@ -195,13 +195,6 @@ router.post('/contact', (req, res) => {
   res.send("Message sent. Thank you.")
 }) 
 
-router.post('/block', (req, res) => {
-    blocked_node = req.body
-  
-    console.log("eek" + blocked_node)
-    res.send("Message sent. Thank you.")
-  }) 
-
 router.post('/locations' , async(req,res) => {
     try {
         const { data, error } = await supabase

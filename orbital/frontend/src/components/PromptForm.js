@@ -13,6 +13,7 @@ import "@fontsource/lexend/300.css";
 import Tooltip from '@mui/material/Tooltip';
 import FileUpload from "./FileUpload";
 import CalculateTime from './CalculateTime';
+import ConvertToMetres from './ConvertToMetres';
 
 function PromptForm() {
     const [sourceLocation, setSourceLocation] = useState('')
@@ -21,10 +22,12 @@ function PromptForm() {
     const [selectData, setSelectData] = useState([])
     const [selectValue, setSelectValue] = useState('')
     const [selectLocations, setSelectLocations] = useState([])
-    const [distance, setDistance] = useState(``)
+    const [totalDistance, setTotalDistance] = useState(``)
+    const [distanceArray, setDistanceArray] = useState([])
     const [debug , SetDebug ] = useState(false);
     const [formSubmitted, setFormSubmitted] = useState(false);
     const [arrayposition, setCount] = useState(0);
+    const [blockedMessage, setBlockedMessage] = useState('');
     const [blocked, setBlocked] = useState('');
     const [disableRightButton, setDisableRightButton] = useState(false);
     const [disableLeftButton, setDisableLeftButton] = useState(true);
@@ -110,7 +113,9 @@ function PromptForm() {
         
                 // Update state variables with the response data
                 setMessageError(response.data['HTML']);
-                setDistance(response.data['Distance'] / 10);
+                setTotalDistance(response.data['Distance'] / 10);
+                const distArray = response.data['Dist_array'];
+                handleConvertToMetres(distArray)
         
                 // Perform split operation inside the then block
                 const arrayFromString = response.data['HTML'].split('<img src');
@@ -147,19 +152,24 @@ function PromptForm() {
 
     const axiosPostBlock = async() => {
         const postData = {
-            blocked: blocked
+            img_string: blocked
         }
 
         //await axios.post("https://naveng-backend-vercel.vercel.app/formPost", postData)
-        await axios.post("http://localhost:4000/block", postData)
+        await axios.post("http://localhost:4000/insertBlocked", postData)
 
         .then(res => {
             setShowUpload(true)
+            setBlockedMessage(res.data)
         })
 
         arrayFromString = messageError.split('<img src');
     }
     
+    const handleConvertToMetres = (distArray) => {
+        const dividedDistance = ConvertToMetres({ distanceArrayx10: distArray }); // Call DivideByTen to get the divided array
+        setDistanceArray(dividedDistance); // Set the divided array into state
+      }
 
     return (
         <>
@@ -229,12 +239,13 @@ function PromptForm() {
              sx={{ p: 2, border: '1px grey', bgcolor: '#F5F5F5', height: "68vh", marginRight:"10vh" , 
              textAlign: 'center', justifyContent: 'center', color: 'grey', fontFamily: "Lexend"}}>Please select the starting and ending <br></br> locations to view the pictures</Box></div>}
             <center>
-            {formSubmitted && <p className= "parametricsDescription">Distance: </p>}
-            {formSubmitted && <p className= "parametricsContent">{distance}m</p>}
+            {formSubmitted && <p className= "parametricsDescription">Total Distance: </p>}
+            {formSubmitted && <p className= "parametricsContent">{totalDistance}m</p>}
             <div></div>
             
             {formSubmitted && <p className= "parametricsDescription">Time Taken: </p>}
-            {formSubmitted && <p className="parametricsContent"><CalculateTime distance={distance} /></p>}
+            {formSubmitted && <div className="parametricsContent"><CalculateTime distance={totalDistance} /></div>}
+            
             </center>
             {formSubmitted && <p className="imageCount">{arrayposition+1}/{arrayFromString.length-1}</p>}
 
