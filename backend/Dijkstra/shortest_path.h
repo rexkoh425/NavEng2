@@ -2,7 +2,7 @@
 #define __SHORTESTPATH_H__
 
 #include <vector>
-
+#include "graph.h"
 // We should include graph.h here, but that causes problems with coursemology.
 // So instead, please make sure to include it before this file.
 

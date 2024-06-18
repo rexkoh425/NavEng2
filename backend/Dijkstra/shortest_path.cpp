@@ -1,14 +1,7 @@
-#include "graph.h"
 #include "shortest_path.h"
 #include "heap.hpp"
 
 #define INFINITY_SELF 999999
-#define NORTH 0
-#define EAST 90
-#define SOUTH 180
-#define WEST -90
-#define UP 45
-#define DOWN -45
 
 bool check_node_exist(int nodes , int source , int dest){
   return (source >= 0 && dest >= 0 && source < nodes && dest < nodes);

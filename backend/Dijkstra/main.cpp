@@ -1,5 +1,4 @@
 #include "shortest_path.cpp"
-#include "shortest_path.h"
 #include "graph.cpp"
 #include "EngGraph.h"
 #include <cstdlib>
@@ -82,14 +81,11 @@ int main(){
     cout << "|" << distance;
 
     cout << "|";
-    //int total = 0;
     for(int i = 0 ; i < size-1 ; i++){
       cout << dist_between[i];
-      //total += dist_between[i];
       if(i != size-2){
         cout << ",";
       }
     }
-    //cout << "|" << total; //for debug addition of dist
     return 0 ;
 }

@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\NUS\Orbital_website\build\CMakeFiles\ca5caf85f3591f3d8bf8fb0caecb272c\INSTALL_force.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{D9AFCAE5-69FA-3B81-A577-28DEEFF92348}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

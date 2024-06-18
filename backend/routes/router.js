@@ -112,21 +112,24 @@ async function is_moving_up_down(incoming , outgoing){
 }
 
 async function room_num_to_node_id(room_number){
-    
-    try {
-        // Query the 'users' table for a specific user by ID
-        const { data, error } = await supabase
-            .from('pictures')
-            .select('node_id')
-            .eq('room_num', `${room_number}`);
-        if (error) {
-            throw error;
-        }
-        return data[0].node_id;
+    if(typeof(room_number) == "string"){
+        try {
+            // Query the 'users' table for a specific user by ID
+            const { data, error } = await supabase
+                .from('pictures')
+                .select('node_id')
+                .eq('room_num', `${room_number}`);
+            if (error) {
+                throw error;
+            }
+            return data[0].node_id;
 
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    } 
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        } 
+    }else{
+        return room_number;
+    }
 }
 
 async function get_filepaths(nodes){
@@ -361,10 +364,13 @@ router.post('/formPost' , async (req ,res) => {
     }
 
     let blocked_array = await get_blocked();
-    let non_sheltered = await get_non_sheltered();
+    blocked_array.push(inputData.current_blocked - 1);
+    let non_sheltered = [];
+    //if(inputData.sheltered == true){
+        non_sheltered = await get_non_sheltered();
+    //}
     let mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered]));
     debug_log(mergedArray);
-    //blocked_array.push(inputData.current_blocked - 1);
     
     debug_log(inputData);
     debug_log(typeof(inputData.source));
@@ -448,7 +454,7 @@ router.post('/formPost' , async (req ,res) => {
             res.send(FinalResults);
         } catch (error) {
             res.status(500).json({ error: error.message }); 
-        } 
+        }
     });
     
   // Handle errors and exit events
@@ -470,9 +476,9 @@ const storage = multer.diskStorage({
         const ext = path.extname(file.originalname);
         cb(null, blocked_node + ext);
     }
-  });
+});
   
-  const upload = multer({ storage: storage });
+const upload = multer({ storage: storage });
 
 router.post('/blocked_img', upload.single('photo'), (req, res) => {
     try {
