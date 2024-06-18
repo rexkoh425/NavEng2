@@ -219,13 +219,6 @@ router.post('/contact', (req, res) => {
   res.send("Message sent. Thank you.")
 }) 
 
-router.post('/block', (req, res) => {
-    blocked_node = req.body
-  
-    console.log("eek" + blocked_node)
-    res.send("Message sent. Thank you.")
-  }) 
-
 router.post('/locations' , async(req,res) => {
     try {
         const { data, error } = await supabase
@@ -364,13 +357,12 @@ router.post('/formPost' , async (req ,res) => {
     }
 
     let blocked_array = await get_blocked();
+    console.log(inputData.current_blocked)
     blocked_array.push(inputData.current_blocked - 1);
-    let non_sheltered = [];
-    //if(inputData.sheltered == true){
-        non_sheltered = await get_non_sheltered();
-    //}
+    let non_sheltered = await get_non_sheltered();
     let mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered]));
     debug_log(mergedArray);
+
     
     debug_log(inputData);
     debug_log(typeof(inputData.source));
@@ -456,6 +448,134 @@ router.post('/formPost' , async (req ,res) => {
             res.status(500).json({ error: error.message }); 
         }
     });
+
+
+
+
+    
+  // Handle errors and exit events
+  cppProcess.on('error', (error) => {
+    console.error('Error executing C++ process:', error);
+  });
+
+  cppProcess.on('exit', (code) => {
+    debug_log(`C++ process exited with code: ${code}`);
+  });
+  
+});
+
+router.post('/blockRefresh' , async (req ,res) => { 
+    //add to formPost input ,  elements = new added node 
+    const inputData = req.body;
+
+    function debug_log(input){
+        if(inputData.Debugging){
+            console.log(input);
+        }
+    }
+
+    //checking for empty input
+    if(!inputData.source || !inputData.destination){
+        console.log("data incorrectly labelled or source and destination not filled")  
+        return;
+    }
+
+    let blocked_array = await get_blocked();
+    console.log(inputData.current_blocked)
+    blocked_array.push(inputData.current_blocked - 1);
+    let non_sheltered = await get_non_sheltered();
+    let mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered]));
+    debug_log(mergedArray);
+
+    
+    debug_log(inputData);
+    debug_log(typeof(inputData.source));
+    inputData.source = await room_num_to_node_id(inputData.source);
+    inputData.destination = await room_num_to_node_id(inputData.destination);
+    debug_log(inputData);
+    const inputObj = { source : inputData.source , destination : inputData.destination , blocked : mergedArray};
+    debug_log(inputObj);
+    const serializedData = JSON.stringify(inputObj);
+    const cppProcess = spawn(__dirname + '/../Dijkstra/main' , []);
+    cppProcess.stdin.write(serializedData);
+    cppProcess.stdin.end();
+    
+    cppProcess.stdout.on('data', async (data) => {
+        debug_log(data.toString());
+        const outputData = data.toString().split("|");
+        let nodes = outputData[0].split(",");
+        const directions = outputData[1].split(",");
+        let distance = outputData[2].split(",");
+        let dist_array = outputData[3].split(",");
+        nodes[0] += "67";
+        let directions_array_len = directions.length;
+        for(i = 1 ; i < directions_array_len ; i ++){
+            const is_up_down = await is_moving_up_down(directions[i-1] , directions[i])
+            if(is_up_down){
+                nodes.splice(i,1);
+                directions.splice(i,1);
+                i --;
+                directions_array_len --;
+            }else{
+                let pov = await get_pov(directions[i-1] , directions[i]); 
+                let direction = await get_arrow_dir(directions[i-1] , directions[i]);
+                nodes[i] += pov;
+                nodes[i] += direction;
+            }
+        }
+        nodes[directions.length] += "67";
+        debug_log(directions);
+        debug_log(nodes);
+        debug_log(`Expected : ${nodes.length}`);
+        try {
+            // Query the 'users' table for a specific user by ID
+            const { data, error } = await supabase
+                .from('pictures')
+                .select('unique_id , filepath')
+                .in('unique_id', nodes)
+                .order('node_id', { ascending: true });
+            if (error) {
+                throw error;
+            }
+            const data_length  = data.length;
+            const fixedLengthArray = new Array(data_length).fill("");
+            const debug_array = new Array(data_length).fill("");//for debug only
+            let debug_array_index = 0;
+            data.forEach(async result => {
+                let index = 0;
+                for(let i = 0 ; i < data_length ; i ++){
+                    if(result.unique_id == parseInt(nodes[i])){
+                        index = i;
+                        break;
+                    }
+                }
+                const imgHTML = template_img(result.filepath);
+                //debug_log(imgHTML);              
+                fixedLengthArray[index] = imgHTML;
+                debug_array[debug_array_index] = result.unique_id;
+                debug_array_index++;
+            });
+            //debug_log(`this is fixedlengtharray : ${fixedLengthArray}`);
+            debug_log(debug_array);
+            debug_log(`Queried : ${debug_array.length}`);
+            debug_log(get_diff(nodes , debug_array));
+            const final = fixedLengthArray.join('');
+            const FinalResults = {
+                Expected : nodes.length ,
+                Queried : data_length , 
+                HTML : final ,
+                Distance : distance ,
+                Dist_array : dist_array
+            }
+            res.send(FinalResults);
+        } catch (error) {
+            res.status(500).json({ error: error.message }); 
+        } 
+    });
+
+
+
+
     
   // Handle errors and exit events
   cppProcess.on('error', (error) => {
@@ -639,6 +759,7 @@ router.post('/get_diff' , async (req , res) => {
 
 router.post('/insertBlocked' , async (req ,res ) => {
     const input = req.body.img_string;
+    console.log("input" + input)
     const node_string = input.split("_")[0];
     const node_id = parseInt(node_string);
     try {
@@ -646,8 +767,8 @@ router.post('/insertBlocked' , async (req ,res ) => {
         .from('block_shelter')
         .update({ blocked : true })
         .eq('id', node_id);
-
         console.log('Data added to database successfully.');
+        console.log('Blocked ID' + node_id)
         res.send({ message : 'Data added to database successfully.' , node : node_id} ); 
     } catch (error) {
         console.error('Error appending data to database:', err);
