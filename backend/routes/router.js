@@ -357,9 +357,13 @@ router.post('/formPost' , async (req ,res) => {
     }
 
     let blocked_array = await get_blocked();
-    console.log(inputData.current_blocked)
-    blocked_array.push(inputData.current_blocked - 1);
-    let non_sheltered = await get_non_sheltered();
+    if(inputData.current_blocked !== ''){
+        blocked_array.push(inputData.current_blocked - 1);
+    }
+    let non_sheltered = [];
+    if(inputData.sheltered){
+        non_sheltered = await get_non_sheltered();
+    }
     let mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered]));
     debug_log(mergedArray);
 

@@ -102,7 +102,9 @@ async function performTest(source, destination) {
     const inputData = {
         source: `${source}`,
         destination: `${destination}`,
-        Debugging: false
+        Debugging: false , 
+        current_blocked: '',
+        sheltered: false
     };
     return await CheckLocation(inputData);
 }
