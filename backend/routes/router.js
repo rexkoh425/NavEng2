@@ -175,6 +175,27 @@ async function get_blocked(){
     }
 }
 
+async function get_non_sheltered(){
+    try {
+        // Query the 'users' table for a specific user by ID
+        const { data, error } = await supabase
+            .from('block_shelter')
+            .select('id')
+            .eq('sheltered', false);
+        if (error) {
+            throw error;
+        }
+        let non_sheltered = []
+        for(const element of data){
+            non_sheltered.push(element.id - 1);
+        }
+        return non_sheltered;
+
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 
 router.get('/test', (req, res) => {
     const userData = 
@@ -329,14 +350,17 @@ router.post('/formPost' , async (req ,res) => {
     }
 
     let blocked_array = await get_blocked();
-    debug_log(blocked_array);
+    let non_sheltered = await get_non_sheltered();
+    let mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered]));
+    debug_log(mergedArray);
     //blocked_array.push(inputData.current_blocked - 1);
+    
     debug_log(inputData);
     debug_log(typeof(inputData.source));
     inputData.source = await room_num_to_node_id(inputData.source);
     inputData.destination = await room_num_to_node_id(inputData.destination);
     debug_log(inputData);
-    const inputObj = { source : inputData.source , destination : inputData.destination , blocked : blocked_array};
+    const inputObj = { source : inputData.source , destination : inputData.destination , blocked : mergedArray};
     debug_log(inputObj);
     const serializedData = JSON.stringify(inputObj);
     const cppProcess = spawn(__dirname + '/../Dijkstra/main' , []);
