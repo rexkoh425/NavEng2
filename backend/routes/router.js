@@ -2,6 +2,8 @@ const express = require('express')
 const router = express.Router()
 const { spawn } = require('child_process');
 require('dotenv/config')
+const multer = require('multer');
+const path = require('path');
 
 const { createClient } = require('@supabase/supabase-js');
 const { fail } = require('assert');
@@ -9,6 +11,8 @@ const { fail } = require('assert');
 const supabaseUrl = process.env.SUPABASE_URL
 const supabaseKey = process.env.SUPABASE_KEY
 const supabase = createClient(supabaseUrl, supabaseKey);
+
+let blocked_node = ""
 
 function template_img(img_path){
   return `<img src = "${img_path}" alt = "cannot be displayed" class="htmlData"><br>`;
@@ -211,6 +215,13 @@ router.post('/contact', (req, res) => {
   console.log(email + ' | ' + message)
   res.send("Message sent. Thank you.")
 }) 
+
+router.post('/block', (req, res) => {
+    blocked_node = req.body
+  
+    console.log("eek" + blocked_node)
+    res.send("Message sent. Thank you.")
+  }) 
 
 router.post('/locations' , async(req,res) => {
     try {
@@ -450,6 +461,29 @@ router.post('/formPost' , async (req ,res) => {
   });
   
 });
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, 'uploads/'); // Directory where uploaded files will be stored
+    },
+    filename: function (req, file, cb) {
+        const ext = path.extname(file.originalname);
+        cb(null, blocked_node + ext);
+    }
+  });
+  
+  const upload = multer({ storage: storage });
+
+router.post('/blocked_img', upload.single('photo'), (req, res) => {
+    try {
+      // File is uploaded successfully, you can process further if needed
+      console.log('image uploaded:', req.file);
+      res.status(200).send('Image uploaded successfully, thank you for helping make NavEng up to date for users');
+    } catch (err) {
+      console.error('Error uploading image:', err);
+      res.status(500).send('Error uploading image');
+    }
+  });
 
 router.post('/template_img' , async (req , res) => {
     const inputs = req.body.Input;

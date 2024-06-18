@@ -10,9 +10,9 @@ import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
 import "@fontsource/lexend"; // Defaults to weight 400
 import "@fontsource/lexend/400.css";
 import "@fontsource/lexend/300.css";
-
-
-
+import Tooltip from '@mui/material/Tooltip';
+import FileUpload from "./FileUpload";
+import CalculateTime from './CalculateTime';
 
 function PromptForm() {
     const [sourceLocation, setSourceLocation] = useState('')
@@ -25,21 +25,44 @@ function PromptForm() {
     const [debug , SetDebug ] = useState(false);
     const [formSubmitted, setFormSubmitted] = useState(false);
     const [arrayposition, setCount] = useState(0);
+    const [blocked, setBlocked] = useState('');
+    const [disableRightButton, setDisableRightButton] = useState(false);
+    const [disableLeftButton, setDisableLeftButton] = useState(true);
+    const [showUpload, setShowUpload] = useState(false);
     let arrayFromString = messageError.split('<br>');
+    const [selectedFile, setSelectedFile] = useState(null);
+
+    let parts = blocked.split('/');
+    let remainder = parts.slice(8).join('/');
+    let indexOfQuote = remainder.indexOf('"');
+    let beforeQuote = remainder.slice(0, indexOfQuote);
+    console.log("Before quote:", beforeQuote);
 
     const incrementCounter = (e) => {
         e.preventDefault();
         if(arrayposition !== (arrayFromString.length-2)) { //Using -2 due to nature of splitting string
             setCount(arrayposition + 1);
+            setBlocked(arrayFromString[arrayposition+1])
         }
+        if (arrayposition === (arrayFromString.length-3)){
+            setDisableRightButton(true)
+        }
+        console.log("Array length: " + arrayFromString.length)
+        setDisableLeftButton(false)
       };
 
       const decrementCounter = (e) => {
         e.preventDefault();
         if(arrayposition !== (0)) {
             setCount(arrayposition - 1);
+            setBlocked(arrayFromString[arrayposition-1])
         }
+        if (arrayposition === 1){
+            setDisableLeftButton(true)
+        }
+        setDisableRightButton(false)
       };
+
 
     useEffect( () => {
         let processing = true
@@ -65,6 +88,7 @@ function PromptForm() {
 
     }
 
+
     const axiosFetchLocations = async(processing) => {
         //await axios.post('https://naveng-backend-vercel.vercel.app/locations')
         await axios.post('http://localhost:4000/locations')
@@ -74,23 +98,28 @@ function PromptForm() {
         .catch(err => console.log("Fetch Location Error!!"))
     }
     
-    const axiosPostData = async() => {
-        const postData = {
-            source: sourceLocation,
-            destination: destinationLocation,
-            Debugging : debug
-        }
-
-        //await axios.post("https://naveng-backend-vercel.vercel.app/formPost", postData)
-        await axios.post("http://localhost:4000/formPost", postData)
-
-        .then(res => {
-            setMessageError(res.data['HTML']);
-            setDistance(res.data['Distance']/10);
-        })
-
-        arrayFromString = messageError.split('<img src');
-    }
+        const axiosPostData = async () => {
+            const postData = {
+                source: sourceLocation,
+                destination: destinationLocation,
+                Debugging: debug
+            };
+        
+            try {
+                const response = await axios.post("http://localhost:4000/formPost", postData);
+        
+                // Update state variables with the response data
+                setMessageError(response.data['HTML']);
+                setDistance(response.data['Distance'] / 10);
+        
+                // Perform split operation inside the then block
+                const arrayFromString = response.data['HTML'].split('<img src');
+                setBlocked(arrayFromString[1]);
+                
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
  
     const handleSubmit = (e) => {
         e.preventDefault()
@@ -109,11 +138,27 @@ function PromptForm() {
                 setMessageError("")
             }
         setMessageError("");
-        setFormSubmitted(true);
         axiosPostData();   
+        setFormSubmitted(true);
+        setCount(0);
+        setDisableRightButton(false);
+        setDisableLeftButton(true);
     }
 
+    const axiosPostBlock = async() => {
+        const postData = {
+            blocked: blocked
+        }
 
+        //await axios.post("https://naveng-backend-vercel.vercel.app/formPost", postData)
+        await axios.post("http://localhost:4000/block", postData)
+
+        .then(res => {
+            setShowUpload(true)
+        })
+
+        arrayFromString = messageError.split('<img src');
+    }
     
 
     return (
@@ -161,6 +206,7 @@ function PromptForm() {
             <br></br>
             <Button variant="contained" type="submit" onClick={handleSubmit} sx ={{ bgcolor: "#cdd8e6", "&:hover": { bgcolor: "#F05C2C"}, fontFamily: "Lexend" }}>Submit</Button>
             <br></br>
+            {showUpload && <div><FileUpload/></div>}
             <br></br>
             <Box component="section" sx={{ p: 2, border: '1px grey', bgcolor: '#F5F5F5'}}>
             <h1 className="InstructionsTitle">How to use</h1>
@@ -168,10 +214,9 @@ function PromptForm() {
             <p className="InstructionsContent">2) Wait for the pictures to load...</p>
             <p className="InstructionsContent">3) The first and last picture show the doors to the starting location and end location respectively</p>
             <p className="InstructionsContent">4) With your back facing towards the door of your starting location, refer to the second picture onwards and follow the arrows!</p>
-    </Box>
+            <p className="InstructionsContent">5) If any location along your path is blocked, please press the block <img src="block_logo.png" alt="Block the location?"  className="instruction-img"></img> button, and an alternate path will be provided for you</p>
+            </Box>
             
-            
-
         </form>
         </center> </div>
 
@@ -189,15 +234,21 @@ function PromptForm() {
             <div></div>
             
             {formSubmitted && <p className= "parametricsDescription">Time Taken: </p>}
-            {formSubmitted && <p className= "parametricsContent">{Math.round((distance/1.4)/60)} minutes</p>}
+            {formSubmitted && <p className="parametricsContent"><CalculateTime distance={distance} /></p>}
             </center>
             {formSubmitted && <p className="imageCount">{arrayposition+1}/{arrayFromString.length-1}</p>}
 
              { formSubmitted && <div className="container">
-             <Button variant="contained" type="submit" onClick={decrementCounter} sx ={{ bgcolor: "#D95328" , "&:hover": { bgcolor: "#F05C2C"}, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "10vh", width: "3vw"}}><ArrowLeftIcon></ArrowLeftIcon></Button>
+             <Button variant="contained" type="submit" onClick={decrementCounter} disabled={disableLeftButton}sx ={{ bgcolor: "#D95328" , "&:hover": { bgcolor: "#F05C2C"}, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "10vh", width: "3vw"}}><ArrowLeftIcon></ArrowLeftIcon></Button>
+             <div className="imageContainer">
              <div className="htmlContent" dangerouslySetInnerHTML={{ __html: arrayFromString[arrayposition] }} />
+             <br></br>
+             <Tooltip title="Block?" arrow>
+             <Button className="overlay-button" onClick={axiosPostBlock}><img src="block_logo.png" className="block-logo"></img></Button>
+             </Tooltip>
+             </div>
              <div className="rightArrow">
-          <Button variant="contained" type="submit" onClick={incrementCounter} sx ={{ bgcolor: "#D95328" , "&:hover": { bgcolor: "#F05C2C"}, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "10vh", width: "3vw"}}><ArrowRightIcon></ArrowRightIcon></Button>
+          <Button variant="contained" type="submit" onClick={incrementCounter} disabled={disableRightButton} sx ={{ bgcolor: "#D95328" , "&:hover": { bgcolor: "#F05C2C"}, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "10vh", width: "3vw"}}><ArrowRightIcon></ArrowRightIcon></Button>
           </div>
         </div>}
 

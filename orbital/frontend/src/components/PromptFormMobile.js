@@ -10,6 +10,8 @@ import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
 import "@fontsource/lexend"; // Defaults to weight 400
 import "@fontsource/lexend/400.css";
 import "@fontsource/lexend/300.css";
+import CalculateTime from './CalculateTime';
+
 
 function PromptFormMobile() {
 
@@ -83,7 +85,7 @@ function PromptFormMobile() {
 
         .then(res => {
             setMessageError(res.data['HTML']);
-            setDistance(res.data['Distance']);
+            setDistance(res.data['Distance']/10);
         })
 
         arrayFromString = messageError.split('<img src');
@@ -179,7 +181,7 @@ function PromptFormMobile() {
             <div></div>
             
             {formSubmitted && <p className= "parametricsDescription">Time Taken: </p>}
-            {formSubmitted && <p className= "parametricsContent">{Math.round((distance/1.4)/60)} minutes</p>}
+            {formSubmitted && <p className= "parametricsContent"><CalculateTime distance={distance} /></p>}
             {formSubmitted && <p className="imageCountMobile">{arrayposition+1}/{arrayFromString.length-1}</p>}
              { formSubmitted && <div className="containerMobile">
              <Button variant="contained" type="submit" onClick={decrementCounter} 
