@@ -642,10 +642,10 @@ router.post('/insertBlocked' , async (req ,res ) => {
         .eq('id', node_id);
 
         console.log('Data added to database successfully.');
-        res.send('Data added to database successfully.'); 
+        res.send({ message : 'Data added to database successfully.' , node : node_id} ); 
     } catch (error) {
         console.error('Error appending data to database:', err);
-        res.status(500).send('Failed to append data to database.'); 
+        res.status(500).send( { message : 'Failed to append data to database.'  , node : node_id} ); 
     }
 });
 
