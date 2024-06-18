@@ -27,7 +27,8 @@ int main(){
         return 1;
     }
     int source = 0;
-    int dest = 0 ;
+    int dest = 0;
+    vector<int> blocked_nodes;
 
     // Access JSON data
     if (doc.IsObject()) {
@@ -37,17 +38,30 @@ int main(){
         if (doc.HasMember("destination")) {
           dest = doc["destination"].GetInt() - 1;
         }
+        if (doc.HasMember("blocked")) {
+          const Value& blocked = doc["blocked"];
+
+          for (SizeType i = 0; i < blocked.Size(); ++i) {
+              if (blocked[i].IsInt()) {
+                  blocked_nodes.push_back(blocked[i].GetInt());
+              } else {
+                  std::cerr << "Non-integer value in \"blocked\" array" << std::endl;
+                  return 1;
+              }
+          }
+        }
     } else {
-        std::cerr << "Input is not a JSON object" << std::endl;
-        return 1;
+      std::cerr << "Input is not a JSON object" << std::endl;
+      return 1;
     }
     
-    Graph test1 = createEngGraph();
-    Path result = shortestPath(test1 , source , dest);
+    //vector<int> blocked_nodes;
+    Graph test1 = createEngGraph(blocked_nodes);
+    Path result = shortestPath(test1 , source ,  dest);
 
-    //source  , dest
     vector<int> final_path = result.path();
     vector<int> final_directions = result.direction();
+    vector<int> dist_between = result.dist_array();
     int distance = result.total_distance();
 
     int size = final_path.size();
@@ -66,5 +80,16 @@ int main(){
     }
 
     cout << "|" << distance;
+
+    cout << "|";
+    //int total = 0;
+    for(int i = 0 ; i < size-1 ; i++){
+      cout << dist_between[i];
+      //total += dist_between[i];
+      if(i != size-2){
+        cout << ",";
+      }
+    }
+    //cout << "|" << total; //for debug addition of dist
     return 0 ;
 }

@@ -23,7 +23,7 @@ describe('test one path only', function(){
         }
     });
 });
-*/
+/*
 describe('test one path only', function(){
 
     this.timeout(10000);
@@ -31,6 +31,23 @@ describe('test one path only', function(){
         try {
             const response = await request(app)
             .post('/DeleteFailedLocations')
+            console.log(response.body);
+        } catch(error){
+            throw error;
+        }
+    });
+});
+*/
+
+describe('test one path only', function(){
+
+    this.timeout(10000);
+    it('test path', async function(){
+        const input = { img_string : "57_200_-275_3_East_East_T_junction_NIL.jpg"};
+        try {
+            const response = await request(app)
+            .post('/insertBlocked')
+            .send(input)
             console.log(response.body);
         } catch(error){
             throw error;

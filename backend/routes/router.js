@@ -129,7 +129,7 @@ async function room_num_to_node_id(room_number){
     } 
 }
 
-async function get_filepaths(res , nodes , supabase){
+async function get_filepaths(nodes){
     try {
         // Query the 'users' table for a specific user by ID
         const { data, error } = await supabase
@@ -155,6 +155,28 @@ async function get_diff(expected , query){
         set1.delete(item);
     }
     return Array.from(set1);
+}
+
+async function get_blocked(){
+    try {
+        // Query the 'users' table for a specific user by ID
+        const { data, error } = await supabase
+            .from('block_shelter')
+            .select('id')
+            .eq('blocked', true)
+            .eq('verified_block' , true);
+        if (error) {
+            throw error;
+        }
+        let blocked_array = []
+        for(const element of data){
+            blocked_array.push(element.id - 1);
+        }
+        return blocked_array;
+
+    } catch (error) {
+        console.log(error);
+    }
 }
 
 
@@ -191,7 +213,7 @@ router.post('/locations' , async(req,res) => {
             throw error;
         }
         
-        let locations_array = [""];
+        let locations_array = [];
         data.forEach(result => {
             if(result.room_num != "NIL" && result.room_num != "duplicate"){
                 locations_array.push(`${result.room_num}`);
@@ -206,7 +228,7 @@ router.post('/locations' , async(req,res) => {
 router.post('/feedback' , async(req,res) => {
     const {feedbackType, bugDetails, blockedNode, sourceLocation, destinationLocation, nodes} = req.body
     try {
-        const input = [{feedback_type : null , bug_details : null , blocked_node : null , source_location : null , destination_location : null , nodes : null}];
+        let input = [{feedback_type : null , bug_details : null , blocked_node : null , source_location : null , destination_location : null , nodes : null}];
 
         if(feedbackType == "Report bug with website"){
             input = [{feedback_type : feedbackType , bug_details : bugDetails , blocked_node : null , source_location : null , destination_location : null , nodes : null}];    
@@ -223,10 +245,10 @@ router.post('/feedback' , async(req,res) => {
             throw error;
         }
         console.log('Data added to database successfully.');
-        res.send('Data added to database successfully.'); 
+        //res.send('Data added to database successfully.'); 
     } catch (error) {
-        console.error('Error appending data to database:', err);
-        res.status(500).send('Failed to append data to database.'); 
+        console.error('Error appending data to database:', error);
+        //res.status(500).send('Failed to append data to database.'); 
     }
 
     //console.log('feedback type:' + feedbackType)
@@ -302,7 +324,7 @@ router.post('/DeleteFailedLocations', async (req, res) => {
 });
 
 router.post('/formPost' , async (req ,res) => { 
-
+    //add to formPost input ,  elements = new added node 
     const inputData = req.body;
 
     function debug_log(input){
@@ -316,13 +338,18 @@ router.post('/formPost' , async (req ,res) => {
         console.log("data incorrectly labelled or source and destination not filled")  
         return;
     }
+
+    let blocked_array = await get_blocked();
+    debug_log(blocked_array);
+    //blocked_array.push(inputData.current_blocked - 1);
     debug_log(inputData);
     debug_log(typeof(inputData.source));
     inputData.source = await room_num_to_node_id(inputData.source);
     inputData.destination = await room_num_to_node_id(inputData.destination);
     debug_log(inputData);
-    debug_log(typeof(inputData.source));
-    const serializedData = JSON.stringify(inputData);
+    const inputObj = { source : inputData.source , destination : inputData.destination , blocked : blocked_array};
+    debug_log(inputObj);
+    const serializedData = JSON.stringify(inputObj);
     const cppProcess = spawn(__dirname + '/../Dijkstra/main' , []);
     cppProcess.stdin.write(serializedData);
     cppProcess.stdin.end();
@@ -332,7 +359,8 @@ router.post('/formPost' , async (req ,res) => {
         const outputData = data.toString().split("|");
         let nodes = outputData[0].split(",");
         const directions = outputData[1].split(",");
-        let distance = outputData[2].split(",")
+        let distance = outputData[2].split(",");
+        let dist_array = outputData[3].split(",");
         nodes[0] += "67";
         let directions_array_len = directions.length;
         for(i = 1 ; i < directions_array_len ; i ++){
@@ -389,8 +417,9 @@ router.post('/formPost' , async (req ,res) => {
             const FinalResults = {
                 Expected : nodes.length ,
                 Queried : data_length , 
-                HTML : final,
-                Distance : distance
+                HTML : final ,
+                Distance : distance ,
+                Dist_array : dist_array
             }
             res.send(FinalResults);
         } catch (error) {
@@ -575,6 +604,24 @@ router.post('/get_diff' , async (req , res) => {
         res.send({ passed : true });
     }else{
         res.send({ passed : false});
+    }
+});
+
+router.post('/insertBlocked' , async (req ,res ) => {
+    const input = req.body.img_string;
+    const node_string = input.split("_")[0];
+    const node_id = parseInt(node_string);
+    try {
+        const { error } = await supabase
+        .from('block_shelter')
+        .update({ blocked : true })
+        .eq('id', node_id);
+
+        console.log('Data added to database successfully.');
+        res.send('Data added to database successfully.'); 
+    } catch (error) {
+        console.error('Error appending data to database:', err);
+        res.status(500).send('Failed to append data to database.'); 
     }
 });
 

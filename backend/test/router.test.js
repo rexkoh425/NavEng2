@@ -128,7 +128,7 @@ async function limitConcurrency(tasks, limit) {
 }
 
 describe('Testing Functions..........', function () {
-    this.timeout(500000);
+    this.timeout(10000);
 
     it('template_img converts image path to HTML usable code', async function () {
         try {
@@ -325,6 +325,7 @@ describe('Testing all location pairs now', function () {
             for (let source of locations) {
                 for (let destination of locations) {
                     if (source !== destination) {
+                        
                         tasks.push(async () => {
                             const result = await performTest(source, destination);
                             if (result.passed) {
