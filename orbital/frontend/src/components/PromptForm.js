@@ -146,6 +146,33 @@ function PromptForm() {
         }
     };
 
+    const axiosPostDataRefresh = async () => {
+        const postData = {
+            source: before_node_id,
+            destination: destinationLocation,
+            Debugging: debug,
+            current_blocked: blockedNodeid,
+            sheltered: sheltered,
+        };
+
+        try {
+            const response = await axios.post("http://localhost:4000/blockRefresh", postData);
+
+            // Update state variables with the response data
+            setMessageError(response.data['HTML']);
+            setTotalDistance(response.data['Distance'] / 10);
+            const distArray = response.data['Dist_array'];
+            handleConvertToMetres(distArray)
+
+            // Perform split operation inside the then block
+            const arrayFromString = response.data['HTML'].split('<img src');
+            setBlocked(arrayFromString[1]);
+
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault()
 
@@ -169,6 +196,29 @@ function PromptForm() {
         setDisableLeftButton(true);
     }
 
+    const handleSubmitRefresh = (e) => {
+        e.preventDefault()
+
+        console.log(sourceLocation + ' | ' + selectValue + ' | ' + destinationLocation)
+
+        if (sourceLocation === destinationLocation) {
+            alert('Entries cannot be the same');
+            return;
+        }
+
+        if (!destinationLocation) {
+            setMessageError("Destination is empty. Please enter a Destination.")
+        } else {
+            setMessageError("")
+        }
+        setMessageError("");
+        axiosPostDataRefresh();
+        setFormSubmitted(true);
+        setCount(0);
+        setDisableRightButton(false);
+        setDisableLeftButton(true);
+    }
+
     const axiosPostBlock = async (e) => {
         try {
           const postData = {
@@ -186,11 +236,6 @@ function PromptForm() {
           console.log("blocked message: " + blockdata['message']); // Log the message
           console.log("blocked nodeID: " + blockdata['node']); // Log the node ID
           console.log("before_node_id" + before_node_id)
-          setSourceLocation(before_node_id)
-          
-
-
-        
 
         } catch (error) {
           console.error('Error posting block:', error);
@@ -305,7 +350,7 @@ function PromptForm() {
                                 <Button className="overlay-button" onClick={axiosPostBlock}><img src="block_logo.png" className="block-logo"></img></Button>
                             </Tooltip>
                             {showUpload && <div className="overlay-refresh">
-                            <Button variant="contained" type="submit" onClick={handleSubmit} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }}>Give me an alternate path</Button>
+                            <Button variant="contained" type="submit" onClick={handleSubmitRefresh} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }}>Give me an alternate path</Button>
                         </div>}
                             
                         </div>
