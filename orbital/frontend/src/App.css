@@ -269,6 +269,15 @@
   display: inline-block
 }
 
+.overlay-refresh {
+  position: absolute;
+  height: 8vh;
+  width: 20vh;
+  bottom: 75vh;
+  right: 22vh;
+  display: inline-block
+}
+
 .block-logo {
   width: 10vh;
 

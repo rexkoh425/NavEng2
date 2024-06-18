@@ -51,6 +51,9 @@ function PromptForm() {
     let beforeremainder = beforeparts.slice(8).join('/');
     let beforeindexOfQuote = beforeremainder.indexOf('"');
     let beforebeforeQuote = beforeremainder.slice(0, beforeindexOfQuote);
+    const node_string = beforebeforeQuote.split("_")[0];
+    const before_node_id = parseInt(node_string);
+
     console.log("Before quote:", beforeQuote);
     const incrementCounter = (e) => {
         e.preventDefault();
@@ -182,8 +185,8 @@ function PromptForm() {
           setBlockedMessage(blockdata['message']);
           console.log("blocked message: " + blockdata['message']); // Log the message
           console.log("blocked nodeID: " + blockdata['node']); // Log the node ID
-          console.log("beforebeforeQuote" + beforebeforeQuote)
-          setSourceLocation(beforebeforeQuote)
+          console.log("before_node_id" + before_node_id)
+          setSourceLocation(before_node_id)
           
 
 
@@ -254,10 +257,7 @@ function PromptForm() {
                         onChange={handleCheckbox}/>} label="Sheltered Path" sx={{ fontFamily: "Lexend" }} />
                         <br></br>
                         <Button variant="contained" type="submit" onClick={handleSubmit} sx={{ bgcolor: "#cdd8e6", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }}>Submit</Button>
-                        {showUpload && <div>
-                            <br></br>
-                            <Button variant="contained" type="submit" onClick={handleSubmit} sx={{ bgcolor: "#cdd8e6", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }}>Give me an alternate path</Button>
-                        </div>}
+
                       
                         <br></br>
                         {showUpload && <div><FileUpload /></div>}
@@ -286,13 +286,7 @@ function PromptForm() {
                                 textAlign: 'center', justifyContent: 'center', color: 'grey', fontFamily: "Lexend"
                             }}>Please select the starting and ending <br></br> locations to view the pictures</Box></div>}
                     <center>
-                        {formSubmitted && <p className="parametricsDescription">Total Distance: </p>}
-                        {sourceLocation}
-                        <br></br>
-                        {beforeBlocked}
-                        <br></br>
-                        {blocked}
-                        
+                        {formSubmitted && <p className="parametricsDescription">Total Distance: </p>}     
                         {formSubmitted && <p className="parametricsContent">{totalDistance}m</p>}
                         <div></div>
 
@@ -310,6 +304,10 @@ function PromptForm() {
                             <Tooltip title="Block?" arrow>
                                 <Button className="overlay-button" onClick={axiosPostBlock}><img src="block_logo.png" className="block-logo"></img></Button>
                             </Tooltip>
+                            {showUpload && <div className="overlay-refresh">
+                            <Button variant="contained" type="submit" onClick={handleSubmit} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }}>Give me an alternate path</Button>
+                        </div>}
+                            
                         </div>
                         <div className="rightArrow">
                             <Button variant="contained" type="submit" onClick={incrementCounter} disabled={disableRightButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "10vh", width: "3vw" }}><ArrowRightIcon></ArrowRightIcon></Button>
