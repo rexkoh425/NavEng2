@@ -354,10 +354,12 @@ router.post('/formPost' , async (req ,res) => {
     }
 
     let blocked_array = await get_blocked();
+    console.log(inputData.current_blocked)
+    blocked_array.push(inputData.current_blocked - 1);
     let non_sheltered = await get_non_sheltered();
     let mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered]));
     debug_log(mergedArray);
-    //blocked_array.push(inputData.current_blocked - 1);
+
     
     debug_log(inputData);
     debug_log(typeof(inputData.source));
@@ -626,6 +628,7 @@ router.post('/get_diff' , async (req , res) => {
 
 router.post('/insertBlocked' , async (req ,res ) => {
     const input = req.body.img_string;
+    console.log("input" + input)
     const node_string = input.split("_")[0];
     const node_id = parseInt(node_string);
     try {
@@ -633,8 +636,8 @@ router.post('/insertBlocked' , async (req ,res ) => {
         .from('block_shelter')
         .update({ blocked : true })
         .eq('id', node_id);
-
         console.log('Data added to database successfully.');
+        console.log('Blocked ID' + node_id)
         res.send({ message : 'Data added to database successfully.' , node : node_id} ); 
     } catch (error) {
         console.error('Error appending data to database:', err);
