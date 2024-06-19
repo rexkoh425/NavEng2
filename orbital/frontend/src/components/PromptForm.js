@@ -39,8 +39,10 @@ function PromptForm() {
     let arrayFromString = messageError.split('<br>');
     const [selectedFile, setSelectedFile] = useState(null);
     const [sheltered, setSheltered] = useState(false);
+    const [blockedNodeID , setBlockedNodeID] = useState('');
+    const [blockedNodePOV , setBlockedNodePOV] = useState('');
+    const [blockedNodeArrowDir , setBlockedNodeArrowDir] = useState('');
 
-    let blockedNodeid = ""
     let parts = blocked.split('/');
     let remainder = parts.slice(8).join('/');
     let indexOfQuote = remainder.indexOf('"');
@@ -124,8 +126,8 @@ function PromptForm() {
             source: sourceLocation,
             destination: destinationLocation,
             Debugging: debug,
-            current_blocked: blockedNodeid,
-            sheltered: sheltered,
+            current_blocked: blockedNodeID,
+            sheltered: sheltered
         };
 
         try {
@@ -147,12 +149,14 @@ function PromptForm() {
     };
 
     const axiosPostDataRefresh = async () => {
+        
         const postData = {
             source: before_node_id,
             destination: destinationLocation,
             Debugging: debug,
-            current_blocked: blockedNodeid,
-            sheltered: sheltered,
+            current_blocked: blockedNodeID,
+            b4_blocked_img_path : beforebeforeQuote,
+            sheltered: sheltered
         };
 
         try {
@@ -231,8 +235,8 @@ function PromptForm() {
           // Update state variables after successful response
           setShowUpload(true);
           const blockdata = response.data;
-          blockedNodeid = blockdata['node']
           setBlockedMessage(blockdata['message']);
+          setBlockedNodeID(blockdata['node']);
           console.log("blocked message: " + blockdata['message']); // Log the message
           console.log("blocked nodeID: " + blockdata['node']); // Log the node ID
           console.log("before_node_id" + before_node_id)
@@ -240,7 +244,7 @@ function PromptForm() {
         } catch (error) {
           console.error('Error posting block:', error);
         }
-      };
+    };
 
     const handleConvertToMetres = (distArray) => {
         const dividedDistance = ConvertToMetres({ distanceArrayx10: distArray }); 

@@ -203,6 +203,46 @@ async function get_non_sheltered(){
     }
 }
 
+async function dir_string_to_ENUM(input){
+    switch(input){
+        case "North" :
+            return "1";
+        case "East" :
+            return "2";
+        case "South" :
+            return "3";
+        case "West" :
+            return "4";
+        case "Up" : 
+            return "5";
+        case "Down" :
+            return "6";
+        case "None" : 
+            return "7";
+        default : 
+            return "1";
+    }
+}
+
+async function break_down_img_path(img_name){
+    let increment = 0;
+    const components = img_name.split("_");
+    const node_id = components[0];
+    const x_coor = components[1];
+    const y_coor = components[2];
+    const z_coor = components[3];
+    const pov=  components[4];
+    const arrow_dir = components[5];
+    let type = components[6];
+    if(components[6] == "T" || components[6] == "Cross"){
+        type = components[6] + "_" + components[7];
+        increment = 1;
+    }
+    const room_num = components[7 + increment];
+    return {node_id : node_id , x_coor : x_coor , y_coor : y_coor , z_coor : z_coor , pov : pov , arrow :arrow_dir , type : type , room_num : room_num};
+
+}
+
 
 router.get('/test', (req, res) => {
     const userData = 
@@ -452,10 +492,6 @@ router.post('/formPost' , async (req ,res) => {
             res.status(500).json({ error: error.message }); 
         }
     });
-
-
-
-
     
   // Handle errors and exit events
   cppProcess.on('error', (error) => {
@@ -485,9 +521,13 @@ router.post('/blockRefresh' , async (req ,res) => {
     }
 
     let blocked_array = await get_blocked();
-    console.log(inputData.current_blocked)
-    blocked_array.push(inputData.current_blocked - 1);
-    let non_sheltered = await get_non_sheltered();
+    if(inputData.current_blocked !== ''){
+        blocked_array.push(inputData.current_blocked - 1);
+    }
+    let non_sheltered = [];
+    if(inputData.sheltered){
+        non_sheltered = await get_non_sheltered();
+    }
     let mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered]));
     debug_log(mergedArray);
 
@@ -496,6 +536,7 @@ router.post('/blockRefresh' , async (req ,res) => {
     debug_log(typeof(inputData.source));
     inputData.source = await room_num_to_node_id(inputData.source);
     inputData.destination = await room_num_to_node_id(inputData.destination);
+    const previous_node = await break_down_img_path(inputData.b4_blocked_img_path);
     debug_log(inputData);
     const inputObj = { source : inputData.source , destination : inputData.destination , blocked : mergedArray};
     debug_log(inputObj);
@@ -511,7 +552,8 @@ router.post('/blockRefresh' , async (req ,res) => {
         const directions = outputData[1].split(",");
         let distance = outputData[2].split(",");
         let dist_array = outputData[3].split(",");
-        nodes[0] += "67";
+        nodes[0] += await dir_string_to_ENUM(previous_node.pov);
+        nodes[0] += await dir_string_to_ENUM(previous_node.arrow);
         let directions_array_len = directions.length;
         for(i = 1 ; i < directions_array_len ; i ++){
             const is_up_down = await is_moving_up_down(directions[i-1] , directions[i])
@@ -763,36 +805,24 @@ router.post('/get_diff' , async (req , res) => {
 
 router.post('/insertBlocked' , async (req ,res ) => {
     const input = req.body.img_string;
-    console.log("input" + input)
-    const node_string = input.split("_")[0];
-    const node_id = parseInt(node_string);
+    console.log("input is : " + input)
+    const node_string = input.split("_");
+    const node_id = parseInt(node_string[0]);
+    
     try {
         const { error } = await supabase
         .from('block_shelter')
         .update({ blocked : true })
         .eq('id', node_id);
         console.log('Data added to database successfully.');
-        console.log('Blocked ID' + node_id)
+        console.log('Blocked ID is : ' + node_id)
         res.send({ message : 'Data added to database successfully.' , node : node_id} ); 
     } catch (error) {
         console.error('Error appending data to database:', err);
-        res.status(500).send( { message : 'Failed to append data to database.'  , node : node_id} ); 
+        res.status(500).send( { message : 'Failed to append data to database.'  , node : node_id}); 
     }
 });
 
 
 module.exports = router;
-/*
-module.exports = {
-    router,
-    template_img,
-    NESW_ENUM,
-    get_pov , 
-    handle_up_down,
-    get_arrow_dir,
-    is_moving_up_down,
-    room_num_to_node_id,
-    get_diff
-};
-*/
 
