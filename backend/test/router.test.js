@@ -1,20 +1,6 @@
 const request = require('supertest');
 const app = require('../app'); 
 
-/*
-const {
-    app ,
-    template_img,
-    NESW_ENUM,
-    get_pov , 
-    handle_up_down,
-    get_arrow_dir,
-    is_moving_up_down,
-    room_num_to_node_id,
-    get_diff 
-} = require('../app'); 
-*/
-
 if (global.gc) {
     global.gc(); // Expose garbage collection if enabled
 } else {
@@ -148,6 +134,9 @@ describe('Testing Functions..........', function () {
         } catch (error){
             throw error;
         }
+        if (global.gc) {
+            global.gc();
+        }
     })
 
     it('NESW_ENUM returns number in string corresponding to the directions', async function () {
@@ -165,6 +154,9 @@ describe('Testing Functions..........', function () {
             }
         } catch (error){
             throw error;
+        }
+        if (global.gc) {
+            global.gc();
         }
     })
 
@@ -191,6 +183,9 @@ describe('Testing Functions..........', function () {
         } catch (error){
             throw error;
         }
+        if (global.gc) {
+            global.gc();
+        }
     })
 
     it('handle_up_down handles going up and down directions and returns the arrow direction', async function () {
@@ -214,6 +209,9 @@ describe('Testing Functions..........', function () {
             }
         } catch (error){
             throw error;
+        }
+        if (global.gc) {
+            global.gc();
         }
     })
 
@@ -240,6 +238,9 @@ describe('Testing Functions..........', function () {
         } catch (error){
             throw error;
         }
+        if (global.gc) {
+            global.gc();
+        }
     })
 
     it('is_moving_up_down handles moving up or down', async function () {
@@ -264,6 +265,9 @@ describe('Testing Functions..........', function () {
         } catch (error){
             throw error;
         }
+        if (global.gc) {
+            global.gc();
+        }
     })
 
     it('room_num_to_node_id converts string room_num to node_id', async function () {
@@ -281,6 +285,9 @@ describe('Testing Functions..........', function () {
             }
         } catch (error){
             throw error;
+        }
+        if (global.gc) {
+            global.gc();
         }
     })
 
@@ -304,6 +311,61 @@ describe('Testing Functions..........', function () {
             }
         } catch (error){
             throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
+
+    it('dir_string_to_ENUM should return 1 - 7 according to "East" , "North" etc' , async function() {
+        try {
+            const input = { 
+                Input : ["North" , "East" , "South" , "West" , "Up" , "Down" , "None"], 
+                Expected : ['1' , '2' , '3' , '4' , '5' , '6' , '7'] 
+            }
+            const response = await request(app)
+                .post('/dir_string_to_ENUM')
+                .send(input);
+
+            if(response.body.passed == false){
+                throw new Error("dir_string_to_ENUM function failed")
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
+
+    it('break_down_img_path', async function () {
+        try {
+            const input = { 
+                Input : [
+                    "2_50_0_1_East_West_Cross_junction_NIL",
+                    "29_375_-110_2_South_North_T_junction_NIL" ,
+                    "48_160_-45_3_East_East_Corner_NIL",
+                    "31_375_-160_2_None_None_Room_EA-02-21"
+                ], 
+                Expected : [
+                    {node_id : "2" , x_coor : "50" , y_coor : "0" , z_coor : "1" , pov : "East" , arrow : "West" , type : "Cross_junction" , room_num : "NIL"},
+                    {node_id : "29" , x_coor : "375" , y_coor : "-110" , z_coor : "2" , pov : "South" , arrow : "North" , type : "T_junction" , room_num : "NIL"},
+                    {node_id : "48" , x_coor : "160" , y_coor : "-45" , z_coor : "3" , pov : "East" , arrow : "East" , type : "Corner" , room_num : "NIL"},
+                    {node_id : "31" , x_coor : "375" , y_coor : "-160" , z_coor : "2" , pov : "None" , arrow : "None" , type : "Room" , room_num : "EA-02-21"}
+                ]
+            }
+            const response = await request(app)
+                .post('/break_down_img_path')
+                .send(input);
+
+            if(response.body.passed == false){
+                throw new Error("break_down_img_path function failed")
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
         }
     })
 

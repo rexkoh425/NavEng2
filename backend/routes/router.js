@@ -132,23 +132,6 @@ async function room_num_to_node_id(room_number){
     }
 }
 
-async function get_filepaths(nodes){
-    try {
-        // Query the 'users' table for a specific user by ID
-        const { data, error } = await supabase
-            .from('pictures')
-            .select('unique_id , filepath')
-            .in('unique_id', nodes)
-            .order('node_id', { ascending: true });
-        if (error) {
-            throw error;
-        }
-        return data;
-    } catch (error) {
-        res.status(500).json({ error: error.message }); 
-    } 
-} // not used
-
 async function get_diff(expected , query){
     const  queried = query.map(num => num.toString());
     const set1 = new Set(expected);
@@ -634,6 +617,26 @@ router.post('/blockRefresh' , async (req ,res) => {
   
 });
 
+router.post('/insertBlocked' , async (req ,res ) => {
+    const input = req.body.img_string;
+    console.log("input is : " + input)
+    const node_string = input.split("_");
+    const node_id = parseInt(node_string[0]);
+    
+    try {
+        const { error } = await supabase
+        .from('block_shelter')
+        .update({ blocked : true })
+        .eq('id', node_id);
+        console.log('Data added to database successfully.');
+        console.log('Blocked ID is : ' + node_id)
+        res.send({ message : 'Data added to database successfully.' , node : node_id} ); 
+    } catch (error) {
+        console.error('Error appending data to database:', err);
+        res.status(500).send( { message : 'Failed to append data to database.'  , node : node_id}); 
+    }
+});
+
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
       cb(null, 'uploads/'); // Directory where uploaded files will be stored
@@ -646,6 +649,10 @@ const storage = multer.diskStorage({
   
 const upload = multer({ storage: storage });
 
+
+/////////////////////////////////////////////////////////////////////////
+//////////////////function testing region////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
 router.post('/blocked_img', upload.single('photo'), (req, res) => {
     try {
       // File is uploaded successfully, you can process further if needed
@@ -655,7 +662,7 @@ router.post('/blocked_img', upload.single('photo'), (req, res) => {
       console.error('Error uploading image:', err);
       res.status(500).send('Error uploading image');
     }
-  });
+});
 
 router.post('/template_img' , async (req , res) => {
     const inputs = req.body.Input;
@@ -803,23 +810,52 @@ router.post('/get_diff' , async (req , res) => {
     }
 });
 
-router.post('/insertBlocked' , async (req ,res ) => {
-    const input = req.body.img_string;
-    console.log("input is : " + input)
-    const node_string = input.split("_");
-    const node_id = parseInt(node_string[0]);
-    
-    try {
-        const { error } = await supabase
-        .from('block_shelter')
-        .update({ blocked : true })
-        .eq('id', node_id);
-        console.log('Data added to database successfully.');
-        console.log('Blocked ID is : ' + node_id)
-        res.send({ message : 'Data added to database successfully.' , node : node_id} ); 
-    } catch (error) {
-        console.error('Error appending data to database:', err);
-        res.status(500).send( { message : 'Failed to append data to database.'  , node : node_id}); 
+router.post('/dir_string_to_ENUM' , async (req , res) => {
+    const inputs = req.body.Input;
+    const expected = req.body.Expected;
+    const test_cases = inputs.length;
+    let passed = 0;
+    for(let i = 0 ; i < test_cases ; i ++){
+        const result = await dir_string_to_ENUM(inputs[i]);
+        if(result == expected[i]){
+            passed ++;
+        }
+    }
+    if(passed == test_cases){
+        res.send({ passed : true });
+    }else{
+        res.send({ passed : false});
+    }
+});
+
+router.post('/break_down_img_path' , async (req , res) => {
+
+    async function same_obj(filepath_obj1 , filepath_obj2){
+        return (filepath_obj1.node_id == filepath_obj2.node_id) &&
+        (filepath_obj1.x_coor == filepath_obj2.x_coor) &&
+        (filepath_obj1.y_coor == filepath_obj2.y_coor) &&
+        (filepath_obj1.z_coor == filepath_obj2.z_coor) &&
+        (filepath_obj1.pov == filepath_obj2.pov) &&
+        (filepath_obj1.arrow_dir == filepath_obj2.arrow_dir) &&
+        (filepath_obj1.type == filepath_obj2.type) &&
+        (filepath_obj1.room_num == filepath_obj2.room_num);
+    }
+    const inputs = req.body.Input;
+    const expected = req.body.Expected;
+    const test_cases = inputs.length;
+    let passed = 0;
+    for(let i = 0 ; i < test_cases ; i ++){
+        const filepath_obj1 = await break_down_img_path(inputs[i]);
+        const filepath_obj2 = expected[i];
+        const result = await same_obj(filepath_obj1,filepath_obj2);
+        if(result == true){
+            passed ++;
+        }
+    }
+    if(passed == test_cases){
+        res.send({ passed : true });
+    }else{
+        res.send({ passed : false});
     }
 });
 
