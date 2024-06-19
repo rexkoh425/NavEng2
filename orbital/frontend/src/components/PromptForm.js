@@ -40,8 +40,6 @@ function PromptForm() {
     let arrayFromString = messageError.split('<br>');
     const [selectedFile, setSelectedFile] = useState(null);
     const [sheltered, setSheltered] = useState(false);
-    const [blockedNodePOV , setBlockedNodePOV] = useState('');
-    const [blockedNodeArrowDir , setBlockedNodeArrowDir] = useState('');
 
     let parts = blocked.split('/');
     let remainder = parts.slice(8).join('/');
