@@ -102,7 +102,9 @@ async function performTest(source, destination) {
     const inputData = {
         source: `${source}`,
         destination: `${destination}`,
-        Debugging: false
+        Debugging: false , 
+        current_blocked: '',
+        sheltered: false
     };
     return await CheckLocation(inputData);
 }
@@ -267,8 +269,8 @@ describe('Testing Functions..........', function () {
     it('room_num_to_node_id converts string room_num to node_id', async function () {
         try {
             const input = { 
-                Input : ['EA-04-16' , 'EA-06-13' , 'EA-01-22'], 
-                Expected : [78 , 129 , 166] 
+                Input : ['EA-04-16' , 'EA-06-13' , 'EA-01-22' , 17], 
+                Expected : [78 , 129 , 166 , 17] 
             }
             const response = await request(app)
                 .post('/room_num_to_node_id')

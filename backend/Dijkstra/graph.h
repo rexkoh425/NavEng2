@@ -6,6 +6,13 @@
 #include <string>
 #include <vector>
 
+#define NORTH 0
+#define EAST 90
+#define SOUTH 180
+#define WEST -90
+#define UP 45
+#define DOWN -45
+
 using std::forward_list;
 using std::ostream;
 using std::string;

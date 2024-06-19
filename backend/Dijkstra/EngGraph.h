@@ -1,10 +1,4 @@
 #include "graph.h"
-#define NORTH 0
-#define EAST 90
-#define SOUTH 180
-#define WEST -90
-#define UP 45
-#define DOWN -45
 
 Graph createEngGraph(vector<int> blocked_nodes){
     Graph g(249  ,blocked_nodes);
