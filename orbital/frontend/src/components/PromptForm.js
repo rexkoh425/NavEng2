@@ -33,13 +33,13 @@ function PromptForm() {
     const [blockedMessage, setBlockedMessage] = useState('');
     const [beforeBlocked, setBeforeBlocked] = useState('');
     const [blocked, setBlocked] = useState('');
+    const [blockedNodeID, setBlockedNodeID] = useState('');
     const [disableRightButton, setDisableRightButton] = useState(false);
     const [disableLeftButton, setDisableLeftButton] = useState(true);
     const [showUpload, setShowUpload] = useState(false);
     let arrayFromString = messageError.split('<br>');
     const [selectedFile, setSelectedFile] = useState(null);
     const [sheltered, setSheltered] = useState(false);
-    const [blockedNodeID , setBlockedNodeID] = useState('');
     const [blockedNodePOV , setBlockedNodePOV] = useState('');
     const [blockedNodeArrowDir , setBlockedNodeArrowDir] = useState('');
 
@@ -47,7 +47,6 @@ function PromptForm() {
     let remainder = parts.slice(8).join('/');
     let indexOfQuote = remainder.indexOf('"');
     let beforeQuote = remainder.slice(0, indexOfQuote);
-    console.log("Before quote:", beforeQuote);
 
     let beforeparts = beforeBlocked.split('/');
     let beforeremainder = beforeparts.slice(8).join('/');
@@ -56,7 +55,6 @@ function PromptForm() {
     const node_string = beforebeforeQuote.split("_")[0];
     const before_node_id = parseInt(node_string);
 
-    console.log("Before quote:", beforeQuote);
     const incrementCounter = (e) => {
         e.preventDefault();
         if (arrayposition !== (arrayFromString.length - 2)) { //Using -2 due to nature of splitting string
@@ -67,7 +65,6 @@ function PromptForm() {
         if (arrayposition === (arrayFromString.length - 3)) {
             setDisableRightButton(true)
         }
-        console.log("Array length: " + arrayFromString.length)
         setDisableLeftButton(false)
     };
 
@@ -239,7 +236,9 @@ function PromptForm() {
           setBlockedNodeID(blockdata['node']);
           console.log("blocked message: " + blockdata['message']); // Log the message
           console.log("blocked nodeID: " + blockdata['node']); // Log the node ID
+          console.log("blocked nodeID variable: " + blockedNodeid); // Log the node ID
           console.log("before_node_id" + before_node_id)
+          setBlockedNodeID(blockdata['node'])
 
         } catch (error) {
           console.error('Error posting block:', error);
