@@ -145,7 +145,7 @@ async function get_diff(expected , query){
 
 async function get_blocked(){
     try {
-        // Query the 'users' table for a specific user by ID
+        
         const { data, error } = await supabase
             .from('block_shelter')
             .select('id')
@@ -162,12 +162,13 @@ async function get_blocked(){
 
     } catch (error) {
         console.log(error);
+        return "failed" ;
     }
 }
 
 async function get_non_sheltered(){
     try {
-        // Query the 'users' table for a specific user by ID
+        
         const { data, error } = await supabase
             .from('block_shelter')
             .select('id')
@@ -183,6 +184,30 @@ async function get_non_sheltered(){
 
     } catch (error) {
         console.log(error);
+        return "failed" ;
+    }
+}
+
+async function get_stairs(){
+    try { 
+        const { data, error } = await supabase
+            .from('pictures')
+            .select('node_id')
+            .eq('self_type', 'Stairs');
+            //dont need distinct cause will become distinct when merged later
+        if (error) {
+            throw error;
+        }
+        let stairs = [];
+        for(const element of data){
+            stairs.push(element.node_id - 1);
+        }
+        stairs = [...new Set(stairs)];
+        return stairs;
+
+    } catch (error) {
+        console.log(error);
+        return "failed" ;
     }
 }
 
@@ -387,17 +412,16 @@ router.post('/formPost' , async (req ,res) => {
     if(inputData.sheltered){
         non_sheltered = await get_non_sheltered();
     }
-    let mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered]));
+    let stairs = [];
+    if(inputData.NoStairs){
+        stairs = await get_stairs();
+    }
+    let mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered , ...stairs]));
     debug_log(mergedArray);
-
-    
-    debug_log(inputData);
-    debug_log(typeof(inputData.source));
     inputData.source = await room_num_to_node_id(inputData.source);
     inputData.destination = await room_num_to_node_id(inputData.destination);
     debug_log(inputData);
     const inputObj = { source : inputData.source , destination : inputData.destination , blocked : mergedArray};
-    debug_log(inputObj);
     const serializedData = JSON.stringify(inputObj);
     const cppProcess = spawn(__dirname + '/../Dijkstra/main' , []);
     cppProcess.stdin.write(serializedData);
@@ -407,6 +431,7 @@ router.post('/formPost' , async (req ,res) => {
         debug_log(data.toString());
         const outputData = data.toString().split("|");
         let nodes = outputData[0].split(",");
+        const nodes_path = [...nodes];
         const directions = outputData[1].split(",");
         let distance = outputData[2].split(",");
         let dist_array = outputData[3].split(",");
@@ -452,14 +477,11 @@ router.post('/formPost' , async (req ,res) => {
                         break;
                     }
                 }
-                const imgHTML = template_img(result.filepath);
-                //debug_log(imgHTML);              
+                const imgHTML = template_img(result.filepath);             
                 fixedLengthArray[index] = imgHTML;
                 debug_array[debug_array_index] = result.unique_id;
                 debug_array_index++;
             });
-            //debug_log(`this is fixedlengtharray : ${fixedLengthArray}`);
-            debug_log(debug_array);
             debug_log(`Queried : ${debug_array.length}`);
             debug_log(get_diff(nodes , debug_array));
             const final = fixedLengthArray.join('');
@@ -468,7 +490,8 @@ router.post('/formPost' , async (req ,res) => {
                 Queried : data_length , 
                 HTML : final ,
                 Distance : distance ,
-                Dist_array : dist_array
+                Dist_array : dist_array , 
+                nodes_path : nodes_path
             }
             res.send(FinalResults);
         } catch (error) {
@@ -512,24 +535,24 @@ router.post('/blockRefresh' , async (req ,res) => {
         non_sheltered = await get_non_sheltered();
     }
     let mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered]));
-    debug_log(mergedArray);
+    //debug_log(mergedArray);
 
     
-    debug_log(inputData);
-    debug_log(typeof(inputData.source));
+    //debug_log(inputData);
+    //debug_log(typeof(inputData.source));
     inputData.source = await room_num_to_node_id(inputData.source);
     inputData.destination = await room_num_to_node_id(inputData.destination);
     const previous_node = await break_down_img_path(inputData.b4_blocked_img_path);
-    debug_log(inputData);
+    //debug_log(inputData);
     const inputObj = { source : inputData.source , destination : inputData.destination , blocked : mergedArray};
-    debug_log(inputObj);
+    //debug_log(inputObj);
     const serializedData = JSON.stringify(inputObj);
     const cppProcess = spawn(__dirname + '/../Dijkstra/main' , []);
     cppProcess.stdin.write(serializedData);
     cppProcess.stdin.end();
     
     cppProcess.stdout.on('data', async (data) => {
-        debug_log(data.toString());
+        //debug_log(data.toString());
         const outputData = data.toString().split("|");
         let nodes = outputData[0].split(",");
         const directions = outputData[1].split(",");
@@ -553,9 +576,9 @@ router.post('/blockRefresh' , async (req ,res) => {
             }
         }
         nodes[directions.length] += "67";
-        debug_log(directions);
-        debug_log(nodes);
-        debug_log(`Expected : ${nodes.length}`);
+        //debug_log(directions);
+        //debug_log(nodes);
+        //debug_log(`Expected : ${nodes.length}`);
         try {
             // Query the 'users' table for a specific user by ID
             const { data, error } = await supabase
@@ -585,9 +608,9 @@ router.post('/blockRefresh' , async (req ,res) => {
                 debug_array_index++;
             });
             //debug_log(`this is fixedlengtharray : ${fixedLengthArray}`);
-            debug_log(debug_array);
-            debug_log(`Queried : ${debug_array.length}`);
-            debug_log(get_diff(nodes , debug_array));
+            //debug_log(debug_array);
+            //debug_log(`Queried : ${debug_array.length}`);
+            //debug_log(get_diff(nodes , debug_array));
             const final = fixedLengthArray.join('');
             const FinalResults = {
                 Expected : nodes.length ,
@@ -858,6 +881,43 @@ router.post('/break_down_img_path' , async (req , res) => {
         res.send({ passed : false});
     }
 });
+
+router.post('/get_stairs' , async (req , res) => {
+
+    const result = await get_stairs();
+    if(result != "failed"){
+        res.send({ passed : true });
+    }else{
+        res.send({ passed : false});
+    }
+
+});
+
+router.post('/get_blocked' , async (req , res) => {
+
+    const result = await get_blocked();
+    if(result != "failed"){
+        res.send({ passed : true });
+    }else{
+        res.send({ passed : false});
+    }
+
+});
+
+router.post('/get_non_sheltered' , async (req , res) => {
+
+    const result = await get_non_sheltered();
+    if(result != "failed"){
+        res.send({ passed : true });
+    }else{
+        res.send({ passed : false});
+    }
+
+});
+
+
+
+
 
 
 module.exports = router;

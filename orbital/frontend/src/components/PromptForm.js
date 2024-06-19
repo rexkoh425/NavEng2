@@ -40,6 +40,7 @@ function PromptForm() {
     let arrayFromString = messageError.split('<br>');
     const [selectedFile, setSelectedFile] = useState(null);
     const [sheltered, setSheltered] = useState(false);
+    const [NoStairs, setNoStairs] = useState(true);
 
     let parts = blocked.split('/');
     let remainder = parts.slice(8).join('/');
@@ -81,7 +82,6 @@ function PromptForm() {
         setDisableRightButton(false)
     };
 
-
     useEffect(() => {
         let processing = true
         axiosFetchData(processing)
@@ -103,7 +103,6 @@ function PromptForm() {
                 }
             })
             .catch(err => console.log("Fetch Error!!"))
-
     }
 
 
@@ -122,7 +121,8 @@ function PromptForm() {
             destination: destinationLocation,
             Debugging: debug,
             current_blocked: blockedNodeID,
-            sheltered: sheltered
+            sheltered: sheltered , 
+            NoStairs : NoStairs
         };
 
         try {
@@ -151,7 +151,8 @@ function PromptForm() {
             Debugging: debug,
             current_blocked: blockedNodeID,
             b4_blocked_img_path : beforebeforeQuote,
-            sheltered: sheltered
+            sheltered: sheltered , 
+            NoStairs : NoStairs
         };
 
         try {
@@ -234,7 +235,6 @@ function PromptForm() {
           setBlockedNodeID(blockdata['node']);
           console.log("blocked message: " + blockdata['message']); // Log the message
           console.log("blocked nodeID: " + blockdata['node']); // Log the node ID
-          console.log("blocked nodeID variable: " + blockedNodeid); // Log the node ID
           console.log("before_node_id" + before_node_id)
           setBlockedNodeID(blockdata['node'])
 
