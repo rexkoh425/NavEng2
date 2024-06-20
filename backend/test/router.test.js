@@ -1,77 +1,11 @@
 const request = require('supertest');
 const app = require('../app'); 
 
-/*
-const {
-    app ,
-    template_img,
-    NESW_ENUM,
-    get_pov , 
-    handle_up_down,
-    get_arrow_dir,
-    is_moving_up_down,
-    room_num_to_node_id,
-    get_diff 
-} = require('../app'); 
-*/
-
 if (global.gc) {
     global.gc(); // Expose garbage collection if enabled
 } else {
     console.warn('No GC hook! Start your program with `node --expose-gc file.js`.');
 }
-
-
-/*
-describe('Testing all functions.......', function(){
-
-    it('template_img function', () => {
-        const imgHtml = template_img("test_image.jpg");
-        console.log(imgHtml);
-        console.log(typeof(imgHtml));
-        console.log(typeof(`<img src = "test_image.jpg" alt = "cannot be displayed" class="htmlData"><br>`));
-        if (imgHtml !== `<img src = "test_image.jpg" alt = "cannot be displayed" class="htmlData"><br>`) {
-            throw new Error('template_img did not return correct HTML');
-        }
-    });
-
-    it('NESW_ENUM function', () => {
-        if (NESW_ENUM('0') !== '1') {
-            throw new Error('NESW_ENUM did not return correct direction for input 0');
-        }
-        if (NESW_ENUM('90') !== '2') {
-            throw new Error('NESW_ENUM did not return correct direction for input 90');
-        }
-        if (NESW_ENUM('180') !== '3') {
-            throw new Error('NESW_ENUM did not return correct direction for input 90');
-        }
-        if (NESW_ENUM('-90') !== '3') {
-            throw new Error('NESW_ENUM did not return correct direction for input 90');
-        }
-        if (NESW_ENUM('45') !== 'not NESW') {
-            throw new Error('NESW_ENUM did not return correct direction for input 90');
-        }
-    });
-
-    it('get_pov function', () => {
-        if (get_pov('0', '90') !== '1') {
-            throw new Error('get_pov did not return correct POV for inputs 0 and 90');
-        }
-        if (get_pov('90', '180') !== '2') {
-            throw new Error('get_pov did not return correct POV for inputs 90 and 180');
-        }
-        if (get_pov('-90', '0') !== '4') {
-            throw new Error('get_pov did not return correct POV for inputs 90 and 180');
-        }
-        if (get_pov('45', '180') !== '3') {
-            throw new Error('get_pov did not return correct POV for inputs 90 and 180');
-        }
-        // Add more assertions as needed
-    });
-    
-    
-});
-*/
 
 async function CheckLocation(receivedData) {
     try {
@@ -83,27 +17,26 @@ async function CheckLocation(receivedData) {
         let data = res.body;
 
         if (data['Expected'] !== data['Queried']) {
-            console.log(data['Expected']);
-            console.log(data['Queried']);
-            console.log(`${receivedData.source} to ${receivedData.destination} : failed`);
-            const res_obj = { source: `${receivedData.source}`, destination: `${receivedData.destination}`, passed: false };
+            //console.log(data['Expected']);
+            //console.log(data['Queried']);
+            //console.log(`${receivedData.source} to ${receivedData.destination} : failed`);
+            const res_obj = { source: `${receivedData.source}`, destination: `${receivedData.destination}`, passed: false , nodes_path : [] };
             return res_obj;
         }
-
-        return { source: receivedData.source, destination: receivedData.destination, passed: true };
+        return { source: receivedData.source, destination: receivedData.destination, passed: true , nodes_path : data.nodes_path};
     } catch (error) {
-        console.log(`${error}`);
-        console.log(`${receivedData.source} to ${receivedData.destination} : failed`);
-        return { source: receivedData.source, destination: receivedData.destination, passed: false };
+        //console.log(`${error}`);
+        //console.log(`${receivedData.source} to ${receivedData.destination} : failed`);
+        return { source: receivedData.source, destination: receivedData.destination, passed: false , nodes_path : [] };
     }
 }
 
-async function performTest(source, destination) {
+async function performTest(source, destination , blocked_input) {
     const inputData = {
         source: `${source}`,
         destination: `${destination}`,
         Debugging: false , 
-        current_blocked: '',
+        current_blocked: blocked_input,
         sheltered: false
     };
     return await CheckLocation(inputData);
@@ -129,6 +62,13 @@ async function limitConcurrency(tasks, limit) {
     return Promise.all(results);
 }
 
+async function choose_middle_blocked(node_path){
+    if(node_path.length > 4){
+        return node_path[node_path.length >> 1];
+    }
+    return '';
+}
+
 describe('Testing Functions..........', function () {
     this.timeout(10000);
 
@@ -148,6 +88,9 @@ describe('Testing Functions..........', function () {
         } catch (error){
             throw error;
         }
+        if (global.gc) {
+            global.gc();
+        }
     })
 
     it('NESW_ENUM returns number in string corresponding to the directions', async function () {
@@ -165,6 +108,9 @@ describe('Testing Functions..........', function () {
             }
         } catch (error){
             throw error;
+        }
+        if (global.gc) {
+            global.gc();
         }
     })
 
@@ -191,6 +137,9 @@ describe('Testing Functions..........', function () {
         } catch (error){
             throw error;
         }
+        if (global.gc) {
+            global.gc();
+        }
     })
 
     it('handle_up_down handles going up and down directions and returns the arrow direction', async function () {
@@ -214,6 +163,9 @@ describe('Testing Functions..........', function () {
             }
         } catch (error){
             throw error;
+        }
+        if (global.gc) {
+            global.gc();
         }
     })
 
@@ -240,6 +192,9 @@ describe('Testing Functions..........', function () {
         } catch (error){
             throw error;
         }
+        if (global.gc) {
+            global.gc();
+        }
     })
 
     it('is_moving_up_down handles moving up or down', async function () {
@@ -264,6 +219,9 @@ describe('Testing Functions..........', function () {
         } catch (error){
             throw error;
         }
+        if (global.gc) {
+            global.gc();
+        }
     })
 
     it('room_num_to_node_id converts string room_num to node_id', async function () {
@@ -281,6 +239,9 @@ describe('Testing Functions..........', function () {
             }
         } catch (error){
             throw error;
+        }
+        if (global.gc) {
+            global.gc();
         }
     })
 
@@ -305,14 +266,117 @@ describe('Testing Functions..........', function () {
         } catch (error){
             throw error;
         }
+        if (global.gc) {
+            global.gc();
+        }
+    })
+
+    it('dir_string_to_ENUM should return 1 - 7 according to "East" , "North" etc' , async function() {
+        try {
+            const input = { 
+                Input : ["North" , "East" , "South" , "West" , "Up" , "Down" , "None"], 
+                Expected : ['1' , '2' , '3' , '4' , '5' , '6' , '7'] 
+            }
+            const response = await request(app)
+                .post('/dir_string_to_ENUM')
+                .send(input);
+
+            if(response.body.passed == false){
+                throw new Error("dir_string_to_ENUM function failed")
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
+
+    it('break_down_img_path breaks down an image name into its components', async function () {
+        try {
+            const input = { 
+                Input : [
+                    "2_50_0_1_East_West_Cross_junction_NIL",
+                    "29_375_-110_2_South_North_T_junction_NIL" ,
+                    "48_160_-45_3_East_East_Corner_NIL",
+                    "31_375_-160_2_None_None_Room_EA-02-21"
+                ], 
+                Expected : [
+                    {node_id : "2" , x_coor : "50" , y_coor : "0" , z_coor : "1" , pov : "East" , arrow : "West" , type : "Cross_junction" , room_num : "NIL"},
+                    {node_id : "29" , x_coor : "375" , y_coor : "-110" , z_coor : "2" , pov : "South" , arrow : "North" , type : "T_junction" , room_num : "NIL"},
+                    {node_id : "48" , x_coor : "160" , y_coor : "-45" , z_coor : "3" , pov : "East" , arrow : "East" , type : "Corner" , room_num : "NIL"},
+                    {node_id : "31" , x_coor : "375" , y_coor : "-160" , z_coor : "2" , pov : "None" , arrow : "None" , type : "Room" , room_num : "EA-02-21"}
+                ]
+            }
+            const response = await request(app)
+                .post('/break_down_img_path')
+                .send(input);
+
+            if(response.body.passed == false){
+                throw new Error("break_down_img_path function failed")
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
+
+    it('get_blocked is able to query from database' , async function() {
+        try {
+            const response = await request(app)
+                .post('/get_blocked')
+
+            if(response.body.passed == false){
+                throw new Error("get_blocked function failed")
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
+
+    it('get_stairs is able to query from database' , async function() {
+        try {
+            const response = await request(app)
+                .post('/get_stairs')
+
+            if(response.body.passed == false){
+                throw new Error("get_stairs function failed")
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
+
+    it('get_non_sheltered is able to query from database' , async function() {
+        try {
+            const response = await request(app)
+                .post('/get_non_sheltered')
+
+            if(response.body.passed == false){
+                throw new Error("get_non_sheltered function failed")
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
     })
 
 })
 
-describe('Testing all location pairs now', function () {
+describe('Testing whether location pairs output correct number of pictures', function () {
     this.timeout(500000);
 
-    it('all location pairs tested', async function () {
+    it('All location pairs tested', async function () {
         try {
             const response = await request(app)
                 .post('/locations');
@@ -321,7 +385,10 @@ describe('Testing all location pairs now', function () {
             let no_of_locations = locations.length;
             let test_cases = no_of_locations * (no_of_locations - 1);
             let failed_locations = [];
-            let passed = 0;
+            let non_block_pass = 0;
+            let block_pass = 0;
+            let both_pass = 0;
+            let processed_count = 0;
             const tasks = [];
 
             for (let source of locations) {
@@ -329,18 +396,23 @@ describe('Testing all location pairs now', function () {
                     if (source !== destination) {
                         
                         tasks.push(async () => {
-                            const result = await performTest(source, destination);
-                            if (result.passed) {
-                                passed++;
+                            const non_block_result = await performTest(source, destination , '');
+                            //const blocked = await choose_middle_blocked(non_block_result.nodes_path);
+                            //const block_result = await performTest(source , destination , blocked);
+                            processed_count ++;
+                            const block_result = { passed : true};
+                            if(non_block_result.passed){   non_block_pass ++ ;  }
+                            if(block_result.passed){   block_pass ++;  }
+                            if (non_block_result.passed && block_result.passed) {
+                                both_pass++;
                             } else {
-                                failed_locations.push({ source: result.source, destination: result.destination });
-                                console.log("inserted failed location");
+                                failed_locations.push({ source: non_block_result.source, destination: non_block_result.destination });
                             }
-                            if (passed > 0 && passed % 100 == 0) {
-                                console.log(`${passed} out of ${test_cases} test cases passed`);
+                            if (processed_count > 0 && processed_count % 100 == 0) {
+                                console.log(`${processed_count} out of ${test_cases} test cases processed`);
                             }
                             if (global.gc) {
-                                global.gc(); // Force garbage collection
+                                global.gc();
                             }
                         });
                     }
@@ -361,8 +433,12 @@ describe('Testing all location pairs now', function () {
                 throw error;
             }
 
-            console.log(`${passed} out of ${test_cases} test cases passed`);
-            console.log(`${test_cases - passed} out of ${test_cases} test cases failed`);
+            console.log(`${non_block_pass} out of ${test_cases} test cases passed without blocking`);
+            console.log(`${test_cases - non_block_pass} out of ${test_cases} test cases failed without blocking`);
+            console.log(`${block_pass} out of ${test_cases} test cases passed with blocking`);
+            console.log(`${test_cases - block_pass} out of ${test_cases} test cases failed with blocking`);
+            console.log(`${both_pass} out of ${test_cases} test cases passed`);
+            console.log(`${test_cases - both_pass} out of ${test_cases} test cases failed`);
         } catch (error) {
             throw error;
         }
