@@ -27,7 +27,6 @@ function PromptForm() {
     const [destinationLocation, setDestinationLocation] = useState('')
     const [disableSubmit, setDisableSubmit] = useState(true)
     const [autocompleteFields, setAutocompleteFields] = useState([]);
-    const [MultiStop, setMultiStop] = useState([false]);
     const [MultiStopArrayDuplicate, setMultiStopArrayDuplicate] = useState([]);
     const [MultiStopArray, setMultiStopArray] = useState([]);
     const [messageError, setMessageError] = useState(``) //using messageError variable for html content as well
@@ -73,23 +72,17 @@ function PromptForm() {
         const updatedMultiStopArray = [...MultiStopArrayDuplicate];
         updatedMultiStopArray.splice(index, 1);
         setMultiStopArrayDuplicate(updatedMultiStopArray);
-
-        const hasInfo = updatedMultiStopArray.some(value => value !== null && value !== undefined && value !== '');
-        setMultiStop(hasInfo);
     };
 
     const handleAutocompleteChange = (index, value) => {
         const updatedValues = [...MultiStopArrayDuplicate];
         updatedValues[index] = value;
         setMultiStopArrayDuplicate(updatedValues);
-
-        const hasInfo = updatedValues.some(value => value !== null && value !== undefined && value !== '');
-        setMultiStop(hasInfo);
+        
         const duplicateArray = [...updatedValues]
         duplicateArray.unshift(sourceLocation);
-        duplicateArray.push(destinationLocation)
-        setMultiStopArray(duplicateArray)
-
+        duplicateArray.push(destinationLocation);
+        setMultiStopArray(duplicateArray);
     };
 
     let parts = blocked.split('/');
