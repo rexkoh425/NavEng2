@@ -38,7 +38,7 @@ describe('test one path only', function(){
     });
 });
 */
-
+/*
 describe('test one path only', function(){
 
     this.timeout(10000);
@@ -48,6 +48,23 @@ describe('test one path only', function(){
             const response = await request(app)
             .post('/insertBlocked')
             .send(input)
+            console.log(response.body);
+        } catch(error){
+            throw error;
+        }
+    });
+});
+*/
+describe('test full_query', function(){
+
+    this.timeout(10000);
+    it('full_query', async function(){
+        const input = { source : 17 , destination : 58 , blocked : []};
+        try {
+            const response = await request(app)
+            .post('/full_query')
+            .send(input)
+            console.log("response is  : "); 
             console.log(response.body);
         } catch(error){
             throw error;

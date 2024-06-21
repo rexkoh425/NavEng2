@@ -125,7 +125,7 @@ async function room_num_to_node_id(room_number){
             return data[0].node_id;
 
         } catch (error) {
-            res.status(500).json({ error: error.message });
+            return error.message;
         } 
     }else{
         return room_number;
@@ -165,6 +165,25 @@ async function get_blocked(){
         return "failed" ;
     }
 }
+
+async function convert_ENUM_to_angle(ENUM){
+    switch(ENUM){
+        case "1" :
+            return "0";
+        case "2" :
+            return "90";
+        case "3" :
+            return "180";
+        case "4" :
+            return "-90";
+        case "5" :
+            return "45";
+        case "6" :
+            return "-45";
+        default : 
+            return "not convertable";
+    }
+}/////to add function testing for this
 
 async function get_non_sheltered(){
     try {
@@ -251,6 +270,209 @@ async function break_down_img_path(img_name){
 
 }
 
+async function full_query(source , destination , blocked_nodes , previous_node){
+    return new Promise((resolve, reject) => {
+        const inputObj = { source : source , destination : destination , blocked : blocked_nodes};
+        const serializedData = JSON.stringify(inputObj);
+        const cppProcess = spawn(__dirname + '/../Dijkstra/main' , []);
+        cppProcess.stdin.write(serializedData);
+        cppProcess.stdin.end();
+        
+        cppProcess.stdout.on('data', async (cpp_data) => {
+            try {
+                
+                const outputData = cpp_data.toString().split("|");
+                let nodes = outputData[0].split(",");
+                if(nodes.length == 1){
+                    throw new Error("cannot find dest");
+                }
+                const nodes_path = [...nodes];
+                const directions = outputData[1].split(",");
+                let distance = outputData[2];
+                let dist_array = outputData[3].split(",");
+                if(previous_node.have_previous){
+                    const pre_pov = await dir_string_to_ENUM(previous_node.pov);
+                    nodes[0] += pre_pov;
+                    const pre_pov_angle = await convert_ENUM_to_angle(pre_pov);
+                    const arrow = await get_arrow_dir(pre_pov_angle , directions[1]);
+                    nodes[0] += arrow;
+                }else{
+                    nodes[0] += "67";
+                }
+                
+                let directions_array_len = directions.length;
+                for(i = 1 ; i < directions_array_len ; i ++){
+                    const is_up_down = await is_moving_up_down(directions[i-1] , directions[i])
+                    if(is_up_down){
+                        nodes.splice(i,1);
+                        directions.splice(i,1);
+                        i --;
+                        directions_array_len --;
+                    }else{
+                        let pov = await get_pov(directions[i-1] , directions[i]); 
+                        let direction = await get_arrow_dir(directions[i-1] , directions[i]);
+                        nodes[i] += pov;
+                        nodes[i] += direction;
+                    }
+                }
+                nodes[directions.length] += "67";
+                
+                // Query the 'users' table for a specific user by ID
+                const { data, error } = await supabase
+                    .from('pictures')
+                    .select('unique_id , filepath')
+                    .in('unique_id', nodes)
+                    .order('node_id', { ascending: true });
+                if (error) {
+                    throw error;
+                }
+
+                const data_length  = data.length;
+                const fixedLengthArray = new Array(data_length).fill("");
+                const debug_array = new Array(data_length).fill("");//for debug only
+                let debug_array_index = 0;
+                data.forEach(async result => {
+                    let index = 0;
+                    for(let i = 0 ; i < data_length ; i ++){
+                        if(result.unique_id == parseInt(nodes[i])){
+                            index = i;
+                            break;
+                        }
+                    }
+                    const imgHTML = template_img(result.filepath);             
+                    fixedLengthArray[index] = imgHTML;
+                    debug_array[debug_array_index] = result.unique_id;
+                    debug_array_index++;
+                });
+                
+                const final = fixedLengthArray.join('');
+                const FinalResults = {
+                    Expected : nodes.length ,
+                    Queried : data_length , 
+                    HTML : final ,
+                    Distance : distance ,
+                    Dist_array : dist_array , 
+                    nodes_path : nodes_path
+                }
+                resolve(FinalResults);
+            } catch (error) {
+                reject(error);
+            }
+        });
+        
+    // Handle errors and exit events
+        cppProcess.on('error', (error) => {
+            console.error('Error executing C++ process:', error);
+        });
+
+        cppProcess.on('exit', (code) => {
+            console.log(`C++ process exited with code: ${code}`);
+        });
+    })
+}
+
+async function transit_query(source , destination , blocked_nodes , previous_node){
+    return new Promise((resolve, reject) => {
+        const inputObj = { source : source , destination : destination , blocked : blocked_nodes};
+        const serializedData = JSON.stringify(inputObj);
+        const cppProcess = spawn(__dirname + '/../Dijkstra/main' , []);
+        cppProcess.stdin.write(serializedData);
+        cppProcess.stdin.end();
+        
+        cppProcess.stdout.on('data', async (cpp_data) => {
+            try {
+                const outputData = cpp_data.toString().split("|");
+                let nodes = outputData[0].split(",");
+                if(nodes.length == 1){
+                    throw new Error("cannot find dest");
+                }
+                let nodes_path = [...nodes];
+                const directions = outputData[1].split(",");
+                let distance = outputData[2];
+                let dist_array = outputData[3].split(",");
+                if(previous_node.have_previous){
+                    const pre_pov = await dir_string_to_ENUM(previous_node.pov);
+                    nodes[0] += pre_pov;
+                    const pre_pov_angle = await convert_ENUM_to_angle(pre_pov);
+                    const arrow = await get_arrow_dir(pre_pov_angle , directions[0]);
+                    nodes[0] += arrow;
+                }else{
+                    nodes[0] += "67";
+                }
+                let directions_array_len = directions.length;
+                for(i = 1 ; i < directions_array_len ; i ++){
+                    const is_up_down = await is_moving_up_down(directions[i-1] , directions[i]);
+                    if(is_up_down){
+                        nodes.splice(i,1);
+                        directions.splice(i,1);
+                        i --;
+                        directions_array_len --;
+                    }else{
+                        let pov = await get_pov(directions[i-1] , directions[i]); 
+                        let direction = await get_arrow_dir(directions[i-1] , directions[i]);
+                        nodes[i] += pov;
+                        nodes[i] += direction;
+                    }
+                }
+                nodes[directions.length] += "67";
+        
+                // Query the 'users' table for a specific user by ID
+                const { data, error } = await supabase
+                    .from('pictures')
+                    .select('unique_id , filepath')
+                    .in('unique_id', nodes)
+                    .order('node_id', { ascending: true });
+                if (error) {
+                    throw error;
+                }
+                let data_length  = data.length;
+                let fixedLengthArray = new Array(data_length).fill("");
+                const debug_array = new Array(data_length).fill("");//for debug only
+                let debug_array_index = 0;
+                data.forEach(async result => {
+                    let index = 0;
+                    for(let i = 0 ; i < data_length ; i ++){
+                        if(result.unique_id == parseInt(nodes[i])){
+                            index = i;
+                            break;
+                        }
+                    }
+                    const imgHTML = template_img(result.filepath);             
+                    fixedLengthArray[index] = imgHTML;
+                    debug_array[debug_array_index] = result.unique_id;
+                    debug_array_index++;
+                });
+                fixedLengthArray.pop();
+                nodes_path.pop();
+                let last_dist = dist_array.pop();
+                nodes.pop();
+                data_length -= 1;
+                distance = `${parseInt(distance)-parseInt(last_dist)}`;
+                const final = fixedLengthArray.join('');
+                const FinalResults = {
+                    Expected : nodes.length ,
+                    Queried : data_length , 
+                    HTML : final ,
+                    Distance : distance ,
+                    Dist_array : dist_array , 
+                    nodes_path : nodes_path
+                }
+                resolve(FinalResults);
+            } catch (error) {
+                reject(error);
+            }
+        });
+        
+    // Handle errors and exit events
+        cppProcess.on('error', (error) => {
+            console.error('Error executing C++ process:', error);
+        });
+
+        cppProcess.on('exit', (code) => {
+            console.log(`C++ process exited with code: ${code}`);
+        });
+    })
+}
 
 router.get('/test', (req, res) => {
     const userData = 
@@ -392,12 +614,6 @@ router.post('/formPost' , async (req ,res) => {
     //add to formPost input ,  elements = new added node 
     const inputData = req.body;
 
-    function debug_log(input){
-        if(inputData.Debugging){
-            console.log(input);
-        }
-    }
-
     //checking for empty input
     if(!inputData.source || !inputData.destination){
         console.log("data incorrectly labelled or source and destination not filled")  
@@ -417,110 +633,62 @@ router.post('/formPost' , async (req ,res) => {
         stairs = await get_stairs();
     }
     let mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered , ...stairs]));
-    debug_log(mergedArray);
-    inputData.source = await room_num_to_node_id(inputData.source);
-    inputData.destination = await room_num_to_node_id(inputData.destination);
-    debug_log(inputData);
-    const inputObj = { source : inputData.source , destination : inputData.destination , blocked : mergedArray};
-    const serializedData = JSON.stringify(inputObj);
-    const cppProcess = spawn(__dirname + '/../Dijkstra/main' , []);
-    cppProcess.stdin.write(serializedData);
-    cppProcess.stdin.end();
     
-    cppProcess.stdout.on('data', async (data) => {
-        debug_log(data.toString());
-        const outputData = data.toString().split("|");
-        let nodes = outputData[0].split(",");
-        const nodes_path = [...nodes];
-        const directions = outputData[1].split(",");
-        let distance = outputData[2].split(",");
-        let dist_array = outputData[3].split(",");
-        nodes[0] += "67";
-        let directions_array_len = directions.length;
-        for(i = 1 ; i < directions_array_len ; i ++){
-            const is_up_down = await is_moving_up_down(directions[i-1] , directions[i])
-            if(is_up_down){
-                nodes.splice(i,1);
-                directions.splice(i,1);
-                i --;
-                directions_array_len --;
-            }else{
-                let pov = await get_pov(directions[i-1] , directions[i]); 
-                let direction = await get_arrow_dir(directions[i-1] , directions[i]);
-                nodes[i] += pov;
-                nodes[i] += direction;
-            }
+    if(inputData.MultiStop){
+        let destinations = inputData.MultiStopArray;
+        for(let i =  0; i < destinations.length ; i ++){
+            destinations[i] = await room_num_to_node_id(destinations[i]);
         }
-        nodes[directions.length] += "67";
-        debug_log(directions);
-        debug_log(nodes);
-        debug_log(`Expected : ${nodes.length}`);
-        try {
-            // Query the 'users' table for a specific user by ID
-            const { data, error } = await supabase
-                .from('pictures')
-                .select('unique_id , filepath')
-                .in('unique_id', nodes)
-                .order('node_id', { ascending: true });
-            if (error) {
-                throw error;
-            }
-            const data_length  = data.length;
-            const fixedLengthArray = new Array(data_length).fill("");
-            const debug_array = new Array(data_length).fill("");//for debug only
-            let debug_array_index = 0;
-            data.forEach(async result => {
-                let index = 0;
-                for(let i = 0 ; i < data_length ; i ++){
-                    if(result.unique_id == parseInt(nodes[i])){
-                        index = i;
-                        break;
-                    }
+        
+        const TotalResult = {
+            Expected : 0 ,
+            Queried : 0 , 
+            HTML : "" ,
+            Distance : 0 ,
+            Dist_array : [] , 
+            nodes_path : [] , 
+            Stops_index : []
+        }
+        const previous_node = { have_previous : false , pov : "" , arrow : ""};
+        for(let i = 1 ; i < destinations.length ; i++){
+            let result;
+            try{
+                if(i == destinations.length-1){
+                    result = await full_query(destinations[i-1] , destinations[i] , mergedArray , previous_node);
+                }else{
+                    result = await transit_query(destinations[i-1] , destinations[i] , mergedArray , previous_node);
                 }
-                const imgHTML = template_img(result.filepath);             
-                fixedLengthArray[index] = imgHTML;
-                debug_array[debug_array_index] = result.unique_id;
-                debug_array_index++;
-            });
-            debug_log(`Queried : ${debug_array.length}`);
-            debug_log(get_diff(nodes , debug_array));
-            const final = fixedLengthArray.join('');
-            const FinalResults = {
-                Expected : nodes.length ,
-                Queried : data_length , 
-                HTML : final ,
-                Distance : distance ,
-                Dist_array : dist_array , 
-                nodes_path : nodes_path
+                TotalResult.Expected += result.Expected;
+                TotalResult.Queried += result.Queried;
+                TotalResult.HTML += result.HTML;
+                TotalResult.Distance = `${parseInt(TotalResult.Distance) + parseInt(result.Distance)}` ;
+                TotalResult.Dist_array = TotalResult.Dist_array.concat(result.Dist_array);
+                TotalResult.nodes_path = TotalResult.nodes_path.concat(result.nodes_path);
+                if(i == destinations.length - 1){
+                    TotalResult.Stops_index.push(TotalResult.Expected - 1);
+                }else{
+                    TotalResult.Stops_index.push(TotalResult.Expected);
+                }
+            } catch(error){
+                console.error('Error caught:', error.message);
+                return res.send({HTML : "<p>sorry no path is available</p>" , Distance : 0 });
             }
-            res.send(FinalResults);
-        } catch (error) {
-            res.status(500).json({ error: error.message }); 
         }
-    });
-    
-  // Handle errors and exit events
-  cppProcess.on('error', (error) => {
-    console.error('Error executing C++ process:', error);
-  });
-
-  cppProcess.on('exit', (code) => {
-    debug_log(`C++ process exited with code: ${code}`);
-  });
+        return res.send(TotalResult);
+    }else{
+        const previous_node = { have_previous : false , pov : "" , arrow : ""};
+        inputData.source = await room_num_to_node_id(inputData.source);
+        inputData.destination = await room_num_to_node_id(inputData.destination);
+        const result = await full_query(inputData.source , inputData.destination , mergedArray , previous_node);
+        return res.send(result); 
+    }
   
 });
 
 router.post('/blockRefresh' , async (req ,res) => { 
-    //add to formPost input ,  elements = new added node 
+    
     const inputData = req.body;
 
-    function debug_log(input){
-        if(inputData.Debugging){
-            console.log(input);
-        }
-    }
-
-    //checking for empty input
     if(!inputData.source || !inputData.destination){
         console.log("data incorrectly labelled or source and destination not filled")  
         return;
@@ -535,109 +703,64 @@ router.post('/blockRefresh' , async (req ,res) => {
         non_sheltered = await get_non_sheltered();
     }
     let mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered]));
-    //debug_log(mergedArray);
+    const previous_node_component = await break_down_img_path(inputData.b4_blocked_img_path);
 
-    
-    //debug_log(inputData);
-    //debug_log(typeof(inputData.source));
-    inputData.source = await room_num_to_node_id(inputData.source);
-    inputData.destination = await room_num_to_node_id(inputData.destination);
-    const previous_node = await break_down_img_path(inputData.b4_blocked_img_path);
-    //debug_log(inputData);
-    const inputObj = { source : inputData.source , destination : inputData.destination , blocked : mergedArray};
-    //debug_log(inputObj);
-    const serializedData = JSON.stringify(inputObj);
-    const cppProcess = spawn(__dirname + '/../Dijkstra/main' , []);
-    cppProcess.stdin.write(serializedData);
-    cppProcess.stdin.end();
-    
-    cppProcess.stdout.on('data', async (data) => {
-        //debug_log(data.toString());
-        const outputData = data.toString().split("|");
-        let nodes = outputData[0].split(",");
-        const directions = outputData[1].split(",");
-        let distance = outputData[2].split(",");
-        let dist_array = outputData[3].split(",");
-        nodes[0] += await dir_string_to_ENUM(previous_node.pov);
-        nodes[0] += await dir_string_to_ENUM(previous_node.arrow);
-        let directions_array_len = directions.length;
-        for(i = 1 ; i < directions_array_len ; i ++){
-            const is_up_down = await is_moving_up_down(directions[i-1] , directions[i])
-            if(is_up_down){
-                nodes.splice(i,1);
-                directions.splice(i,1);
-                i --;
-                directions_array_len --;
-            }else{
-                let pov = await get_pov(directions[i-1] , directions[i]); 
-                let direction = await get_arrow_dir(directions[i-1] , directions[i]);
-                nodes[i] += pov;
-                nodes[i] += direction;
+    if(inputData.MultiStop){
+        let destinations = inputData.MultiStopArray;
+        //destinations[0] = parseInt(previous_node_component.node_id);/////////////////////////////to remove
+        for(let i =  0; i < destinations.length ; i ++){
+            destinations[i] = await room_num_to_node_id(destinations[i]);
+        }
+        
+        const TotalResult = {
+            Expected : 0 ,
+            Queried : 0 , 
+            HTML : "" ,
+            Distance : 0 ,
+            Dist_array : [] , 
+            nodes_path : [] , 
+            Stops_index : []
+        }
+        const no_previous = { have_previous : false , pov : "" , arrow : ""};
+        const previous_node = { have_previous : true , pov : previous_node_component.pov , arrow : previous_node_component.arrow};
+        for(let i = 1 ; i < destinations.length ; i++){
+            let result;
+            try{
+                if(i == destinations.length-1){
+                    if(destinations.length == 2){
+                        result = await full_query(destinations[i-1] , destinations[i] , mergedArray , previous_node);
+                    }else{
+                        result = await full_query(destinations[i-1] , destinations[i] , mergedArray , no_previous);
+                    }
+                }else if(i == 1){
+                    result = await transit_query(destinations[i-1] , destinations[i] , mergedArray , previous_node);
+                }else{
+                    result = await transit_query(destinations[i-1] , destinations[i] , mergedArray , no_previous);
+                }
+                TotalResult.Expected += result.Expected;
+                TotalResult.Queried += result.Queried;
+                TotalResult.HTML += result.HTML;
+                TotalResult.Distance = `${parseInt(TotalResult.Distance) + parseInt(result.Distance)}` ;
+                TotalResult.Dist_array = TotalResult.Dist_array.concat(result.Dist_array);
+                TotalResult.nodes_path = TotalResult.nodes_path.concat(result.nodes_path);
+                if(i == destinations.length - 1){
+                    TotalResult.Stops_index.push(TotalResult.Expected - 1);
+                }else{
+                    TotalResult.Stops_index.push(TotalResult.Expected);
+                }
+            }catch(error){
+                console.error('Error caught:', error.message);
+                return res.send({HTML : "<p>sorry no path is available</p>" , Distance : 0 });
             }
         }
-        nodes[directions.length] += "67";
-        //debug_log(directions);
-        //debug_log(nodes);
-        //debug_log(`Expected : ${nodes.length}`);
-        try {
-            // Query the 'users' table for a specific user by ID
-            const { data, error } = await supabase
-                .from('pictures')
-                .select('unique_id , filepath')
-                .in('unique_id', nodes)
-                .order('node_id', { ascending: true });
-            if (error) {
-                throw error;
-            }
-            const data_length  = data.length;
-            const fixedLengthArray = new Array(data_length).fill("");
-            const debug_array = new Array(data_length).fill("");//for debug only
-            let debug_array_index = 0;
-            data.forEach(async result => {
-                let index = 0;
-                for(let i = 0 ; i < data_length ; i ++){
-                    if(result.unique_id == parseInt(nodes[i])){
-                        index = i;
-                        break;
-                    }
-                }
-                const imgHTML = template_img(result.filepath);
-                //debug_log(imgHTML);              
-                fixedLengthArray[index] = imgHTML;
-                debug_array[debug_array_index] = result.unique_id;
-                debug_array_index++;
-            });
-            //debug_log(`this is fixedlengtharray : ${fixedLengthArray}`);
-            //debug_log(debug_array);
-            //debug_log(`Queried : ${debug_array.length}`);
-            //debug_log(get_diff(nodes , debug_array));
-            const final = fixedLengthArray.join('');
-            const FinalResults = {
-                Expected : nodes.length ,
-                Queried : data_length , 
-                HTML : final ,
-                Distance : distance ,
-                Dist_array : dist_array
-            }
-            res.send(FinalResults);
-        } catch (error) {
-            res.status(500).json({ error: error.message }); 
-        } 
-    });
-
-
-
-
-    
-  // Handle errors and exit events
-  cppProcess.on('error', (error) => {
-    console.error('Error executing C++ process:', error);
-  });
-
-  cppProcess.on('exit', (code) => {
-    debug_log(`C++ process exited with code: ${code}`);
-  });
-  
+        return res.send(TotalResult);
+    }else{
+        const previous_node = { have_previous : false , pov : "" , arrow : ""};
+        inputData.source = await room_num_to_node_id(inputData.source);
+        inputData.destination = await room_num_to_node_id(inputData.destination);
+        const result = await full_query(inputData.source , inputData.destination , mergedArray , previous_node);
+        return res.send(result); 
+    }
 });
 
 router.post('/insertBlocked' , async (req ,res ) => {
@@ -673,9 +796,9 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 
-/////////////////////////////////////////////////////////////////////////
-//////////////////function testing region////////////////////////////////
-/////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+///////////////////////function testing region////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 router.post('/blocked_img', upload.single('photo'), (req, res) => {
     try {
       // File is uploaded successfully, you can process further if needed
@@ -915,9 +1038,17 @@ router.post('/get_non_sheltered' , async (req , res) => {
 
 });
 
-
-
-
+router.post('/full_query' , async (req , res) => {
+    const inputData = req.body;
+    
+    try {
+        const result = await full_query(inputData.source, inputData.destination, inputData.blocked);
+        res.send(result);
+    } catch (error) {
+        res.send(error.message);
+        console.error('Error occurred:', error);
+    }
+});
 
 
 module.exports = router;

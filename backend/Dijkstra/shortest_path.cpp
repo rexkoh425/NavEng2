@@ -69,7 +69,7 @@ Path shortestPath(const Graph& g, int source, int dest) {
 
   int parent_node = dest;
   path.insert(path.begin() , parent_node);
-  while(parent_node != source){
+  while(parent_node != source && parent[parent_node] != parent_node){//was (parent_node != source)
     direction.insert(direction.begin(), parent_direction[parent_node]);
     dist_array.insert(dist_array.begin(), parent_dist[parent_node]);
     parent_node = parent[parent_node];

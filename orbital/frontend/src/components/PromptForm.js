@@ -213,8 +213,8 @@ function PromptForm() {
             setMessageError(response.data['HTML']);
             setTotalDistance(response.data['Distance'] / 10);
             const distArray = response.data['Dist_array'];
-            handleConvertToMetres(distArray)
-
+            handleConvertToMetres(distArray);
+            
             // Perform split operation inside the then block
             const arrayFromString = response.data['HTML'].split('<img src');
             setBlocked(arrayFromString[1]);
