@@ -17,13 +17,20 @@ import ConvertToMetres from './ConvertToMetres';
 import * as React from 'react';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
+import Instructions from "./Instructions";
+
 
 function PromptForm() {
     const [sourceLocation, setSourceLocation] = useState('')
     const [destinationLocation, setDestinationLocation] = useState('')
+    const [disableSubmit, setDisableSubmit] = useState(true)
+    const [autocompleteFields, setAutocompleteFields] = useState([]);
+    const [MultiStop, setMultiStop] = useState([false]);
+    const [MultiStopArrayDuplicate, setMultiStopArrayDuplicate] = useState([]);
+    const [MultiStopArray, setMultiStopArray] = useState([]);
     const [messageError, setMessageError] = useState(``) //using messageError variable for html content as well
-    const [selectData, setSelectData] = useState([])
-    const [selectValue, setSelectValue] = useState('')
     const [selectLocations, setSelectLocations] = useState([])
     const [totalDistance, setTotalDistance] = useState(``)
     const [distanceArray, setDistanceArray] = useState([])
@@ -38,9 +45,50 @@ function PromptForm() {
     const [disableLeftButton, setDisableLeftButton] = useState(true);
     const [showUpload, setShowUpload] = useState(false);
     let arrayFromString = messageError.split('<br>');
-    const [selectedFile, setSelectedFile] = useState(null);
     const [sheltered, setSheltered] = useState(false);
-    const [NoStairs, setNoStairs] = useState(true);
+    const [NoStairs, setNoStairs] = useState(false);
+
+    const disableSubmitButton = (start, end) => {
+        if (start !== '' && end !== '') 
+            {
+                setDisableSubmit(false);
+                return;
+            }
+        setDisableSubmit(true);
+        return;
+    }
+
+    const addAutocomplete = () => {
+        setAutocompleteFields([...autocompleteFields, {}]);
+        setMultiStopArrayDuplicate([...MultiStopArrayDuplicate, null]);
+    };
+
+    const removeAutocomplete = (index) => {
+        const updatedAutocompletes = [...autocompleteFields];
+        updatedAutocompletes.splice(index, 1);
+        setAutocompleteFields(updatedAutocompletes);
+
+        const updatedMultiStopArray = [...MultiStopArrayDuplicate];
+        updatedMultiStopArray.splice(index, 1);
+        setMultiStopArrayDuplicate(updatedMultiStopArray);
+
+        const hasInfo = updatedMultiStopArray.some(value => value !== null && value !== undefined && value !== '');
+        setMultiStop(hasInfo);
+    };
+
+    const handleAutocompleteChange = (index, value) => {
+        const updatedValues = [...MultiStopArrayDuplicate];
+        updatedValues[index] = value;
+        setMultiStopArrayDuplicate(updatedValues);
+
+        const hasInfo = updatedValues.some(value => value !== null && value !== undefined && value !== '');
+        setMultiStop(hasInfo);
+        const duplicateArray = [...updatedValues]
+        duplicateArray.unshift(sourceLocation);
+        duplicateArray.push(destinationLocation)
+        setMultiStopArray(duplicateArray)
+
+    };
 
     let parts = blocked.split('/');
     let remainder = parts.slice(8).join('/');
@@ -73,8 +121,8 @@ function PromptForm() {
             setCount(arrayposition - 1);
             setBlocked(arrayFromString[arrayposition - 1])
             if (arrayposition !== (1)) {
-            setBeforeBlocked(arrayFromString[arrayposition-2])
-        }
+                setBeforeBlocked(arrayFromString[arrayposition - 2])
+            }
         }
         if (arrayposition === 1) {
             setDisableLeftButton(true)
@@ -99,7 +147,6 @@ function PromptForm() {
 
             .then(res => {
                 if (processing) {
-                    setSelectData(res.data)
                 }
             })
             .catch(err => console.log("Fetch Error!!"))
@@ -121,8 +168,10 @@ function PromptForm() {
             destination: destinationLocation,
             Debugging: debug,
             current_blocked: blockedNodeID,
-            sheltered: sheltered , 
-            NoStairs : NoStairs
+            sheltered: sheltered,
+            NoStairs: NoStairs,
+            MultiStop: MultiStop,
+            MultiStopArray: MultiStopArray,
         };
 
         try {
@@ -144,15 +193,17 @@ function PromptForm() {
     };
 
     const axiosPostDataRefresh = async () => {
-        
+
         const postData = {
             source: before_node_id,
             destination: destinationLocation,
             Debugging: debug,
             current_blocked: blockedNodeID,
-            b4_blocked_img_path : beforebeforeQuote,
-            sheltered: sheltered , 
-            NoStairs : NoStairs
+            b4_blocked_img_path: beforebeforeQuote,
+            sheltered: sheltered,
+            NoStairs: NoStairs,
+            MultiStop: MultiStop,
+            MultiStopArray: MultiStopArray
         };
 
         try {
@@ -176,7 +227,7 @@ function PromptForm() {
     const handleSubmit = (e) => {
         e.preventDefault()
 
-        console.log(sourceLocation + ' | ' + selectValue + ' | ' + destinationLocation)
+        console.log(sourceLocation + ' | ' + destinationLocation)
 
         if (sourceLocation === destinationLocation) {
             alert('Entries cannot be the same');
@@ -199,7 +250,7 @@ function PromptForm() {
     const handleSubmitRefresh = (e) => {
         e.preventDefault()
 
-        console.log(sourceLocation + ' | ' + selectValue + ' | ' + destinationLocation)
+        console.log(sourceLocation + ' | ' + destinationLocation)
 
         if (sourceLocation === destinationLocation) {
             alert('Entries cannot be the same');
@@ -222,36 +273,40 @@ function PromptForm() {
 
     const axiosPostBlock = async (e) => {
         try {
-          const postData = {
-            img_string: beforeQuote
-          };
-    
-          // Send POST request to insertBlocked endpoint
-          const response = await axios.post("http://localhost:4000/insertBlocked", postData);
-    
-          // Update state variables after successful response
-          setShowUpload(true);
-          const blockdata = response.data;
-          setBlockedMessage(blockdata['message']);
-          setBlockedNodeID(blockdata['node']);
-          console.log("blocked message: " + blockdata['message']); // Log the message
-          console.log("blocked nodeID: " + blockdata['node']); // Log the node ID
-          console.log("before_node_id" + before_node_id)
-          setBlockedNodeID(blockdata['node'])
+            const postData = {
+                img_string: beforeQuote
+            };
+
+            // Send POST request to insertBlocked endpoint
+            const response = await axios.post("http://localhost:4000/insertBlocked", postData);
+
+            // Update state variables after successful response
+            setShowUpload(true);
+            const blockdata = response.data;
+            setBlockedMessage(blockdata['message']);
+            setBlockedNodeID(blockdata['node']);
+            console.log("blocked message: " + blockdata['message']); // Log the message
+            console.log("blocked nodeID: " + blockdata['node']); // Log the node ID
+            console.log("before_node_id" + before_node_id)
+            setBlockedNodeID(blockdata['node'])
 
         } catch (error) {
-          console.error('Error posting block:', error);
+            console.error('Error posting block:', error);
         }
     };
 
     const handleConvertToMetres = (distArray) => {
-        const dividedDistance = ConvertToMetres({ distanceArrayx10: distArray }); 
-        setDistanceArray(dividedDistance); 
+        const dividedDistance = ConvertToMetres({ distanceArrayx10: distArray });
+        setDistanceArray(dividedDistance);
     }
 
-    const handleCheckbox = (event) => {
+    const handleShelteredCheckbox = (event) => {
         setSheltered(event.target.checked);
-      };
+    };
+
+    const handleStairsCheckbox = (event) => {
+        setNoStairs(event.target.checked);
+    };
 
     return (
         <>
@@ -271,53 +326,96 @@ function PromptForm() {
                                 } else {
                                     setSourceLocation(""); // Handle case when value is cleared
                                 }
+                                disableSubmitButton(event.target.value, destinationLocation);
                             }
                             }
                         >
                         </Autocomplete>
                         <br></br>
+
                         <br></br>
                         <label className="StartAndEndLocation">End Location</label>
                         <Typography className="description2" sx={{ marginBottom: "10px", fontFamily: "Lexend" }}>Search or select the location closest to your end point</Typography>
 
-                        <Autocomplete
-                            options={selectLocations} sx={{ width: 250 }} renderInput={(params) => (
-                                <TextField {...params} label="End Location"></TextField>
-                            )}
-                            onChange={(event, value) => {
-                                if (value) {
-                                    setDestinationLocation(value);
-                                } else {
-                                    setDestinationLocation(""); // Handle case when value is cleared
-                                }
-                            }
-                            }
-                        >
-                        </Autocomplete>
+                        <div >
+
+                            {autocompleteFields.map((_, index) => (
+
+                                <div className="Autocomplete-container" key={index}>
+                                    <div className="centered-element">
+                                        <Autocomplete
+                                            options={selectLocations} // Replace with your options array
+                                            value={MultiStopArrayDuplicate[index] || null}
+                                            sx={{ width: 250, fontFamily: 'Georgia, serif' }}
+                                            onChange={(event, value) => handleAutocompleteChange(index, value)}
+                                            renderInput={(params) => (
+                                                <TextField {...params} label={"Enter a destination"} variant="outlined" fullWidth />
+                                            )}
+                                        />
+                                    </div>
+                                    <div className="right-element">
+                                        <Button color="secondary" sx={{ color: "#F05C2C" }} onClick={() => removeAutocomplete(index)}>
+                                            <RemoveCircleOutlineIcon />
+                                        </Button>
+                                    </div>
+                                </div>
+
+                            ))}
+
+                        </div>
+                        <div>
+
+                            <div className="Autocomplete-container">
+                                <div className="centered-element">
+                                    <Autocomplete
+                                        options={selectLocations} sx={{ width: 250 }} renderInput={(params) => (
+                                            <TextField {...params} label="End Location"></TextField>
+                                        )}
+                                        onChange={(event, value) => {
+                                            if (value) {
+                                                setDestinationLocation(value);
+                                            } else {
+                                                setDestinationLocation(""); // Handle case when value is cleared
+                                            }
+                                            disableSubmitButton(sourceLocation, event.target.value);
+                                        }
+                                        }
+                                    >
+                                    </Autocomplete>
+                                </div>
+                                <div className="right-element">
+                                    <Button color="primary" onClick={addAutocomplete}>
+                                        <AddCircleOutlineIcon />
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
                         <br></br>
-                        <FormControlLabel control={<Checkbox defaultChecked sx={{
+                        <FormControlLabel control={<Checkbox sx={{
+                            color: "#cdd8e6",
+                            '&.Mui-checked': {
+                                color: "#F05C2C",
+                            },
+                        }} checked={NoStairs}
+                            onChange={handleStairsCheckbox} />} label="No Stairs" sx={{ fontFamily: "Lexend" }} />
+
+                        <FormControlLabel control={<Checkbox sx={{
                             color: "#cdd8e6",
                             '&.Mui-checked': {
                                 color: "#F05C2C",
                             },
                         }} checked={sheltered}
-                        onChange={handleCheckbox}/>} label="Sheltered Path" sx={{ fontFamily: "Lexend" }} />
+                            onChange={handleShelteredCheckbox} />} label="Sheltered Path" sx={{ fontFamily: "Lexend" }} />
                         <br></br>
-                        <Button variant="contained" type="submit" onClick={handleSubmit} sx={{ bgcolor: "#cdd8e6", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }}>Submit</Button>
+                        <Button variant="contained" type="submit" disabled={disableSubmit} onClick={handleSubmit} sx={{ bgcolor: "#cdd8e6", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }}>Submit</Button>
 
-                      
+
                         <br></br>
                         {showUpload && <div><FileUpload /></div>}
                         <br></br>
-                        <Box component="section" sx={{ p: 2, border: '1px grey', bgcolor: '#F5F5F5' }}>
-                            <h1 className="InstructionsTitle">How to use</h1>
-                            <p className="InstructionsContent">1) Simply select your closest starting and end location and click Submit!</p>
-                            <p className="InstructionsContent">2) Wait for the pictures to load...</p>
-                            <p className="InstructionsContent">3) The first and last picture show the doors to the starting location and end location respectively</p>
-                            <p className="InstructionsContent">4) With your back facing towards the door of your starting location, refer to the second picture onwards and follow the arrows!</p>
-                            <p className="InstructionsContent">5) If any location along your path is blocked, please press the block <img src="block_logo.png" alt="Block the location?" className="instruction-img"></img> button, and an alternate path will be provided for you</p>
-                            {blockedMessage}
-                        </Box>
+                        <Instructions></Instructions>
+
+                        
 
                     </form>
                 </center> </div>
@@ -333,7 +431,7 @@ function PromptForm() {
                                 textAlign: 'center', justifyContent: 'center', color: 'grey', fontFamily: "Lexend"
                             }}>Please select the starting and ending <br></br> locations to view the pictures</Box></div>}
                     <center>
-                        {formSubmitted && <p className="parametricsDescription">Total Distance: </p>}     
+                        {formSubmitted && <p className="parametricsDescription">Total Distance: </p>}
                         {formSubmitted && <p className="parametricsContent">{totalDistance}m</p>}
 
                         <div></div>
@@ -348,7 +446,7 @@ function PromptForm() {
                         {formSubmitted && <p className="parametricsDescription">Time to Destination: </p>}
                         {formSubmitted && <div className="parametricsContent"><CalculateTime distance={distanceArray[arrayposition]} /></div>}
 
-                        
+
 
                     </center>
                     {formSubmitted && <p className="imageCount">{arrayposition + 1}/{arrayFromString.length - 1}</p>}
@@ -362,9 +460,9 @@ function PromptForm() {
                                 <Button className="overlay-button" onClick={axiosPostBlock}><img src="block_logo.png" className="block-logo"></img></Button>
                             </Tooltip>
                             {showUpload && <div className="overlay-refresh">
-                            <Button variant="contained" type="submit" onClick={handleSubmitRefresh} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }}>Give me an alternate path</Button>
-                        </div>}
-                            
+                                <Button variant="contained" type="submit" onClick={handleSubmitRefresh} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }}>Give me an alternate path</Button>
+                            </div>}
+
                         </div>
                         <div className="rightArrow">
                             <Button variant="contained" type="submit" onClick={incrementCounter} disabled={disableRightButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "10vh", width: "3vw" }}><ArrowRightIcon></ArrowRightIcon></Button>
