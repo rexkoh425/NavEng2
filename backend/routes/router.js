@@ -617,12 +617,12 @@ router.post('/formPost' , async (req ,res) => {
     if((inputData.MultiStopArray.length < 3) && inputData.sourceLocation && inputData.destinationLocation) {
         inputData.MultiStopArray = ([inputData.sourceLocation, inputData.destinationLocation])
     }
-    //checking for empty input
+    /*
     if(inputData.MultiStopArray.length < 2){
         console.log("data incorrectly labelled or source and destination not filled"); 
         return res.send({HTML : "<p>sorry no path is available</p>" , Distance : 0 });
     }
-
+    */
     let blocked_array = await get_blocked();
     if(inputData.current_blocked !== ''){
         blocked_array.push(inputData.current_blocked - 1);
@@ -682,11 +682,16 @@ router.post('/formPost' , async (req ,res) => {
 router.post('/blockRefresh' , async (req ,res) => { 
     
     const inputData = req.body;
-
+    
+    if((inputData.MultiStopArray.length < 3) && inputData.sourceLocation && inputData.destinationLocation) {
+        inputData.MultiStopArray = ([inputData.sourceLocation, inputData.destinationLocation])
+    }
+    /*
     if(inputData.MultiStopArray.length < 2){
         console.log("data incorrectly labelled or source and destination not filled")  
         return res.send({HTML : "<p>sorry no path is available</p>" , Distance : 0 });
     }
+    */
 
     let blocked_array = await get_blocked();
     if(inputData.current_blocked !== ''){
