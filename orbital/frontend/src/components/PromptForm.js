@@ -34,6 +34,7 @@ function PromptForm() {
     const [selectLocations, setSelectLocations] = useState([])
     const [totalDistance, setTotalDistance] = useState(``)
     const [distanceArray, setDistanceArray] = useState([])
+    const [nodePath, setNodePath] = useState([])
     const [debug, SetDebug] = useState(false);
     const [formSubmitted, setFormSubmitted] = useState(false);
     const [arrayposition, setCount] = useState(0);
@@ -47,6 +48,7 @@ function PromptForm() {
     let arrayFromString = messageError.split('<br>');
     const [sheltered, setSheltered] = useState(false);
     const [NoStairs, setNoStairs] = useState(false);
+    const [blockedNodeIndex, setBlockedNodeIndex] = useState("");
 
     const disableSubmitButton = (start, end) => {
         if (start !== '' && end !== '') 
@@ -108,6 +110,7 @@ function PromptForm() {
             setCount(arrayposition + 1);
             setBlocked(arrayFromString[arrayposition + 1])
             setBeforeBlocked(arrayFromString[arrayposition])
+            setBlockedNodeIndex(arrayposition + 1)
         }
         if (arrayposition === (arrayFromString.length - 3)) {
             setDisableRightButton(true)
@@ -120,6 +123,7 @@ function PromptForm() {
         if (arrayposition !== (0)) {
             setCount(arrayposition - 1);
             setBlocked(arrayFromString[arrayposition - 1])
+            setBlockedNodeIndex(arrayposition - 1)
             if (arrayposition !== (1)) {
                 setBeforeBlocked(arrayFromString[arrayposition - 2])
             }
@@ -171,6 +175,7 @@ function PromptForm() {
             sheltered: sheltered , 
             NoStairs : NoStairs , 
             MultiStopArray : MultiStopArray
+            
         };
 
         try {
@@ -180,6 +185,8 @@ function PromptForm() {
             setMessageError(response.data['HTML']);
             setTotalDistance(response.data['Distance'] / 10);
             const distArray = response.data['Dist_array'];
+            const nodes_path = response.data['nodes_path'];
+            setNodePath(nodes_path)
             handleConvertToMetres(distArray)
 
             // Perform split operation inside the then block
@@ -194,12 +201,17 @@ function PromptForm() {
     const axiosPostDataRefresh = async () => {
 
         const postData = {
+            sourceLocation: sourceLocation,
+            destinationLocation: destinationLocation,
             Debugging: debug,
             current_blocked: blockedNodeID,
             b4_blocked_img_path : beforebeforeQuote,
             sheltered: sheltered , 
             NoStairs : NoStairs ,  
-            MultiStopArray : MultiStopArray
+            MultiStopArray : MultiStopArray,
+            Stops_index: nodePath,
+            BlockedNodeIndex: blockedNodeIndex
+            
         };
 
         try {
