@@ -41,8 +41,8 @@ function PromptForm() {
     const [selectedFile, setSelectedFile] = useState(null);
     const [sheltered, setSheltered] = useState(false);
     const [NoStairs, setNoStairs] = useState(false);
-    const [MultiStop , setMultiStop] = useState(true);
-    const [MultiStopArray , setMultiStopArray] = useState([158 , 87 , 141]);//  
+    const [MultiStop , setMultiStop] = useState(false);
+    const [MultiStopArray , setMultiStopArray] = useState([]);//  
 
     let parts = blocked.split('/');
     let remainder = parts.slice(8).join('/');

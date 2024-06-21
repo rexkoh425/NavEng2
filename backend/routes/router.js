@@ -707,7 +707,7 @@ router.post('/blockRefresh' , async (req ,res) => {
 
     if(inputData.MultiStop){
         let destinations = inputData.MultiStopArray;
-        destinations[0] = parseInt(previous_node_component.node_id);/////////////////////////////to remove
+        //destinations[0] = parseInt(previous_node_component.node_id);/////////////////////////////to remove
         for(let i =  0; i < destinations.length ; i ++){
             destinations[i] = await room_num_to_node_id(destinations[i]);
         }
