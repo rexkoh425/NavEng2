@@ -407,7 +407,6 @@ function PromptForm() {
                             onChange={handleShelteredCheckbox} />} label="Sheltered Path" sx={{ fontFamily: "Lexend" }} />
                         <br></br>
                         <Button variant="contained" type="submit" disabled={disableSubmit} onClick={handleSubmit} sx={{ bgcolor: "#cdd8e6", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }}>Submit</Button>
-                        {MultiStopArray}
 
                         <br></br>
                         {showUpload && <div><FileUpload /></div>}
