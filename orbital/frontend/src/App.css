@@ -110,7 +110,6 @@
   margin-left: 5vw;
   margin-right: 5vw;
   margin-top: 0vw;
-  height: 100vh;
 }
 
 .InstructionsTitle {
@@ -266,6 +265,15 @@
   width: 8vh;
   bottom: 76vh;
   right: -34vh;
+  display: inline-block
+}
+
+.overlay-button-mobile {
+  position: absolute;
+  height: 8vh;
+  width: 8vh;
+  bottom: 76vh;
+  right: -16vh;
   display: inline-block
 }
 

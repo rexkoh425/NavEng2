@@ -223,6 +223,7 @@ function PromptForm() {
         setCount(0);
         setDisableRightButton(false);
         setDisableLeftButton(true);
+        setShowUpload(false);
     }
 
     const axiosPostBlock = async (e) => {
@@ -340,10 +341,20 @@ function PromptForm() {
                     <center>
                         {formSubmitted && <p className="parametricsDescription">Total Distance: </p>}     
                         {formSubmitted && <p className="parametricsContent">{totalDistance}m</p>}
-                        <div></div>
 
-                        {formSubmitted && <p className="parametricsDescription">Time Taken: </p>}
+                        <div></div>
+                        {formSubmitted && <p className="parametricsDescription">Total Estimated Time Taken: </p>}
                         {formSubmitted && <div className="parametricsContent"><CalculateTime distance={totalDistance} /></div>}
+                        <br></br>
+                        <br></br>
+                        {formSubmitted && <p className="parametricsDescription">Remaining Distance: </p>}
+                        {formSubmitted && <p className="parametricsContent">{distanceArray[arrayposition]}m</p>}
+
+                        <div></div>
+                        {formSubmitted && <p className="parametricsDescription">Time to Destination: </p>}
+                        {formSubmitted && <div className="parametricsContent"><CalculateTime distance={distanceArray[arrayposition]} /></div>}
+
+                        
 
                     </center>
                     {formSubmitted && <p className="imageCount">{arrayposition + 1}/{arrayFromString.length - 1}</p>}

@@ -19,10 +19,8 @@ function Feedback() {
 
     const [showBugQs, setShowBugQs] = useState(false)
     const [showSuggestPathQs, setShowSuggestPathQs] = useState(false)
-    const [showBlockedPathQs, setShowBlockedPathQs] = useState(false)
 
     const [bugDetails, setBugDetails] = useState('')
-    const [blockedNode, setBlockedNode] = useState('')
     const [nodes, setnodes] = useState([""]); // State to store autocomplete nodes
 
     const handlenodeChange = (index, value) => {
@@ -103,7 +101,6 @@ function Feedback() {
         const postData = {
             feedbackType: feedbackType,
             bugDetails: bugDetails,
-            blockedNode: blockedNode,
             sourceLocation: sourceLocation,
             destinationLocation: destinationLocation,
             nodes: nodes,
@@ -145,20 +142,8 @@ function Feedback() {
             setFeedbackMessage("Please provide some details about the bug")
             return;
         }
-        if (showBlockedPathQs && !blockedNode) {
-            setFeedbackMessage("Please select a blocked location")
-            return;
-        }
-        if (showBlockedPathQs && !sourceLocation) {
-            setFeedbackMessage("Please select a start location")
-            return;
-        }
-        if (showBlockedPathQs && !destinationLocation) {
-            setFeedbackMessage("Please select an end location")
-            return;
-        }
         setFeedbackMessage('')
-        console.log('feedback type:' + feedbackType + ' | bug details:' + bugDetails + ' | Blocked Node:' + blockedNode)
+        console.log('feedback type:' + feedbackType + ' | bug details:' + bugDetails)
         console.log("Path:", sourceLocation + '|' + destinationLocation)
         console.log("Nodes:", nodes)
 
@@ -169,7 +154,7 @@ function Feedback() {
         }
     }
 
-    const typeOfFeedback = ["Report bug with website", "Suggest a better path", "Report blocked location"]
+    const typeOfFeedback = ["Report bug with website", "Suggest a better path"]
 
     const handleFeedbackType = (event, value) => {
     // To determine what type of questions to show
@@ -180,7 +165,6 @@ function Feedback() {
     }
     if (value === "Report bug with website"){
             
-            setBlockedNode("")
             setSourceLocation("")
             setDestinationLocation("")
             setFormSubmitted(false)
@@ -188,7 +172,6 @@ function Feedback() {
         if (value === "Suggest a better path"){
             
             setBugDetails("")
-            setBlockedNode("")
             setSourceLocation("")
             setDestinationLocation("")
             setFormSubmitted(false)
@@ -196,12 +179,10 @@ function Feedback() {
         if (value === "Report blocked location"){
             
             setBugDetails("")
-            setBlockedNode("")
             setSourceLocation("")
             setDestinationLocation("")
             setFormSubmitted(false)
         }
-        setShowBlockedPathQs(value === "Report blocked location")
         setShowSuggestPathQs(value === "Suggest a better path")
         setShowBugQs(value === "Report bug with website");
     }
@@ -227,7 +208,6 @@ function Feedback() {
             <p className="InstructionsContent">Please fill out the form below to submit any feedback regarding the pathfinding. You can fill out the form to:</p>
             <p className="InstructionsContent">1) Report any bugs with the website</p>
             <p className="InstructionsContent">2) Suggest a path which you think is better than the path shown by the website</p>
-            <p className="InstructionsContent">3) Report any blocked locations so that the website can provide you with an alternate path</p>
         </Box>
             <Typography sx={{marginBottom: "10px", fontFamily: "Lexend"}}>What is your issue?</Typography>
             <Autocomplete
@@ -258,112 +238,24 @@ function Feedback() {
       ))}
       <br></br>
       <br></br>
-      <Button variant="contained" sx ={{ bgcolor: "#D95328" , "&:hover": { bgcolor: "#F05C2C"}}} onClick={addnode}>
+      <Button variant="contained" sx ={{ bgcolor: "#D95328" , "&:hover": { bgcolor: "#F05C2C"} , fontFamily: "Lexend" }} onClick={addnode}>
         Add Node
       </Button>
       {nodes.length > 1 && (
-        <Button variant="contained" sx ={{ bgcolor: "#D95328" , "&:hover": { bgcolor: "#F05C2C"}, margin: "10px" }} onClick={() => removenode(nodes.length - 1)}>
+        <Button variant="contained" sx ={{ bgcolor: "#D95328" , "&:hover": { bgcolor: "#F05C2C"}, margin: "10px" , fontFamily: "Lexend" }} onClick={() => removenode(nodes.length - 1)}>
           Remove Previous Node
         </Button>
       )}
       </div>}
-
-            {showBlockedPathQs && <div>
-                <Typography sx={{marginBottom: "10px", fontFamily: "Lexend"}}>Which location is blocked?</Typography>
-                <Autocomplete
-                options={selectLocations} sx={{ width: 250 }} renderInput={(params) => (
-                <TextField {...params} label="Location"></TextField>
-                )}
-                 onChange={(event, value) => {
-                    if (value) {
-                      setBlockedNode(value);
-                    }else {
-                        setBlockedNode(''); // Handle case when value is cleared
-                    }
-                }
-                
-                }
-            >
-            </Autocomplete>
-            <br></br>
-            <label className="blockedNodeLocation">Where did you originally want to get to and from?</label>
-            <br></br>
-            <br></br>
-
-            <label className="StartAndEndLocation">Start Location</label>
-            
-            <Autocomplete
-            options={selectLocations} sx={{ width: 250 }} renderInput={(params) => (
-                <TextField {...params} label="Start Location"></TextField>
-            )}
-            onChange={(event, value) => {
-                if (value) {
-                    setSourceLocation(value);
-                } else {
-                    setSourceLocation(''); // Handle case when value is cleared
-                }
-            }
-        }
-            >
-            </Autocomplete>
-            <br></br>
-            <label className="StartAndEndLocation">End Location</label>
-            
-            <Autocomplete
-            options={selectLocations} sx={{ width: 250 }} renderInput={(params) => (
-                <TextField {...params} label="End Location"></TextField>
-            )}
-            onChange={(event, value) => {
-                if (value) {
-                    setDestinationLocation(value);
-                } else {
-                    setDestinationLocation(''); // Handle case when value is cleared
-                }
-            }
-        }
-            >
-            </Autocomplete>
-            </div>}
             <br></br>
             <div className="feedbackUserInfo">{feedbackMessage}</div>
             <br></br>
-            <Button variant="contained" type="submit" onClick={handleSubmit} sx ={{ bgcolor: "#cdd8e6", "&:hover": { bgcolor: "#F05C2C"}, }}>Submit</Button>
+            <Button variant="contained" type="submit" onClick={handleSubmit} sx={{ bgcolor: "#cdd8e6", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }}>Submit</Button>
             <br></br>
             <br></br>
             {feedbackSubmission}
     </center>
         </form>
-        
-            <div className="child2mobile">
-                {!formSubmitted && showBlockedPathQs
-                && <div><Box 
-                component="section"  
-                display="flex"
-                alignItems="center"
-                 sx={{ p: 2, border: '1px grey', bgcolor: '#F5F5F5', height: "68vh", marginRight:"0px" , 
-                 textAlign: 'center', justifyContent: 'center', color: 'grey'}}>Please select the starting and ending <br></br> locations to view the pictures</Box>
-            </div>}
-            
-            <center>
-            {formSubmitted && <p className= "parametricsDescription">Distance: </p>}
-            {formSubmitted && <p className= "parametricsContent">{distance}m</p>}
-            <div></div>
-            
-            {formSubmitted && <p className= "parametricsDescription">Time Taken: </p>}
-            {formSubmitted && <p className= "parametricsContent">{Math.round((distance/1.4)/60)} minutes</p>}
-            {formSubmitted && <p className="imageCountMobile">{arrayposition+1}/{arrayFromString.length-1}</p>}
-             { formSubmitted && <div className="containerMobile">
-             <Button variant="contained" type="submit" onClick={decrementCounter} 
-             sx ={{ bgcolor: "#D95328" , "&:hover": { bgcolor: "#F05C2C"}, minWidth: 'unset', 
-             textAlign: 'center !important', px: '0px', py: '0px', height: "15vh", width: "10vw"}}><ArrowLeftIcon></ArrowLeftIcon></Button>
-             <div className="htmlContent" dangerouslySetInnerHTML={{ __html: arrayFromString[arrayposition] }} />
-          <Button variant="contained" type="submit" onClick={incrementCounter} 
-          sx ={{ bgcolor: "#D95328" , "&:hover": { bgcolor: "#F05C2C"}, minWidth: 'unset', 
-          textAlign: 'center !important', px: '0px', py: '0px', height: "15vh", width: "10vw"}}><ArrowRightIcon></ArrowRightIcon></Button>
-
-        </div>}
-        </center>
-        </div>
         
         </>
     )
