@@ -17,15 +17,20 @@ import ConvertToMetres from './ConvertToMetres';
 import * as React from 'react';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
+import Instructions from "./Instructions";
 
 
 function PromptFormMobile() {
 
     const [sourceLocation, setSourceLocation] = useState('')
     const [destinationLocation, setDestinationLocation] = useState('')
+    const [autocompleteFields, setAutocompleteFields] = useState([]);
+    const [MultiStop, setMultiStop] = useState([false]);
+    const [MultiStopArrayDuplicate, setMultiStopArrayDuplicate] = useState([]);
+    const [MultiStopArray, setMultiStopArray] = useState([]);
     const [messageError, setMessageError] = useState(``) //using messageError variable for html content as well
-    const [selectData, setSelectData] = useState([])
-    const [selectValue, setSelectValue] = useState('')
     const [selectLocations, setSelectLocations] = useState([])
     const [totalDistance, setTotalDistance] = useState(``)
     const [distanceArray, setDistanceArray] = useState([])
@@ -40,8 +45,40 @@ function PromptFormMobile() {
     const [disableLeftButton, setDisableLeftButton] = useState(true);
     const [showUpload, setShowUpload] = useState(false);
     let arrayFromString = messageError.split('<br>');
-    const [selectedFile, setSelectedFile] = useState(null);
     const [sheltered, setSheltered] = useState(false);
+    const [NoStairs, setNoStairs] = useState(false);
+
+    const addAutocomplete = () => {
+        setAutocompleteFields([...autocompleteFields, {}]);
+        setMultiStopArrayDuplicate([...MultiStopArrayDuplicate, null]);
+      };
+
+      const removeAutocomplete = (index) => {
+        const updatedAutocompletes = [...autocompleteFields];
+        updatedAutocompletes.splice(index, 1);
+        setAutocompleteFields(updatedAutocompletes);
+    
+        const updatedMultiStopArray = [...MultiStopArrayDuplicate];
+        updatedMultiStopArray.splice(index, 1);
+        setMultiStopArrayDuplicate(updatedMultiStopArray);
+
+        const hasInfo = updatedMultiStopArray.some(value => value !== null && value !== undefined && value !== '');
+        setMultiStop(hasInfo);
+      };
+
+      const handleAutocompleteChange = (index, value) => {
+        const updatedValues = [...MultiStopArrayDuplicate];
+        updatedValues[index] = value;
+        setMultiStopArrayDuplicate(updatedValues);
+    
+        const hasInfo = updatedValues.some(value => value !== null && value !== undefined && value !== '');
+        setMultiStop(hasInfo);
+        const duplicateArray = [...updatedValues]
+        duplicateArray.unshift(sourceLocation);
+        duplicateArray.push(destinationLocation)
+        setMultiStopArray(duplicateArray)
+
+      };
 
     let blockedNodeid = ""
     let parts = blocked.split('/');
@@ -101,7 +138,6 @@ function PromptFormMobile() {
 
             .then(res => {
                 if (processing) {
-                    setSelectData(res.data)
                 }
             })
             .catch(err => console.log("Fetch Error!!"))
@@ -123,7 +159,10 @@ function PromptFormMobile() {
             destination: destinationLocation,
             Debugging: debug,
             current_blocked: blockedNodeID,
-            sheltered: sheltered,
+            sheltered: sheltered , 
+            NoStairs : NoStairs,
+            MultiStop: MultiStop,
+            MultiStopArray: MultiStopArray,
         };
 
         try {
@@ -149,7 +188,11 @@ function PromptFormMobile() {
             destination: destinationLocation,
             Debugging: debug,
             current_blocked: blockedNodeID,
-            sheltered: sheltered,
+            b4_blocked_img_path : beforebeforeQuote,
+            sheltered: sheltered , 
+            NoStairs : NoStairs,
+            MultiStop: MultiStop,
+            MultiStopArray: MultiStopArray
         };
 
         try {
@@ -173,7 +216,7 @@ function PromptFormMobile() {
     const handleSubmit = (e) => {
         e.preventDefault()
 
-        console.log(sourceLocation + ' | ' + selectValue + ' | ' + destinationLocation)
+        console.log(sourceLocation + ' | '  + destinationLocation)
 
         if (sourceLocation === destinationLocation) {
             alert('Entries cannot be the same');
@@ -196,7 +239,7 @@ function PromptFormMobile() {
     const handleSubmitRefresh = (e) => {
         e.preventDefault()
 
-        console.log(sourceLocation + ' | ' + selectValue + ' | ' + destinationLocation)
+        console.log(sourceLocation + ' | '  + destinationLocation)
 
         if (sourceLocation === destinationLocation) {
             alert('Entries cannot be the same');
@@ -274,8 +317,39 @@ function PromptFormMobile() {
             <br></br>
             <label className="StartAndEndLocation">End Location</label>
             <Typography className="description" sx={{marginBottom: "10px" , fontFamily: "Lexend"}}>Search or select the location closest to your end point</Typography>
-            
+
+            <div >
+
+{autocompleteFields.map((_, index) => (
+
+    <div className="Autocomplete-container" key={index}>
+        <div className="centered-element">
             <Autocomplete
+                options={selectLocations} // Replace with your options array
+                value={MultiStopArrayDuplicate[index] || null}
+                sx={{ width: 250, fontFamily: 'Georgia, serif' }}
+                onChange={(event, value) => handleAutocompleteChange(index, value)}
+                renderInput={(params) => (
+                    <TextField {...params} label={"Enter a destination"} variant="outlined" fullWidth />
+                )}
+            />
+        </div>
+        <div className="right-element">
+            <Button color="secondary" sx={{ color: "#F05C2C" }} onClick={() => removeAutocomplete(index)}>
+                <RemoveCircleOutlineIcon />
+            </Button>
+        </div>
+    </div>
+
+))}
+
+</div>
+
+<div>
+
+<div className="Autocomplete-container">
+    <div className="centered-element">
+        <Autocomplete
             options={selectLocations} sx={{ width: 250 }} renderInput={(params) => (
                 <TextField {...params} label="End Location"></TextField>
             )}
@@ -286,9 +360,17 @@ function PromptFormMobile() {
                     setDestinationLocation(""); // Handle case when value is cleared
                 }
             }
-        }
-            >
-            </Autocomplete>
+            }
+        >
+        </Autocomplete>
+    </div>
+    <div className="right-element">
+        <Button color="primary" onClick={addAutocomplete}>
+            <AddCircleOutlineIcon />
+        </Button>
+    </div>
+</div>
+</div>
             <br></br>
                         <FormControlLabel control={<Checkbox defaultChecked sx={{
                             color: "#cdd8e6",
@@ -301,15 +383,10 @@ function PromptFormMobile() {
             <Button variant="contained" type="submit" onClick={handleSubmit} sx ={{ bgcolor: "#cdd8e6", "&:hover": { bgcolor: "#F05C2C"}, }}>Submit</Button>
             <br></br>
             <br></br>
-            <Box component="section" sx={{ p: 2, border: '1px grey', bgcolor: '#F5F5F5'}}>
-            <h1 className="InstructionsTitle">How to use</h1>
-            <p className="InstructionsContent">1) Simply select your closest starting and end location and click Submit!</p>
-            <p className="InstructionsContent">2) Wait for the pictures to load...</p>
-            <p className="InstructionsContent">3) The first and last picture show the doors to the starting location and end location respectively</p>
-            <p className="InstructionsContent">4) With your back facing towards the door of your starting location, refer to the second picture onwards and follow the arrows!</p>
-    </Box>
+            <Instructions></Instructions>
     </center>
         </form>
+        <br></br>
         
         
         <div className="child2mobile">
@@ -359,7 +436,8 @@ function PromptFormMobile() {
           
 
         </div>}
-        {showUpload && <div><FileUpload /></div>}
+        <br></br>
+        {showUpload && <div className="fileupload-mobile"><FileUpload /></div>}
         </center>
         </div>
         

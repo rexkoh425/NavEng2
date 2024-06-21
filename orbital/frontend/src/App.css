@@ -114,7 +114,10 @@
 
 .InstructionsTitle {
   color: #F05C2C;
+  font-size: 35px;
   font-family: "Lexend";
+  margin-top: 0px;
+  margin-bottom: 37px;
 }
 
 .InstructionsContent {
@@ -294,4 +297,30 @@
 .instruction-img {
   width: 40px;
   margin-bottom: -13px;
+}
+
+.Autocomplete-container {
+  display: flex;
+  justify-content: center; /* Centers items horizontally */
+  align-items: center; /* Centers items vertically */
+  position: relative; /* Ensure relative positioning for absolute child */
+}
+
+.centered-element {
+  /* Optional: Adjust width, padding, etc. */
+  padding: 5px;
+
+}
+
+.right-element {
+  /* Example absolute positioning for right element */
+  position: absolute;
+  left: calc(50% + 130px); /* Adjust as needed to position to the right */
+  /* Optional: Adjust width, padding, etc. */
+  padding: 10px;
+
+}
+
+.fileupload-mobile {
+  margin-top: 20vh;
 }
