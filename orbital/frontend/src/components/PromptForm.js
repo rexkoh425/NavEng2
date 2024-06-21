@@ -41,7 +41,6 @@ function PromptForm() {
     const [selectedFile, setSelectedFile] = useState(null);
     const [sheltered, setSheltered] = useState(false);
     const [NoStairs, setNoStairs] = useState(false);
-    const [MultiStop , setMultiStop] = useState(false);
     const [MultiStopArray , setMultiStopArray] = useState([]);//  
 
     let parts = blocked.split('/');
@@ -119,13 +118,10 @@ function PromptForm() {
 
     const axiosPostData = async () => {
         const postData = {
-            source: sourceLocation,
-            destination: destinationLocation,
             Debugging: debug,
             current_blocked: blockedNodeID,
             sheltered: sheltered , 
             NoStairs : NoStairs , 
-            MultiStop : MultiStop ,
             MultiStopArray : MultiStopArray
         };
 
@@ -150,14 +146,11 @@ function PromptForm() {
     const axiosPostDataRefresh = async () => {
         
         const postData = {
-            source: before_node_id,
-            destination: destinationLocation,
             Debugging: debug,
             current_blocked: blockedNodeID,
             b4_blocked_img_path : beforebeforeQuote,
             sheltered: sheltered , 
-            NoStairs : NoStairs , 
-            MultiStop : MultiStop , 
+            NoStairs : NoStairs ,  
             MultiStopArray : MultiStopArray
         };
 

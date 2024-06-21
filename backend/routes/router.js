@@ -615,9 +615,9 @@ router.post('/formPost' , async (req ,res) => {
     const inputData = req.body;
 
     //checking for empty input
-    if(!inputData.source || !inputData.destination){
-        console.log("data incorrectly labelled or source and destination not filled")  
-        return;
+    if(inputData.MultiStopArray.length < 2){
+        console.log("data incorrectly labelled or source and destination not filled"); 
+        return res.send({HTML : "<p>sorry no path is available</p>" , Distance : 0 });
     }
 
     let blocked_array = await get_blocked();
@@ -634,64 +634,55 @@ router.post('/formPost' , async (req ,res) => {
     }
     let mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered , ...stairs]));
     
-    if(inputData.MultiStop){
-        let destinations = inputData.MultiStopArray;
-        for(let i =  0; i < destinations.length ; i ++){
-            destinations[i] = await room_num_to_node_id(destinations[i]);
-        }
-        
-        const TotalResult = {
-            Expected : 0 ,
-            Queried : 0 , 
-            HTML : "" ,
-            Distance : 0 ,
-            Dist_array : [] , 
-            nodes_path : [] , 
-            Stops_index : []
-        }
-        const previous_node = { have_previous : false , pov : "" , arrow : ""};
-        for(let i = 1 ; i < destinations.length ; i++){
-            let result;
-            try{
-                if(i == destinations.length-1){
-                    result = await full_query(destinations[i-1] , destinations[i] , mergedArray , previous_node);
-                }else{
-                    result = await transit_query(destinations[i-1] , destinations[i] , mergedArray , previous_node);
-                }
-                TotalResult.Expected += result.Expected;
-                TotalResult.Queried += result.Queried;
-                TotalResult.HTML += result.HTML;
-                TotalResult.Distance = `${parseInt(TotalResult.Distance) + parseInt(result.Distance)}` ;
-                TotalResult.Dist_array = TotalResult.Dist_array.concat(result.Dist_array);
-                TotalResult.nodes_path = TotalResult.nodes_path.concat(result.nodes_path);
-                if(i == destinations.length - 1){
-                    TotalResult.Stops_index.push(TotalResult.Expected - 1);
-                }else{
-                    TotalResult.Stops_index.push(TotalResult.Expected);
-                }
-            } catch(error){
-                console.error('Error caught:', error.message);
-                return res.send({HTML : "<p>sorry no path is available</p>" , Distance : 0 });
-            }
-        }
-        return res.send(TotalResult);
-    }else{
-        const previous_node = { have_previous : false , pov : "" , arrow : ""};
-        inputData.source = await room_num_to_node_id(inputData.source);
-        inputData.destination = await room_num_to_node_id(inputData.destination);
-        const result = await full_query(inputData.source , inputData.destination , mergedArray , previous_node);
-        return res.send(result); 
+    let destinations = inputData.MultiStopArray;
+    for(let i =  0; i < destinations.length ; i ++){
+        destinations[i] = await room_num_to_node_id(destinations[i]);
     }
-  
+    
+    const TotalResult = {
+        Expected : 0 ,
+        Queried : 0 , 
+        HTML : "" ,
+        Distance : 0 ,
+        Dist_array : [] , 
+        nodes_path : [] , 
+        Stops_index : []
+    }
+    const previous_node = { have_previous : false , pov : "" , arrow : ""};
+    for(let i = 1 ; i < destinations.length ; i++){
+        let result;
+        try{
+            if(i == destinations.length-1){
+                result = await full_query(destinations[i-1] , destinations[i] , mergedArray , previous_node);
+            }else{
+                result = await transit_query(destinations[i-1] , destinations[i] , mergedArray , previous_node);
+            }
+            TotalResult.Expected += result.Expected;
+            TotalResult.Queried += result.Queried;
+            TotalResult.HTML += result.HTML;
+            TotalResult.Distance = `${parseInt(TotalResult.Distance) + parseInt(result.Distance)}` ;
+            TotalResult.Dist_array = TotalResult.Dist_array.concat(result.Dist_array);
+            TotalResult.nodes_path = TotalResult.nodes_path.concat(result.nodes_path);
+            if(i == destinations.length - 1){
+                TotalResult.Stops_index.push(TotalResult.Expected - 1);
+            }else{
+                TotalResult.Stops_index.push(TotalResult.Expected);
+            }
+        } catch(error){
+            console.error('Error caught:', error.message);
+            return res.send({HTML : "<p>sorry no path is available</p>" , Distance : 0 });
+        }
+    }
+    return res.send(TotalResult);
 });
 
 router.post('/blockRefresh' , async (req ,res) => { 
     
     const inputData = req.body;
 
-    if(!inputData.source || !inputData.destination){
+    if(inputData.MultiStopArray.length < 2){
         console.log("data incorrectly labelled or source and destination not filled")  
-        return;
+        return res.send({HTML : "<p>sorry no path is available</p>" , Distance : 0 });
     }
 
     let blocked_array = await get_blocked();
@@ -705,62 +696,54 @@ router.post('/blockRefresh' , async (req ,res) => {
     let mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered]));
     const previous_node_component = await break_down_img_path(inputData.b4_blocked_img_path);
 
-    if(inputData.MultiStop){
-        let destinations = inputData.MultiStopArray;
-        //destinations[0] = parseInt(previous_node_component.node_id);/////////////////////////////to remove
-        for(let i =  0; i < destinations.length ; i ++){
-            destinations[i] = await room_num_to_node_id(destinations[i]);
-        }
-        
-        const TotalResult = {
-            Expected : 0 ,
-            Queried : 0 , 
-            HTML : "" ,
-            Distance : 0 ,
-            Dist_array : [] , 
-            nodes_path : [] , 
-            Stops_index : []
-        }
-        const no_previous = { have_previous : false , pov : "" , arrow : ""};
-        const previous_node = { have_previous : true , pov : previous_node_component.pov , arrow : previous_node_component.arrow};
-        for(let i = 1 ; i < destinations.length ; i++){
-            let result;
-            try{
-                if(i == destinations.length-1){
-                    if(destinations.length == 2){
-                        result = await full_query(destinations[i-1] , destinations[i] , mergedArray , previous_node);
-                    }else{
-                        result = await full_query(destinations[i-1] , destinations[i] , mergedArray , no_previous);
-                    }
-                }else if(i == 1){
-                    result = await transit_query(destinations[i-1] , destinations[i] , mergedArray , previous_node);
-                }else{
-                    result = await transit_query(destinations[i-1] , destinations[i] , mergedArray , no_previous);
-                }
-                TotalResult.Expected += result.Expected;
-                TotalResult.Queried += result.Queried;
-                TotalResult.HTML += result.HTML;
-                TotalResult.Distance = `${parseInt(TotalResult.Distance) + parseInt(result.Distance)}` ;
-                TotalResult.Dist_array = TotalResult.Dist_array.concat(result.Dist_array);
-                TotalResult.nodes_path = TotalResult.nodes_path.concat(result.nodes_path);
-                if(i == destinations.length - 1){
-                    TotalResult.Stops_index.push(TotalResult.Expected - 1);
-                }else{
-                    TotalResult.Stops_index.push(TotalResult.Expected);
-                }
-            }catch(error){
-                console.error('Error caught:', error.message);
-                return res.send({HTML : "<p>sorry no path is available</p>" , Distance : 0 });
-            }
-        }
-        return res.send(TotalResult);
-    }else{
-        const previous_node = { have_previous : false , pov : "" , arrow : ""};
-        inputData.source = await room_num_to_node_id(inputData.source);
-        inputData.destination = await room_num_to_node_id(inputData.destination);
-        const result = await full_query(inputData.source , inputData.destination , mergedArray , previous_node);
-        return res.send(result); 
+    let destinations = inputData.MultiStopArray;
+    //destinations[0] = parseInt(previous_node_component.node_id);/////////////////////////////to remove
+    for(let i =  0; i < destinations.length ; i ++){
+        destinations[i] = await room_num_to_node_id(destinations[i]);
     }
+    
+    const TotalResult = {
+        Expected : 0 ,
+        Queried : 0 , 
+        HTML : "" ,
+        Distance : 0 ,
+        Dist_array : [] , 
+        nodes_path : [] , 
+        Stops_index : []
+    }
+    const no_previous = { have_previous : false , pov : "" , arrow : ""};
+    const previous_node = { have_previous : true , pov : previous_node_component.pov , arrow : previous_node_component.arrow};
+    for(let i = 1 ; i < destinations.length ; i++){
+        let result;
+        try{
+            if(i == destinations.length-1){
+                if(destinations.length == 2){
+                    result = await full_query(destinations[i-1] , destinations[i] , mergedArray , previous_node);
+                }else{
+                    result = await full_query(destinations[i-1] , destinations[i] , mergedArray , no_previous);
+                }
+            }else if(i == 1){
+                result = await transit_query(destinations[i-1] , destinations[i] , mergedArray , previous_node);
+            }else{
+                result = await transit_query(destinations[i-1] , destinations[i] , mergedArray , no_previous);
+            }
+            TotalResult.Expected += result.Expected;
+            TotalResult.Queried += result.Queried;
+            TotalResult.HTML += result.HTML;
+            TotalResult.Distance = `${parseInt(TotalResult.Distance) + parseInt(result.Distance)}` ;
+            TotalResult.Dist_array = TotalResult.Dist_array.concat(result.Dist_array);
+            TotalResult.nodes_path = TotalResult.nodes_path.concat(result.nodes_path);
+            if(i == destinations.length - 1){
+                TotalResult.Stops_index.push(TotalResult.Expected - 1);
+            }else{
+                TotalResult.Stops_index.push(TotalResult.Expected);
+            }
+        }catch(error){
+            console.error('Error caught:', error.message);
+            return res.send({HTML : "<p>sorry no path is available</p>" , Distance : 0 });
+        }
+    }
+    return res.send(TotalResult);
 });
 
 router.post('/insertBlocked' , async (req ,res ) => {
