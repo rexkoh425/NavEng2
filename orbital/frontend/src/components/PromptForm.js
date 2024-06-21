@@ -164,6 +164,8 @@ function PromptForm() {
 
     const axiosPostData = async () => {
         const postData = {
+            sourceLocation: sourceLocation,
+            destinationLocation: destinationLocation,
             Debugging: debug,
             current_blocked: blockedNodeID,
             sheltered: sheltered , 
@@ -218,6 +220,7 @@ function PromptForm() {
         }
     };
 
+
     const handleSubmit = (e) => {
         e.preventDefault()
 
@@ -233,6 +236,7 @@ function PromptForm() {
         } else {
             setMessageError("")
         }
+
         setMessageError("");
         axiosPostData();
         setFormSubmitted(true);
@@ -319,6 +323,7 @@ function PromptForm() {
                                     setSourceLocation(value);
                                 } else {
                                     setSourceLocation(""); // Handle case when value is cleared
+
                                 }
                                 disableSubmitButton(event.target.value, destinationLocation);
                             }
@@ -402,7 +407,7 @@ function PromptForm() {
                             onChange={handleShelteredCheckbox} />} label="Sheltered Path" sx={{ fontFamily: "Lexend" }} />
                         <br></br>
                         <Button variant="contained" type="submit" disabled={disableSubmit} onClick={handleSubmit} sx={{ bgcolor: "#cdd8e6", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }}>Submit</Button>
-
+                        {MultiStopArray}
 
                         <br></br>
                         {showUpload && <div><FileUpload /></div>}
