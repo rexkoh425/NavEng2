@@ -71,9 +71,10 @@ int main(){
       }
     }
     cout << "|";
-    for(int i = 0 ; i < size-1 ; i++){
+    size = final_directions.size();
+    for(int i = 0 ; i < size ; i++){
       cout << final_directions[i];
-      if(i != size-2){
+      if(i != size-1){
         cout << ",";
       }
     }
@@ -81,9 +82,10 @@ int main(){
     cout << "|" << distance;
 
     cout << "|";
-    for(int i = 0 ; i < size-1 ; i++){
+    size = dist_between.size();
+    for(int i = 0 ; i < size ; i++){
       cout << dist_between[i];
-      if(i != size-2){
+      if(i != size-1){
         cout << ",";
       }
     }

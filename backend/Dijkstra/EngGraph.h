@@ -48,7 +48,7 @@ Graph createEngGraph(vector<int> blocked_nodes){
     g.addEdge(41, 42, 135 , WEST);
     g.addEdge(42, 43, 20 , NORTH);
     g.addEdge(42, 44, 60 , SOUTH);
-    g.addEdge(44, 45, 40 , WEST);////////
+    g.addEdge(44, 45, 40 , WEST);///////
     g.addEdge(45, 46, 30 , SOUTH);//////
     g.addEdge(45, 47, 50 , NORTH);///////
     g.addEdge(47, 48, 20 , WEST);

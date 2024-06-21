@@ -40,7 +40,9 @@ function PromptForm() {
     let arrayFromString = messageError.split('<br>');
     const [selectedFile, setSelectedFile] = useState(null);
     const [sheltered, setSheltered] = useState(false);
-    const [NoStairs, setNoStairs] = useState(true);
+    const [NoStairs, setNoStairs] = useState(false);
+    const [MultiStop , setMultiStop] = useState(true);
+    const [MultiStopArray , setMultiStopArray] = useState([158 , 87 , 141]);//  
 
     let parts = blocked.split('/');
     let remainder = parts.slice(8).join('/');
@@ -122,7 +124,9 @@ function PromptForm() {
             Debugging: debug,
             current_blocked: blockedNodeID,
             sheltered: sheltered , 
-            NoStairs : NoStairs
+            NoStairs : NoStairs , 
+            MultiStop : MultiStop ,
+            MultiStopArray : MultiStopArray
         };
 
         try {
@@ -152,7 +156,9 @@ function PromptForm() {
             current_blocked: blockedNodeID,
             b4_blocked_img_path : beforebeforeQuote,
             sheltered: sheltered , 
-            NoStairs : NoStairs
+            NoStairs : NoStairs , 
+            MultiStop : MultiStop , 
+            MultiStopArray : MultiStopArray
         };
 
         try {
@@ -162,8 +168,8 @@ function PromptForm() {
             setMessageError(response.data['HTML']);
             setTotalDistance(response.data['Distance'] / 10);
             const distArray = response.data['Dist_array'];
-            handleConvertToMetres(distArray)
-
+            handleConvertToMetres(distArray);
+            
             // Perform split operation inside the then block
             const arrayFromString = response.data['HTML'].split('<img src');
             setBlocked(arrayFromString[1]);
