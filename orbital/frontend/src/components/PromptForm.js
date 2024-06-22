@@ -33,7 +33,6 @@ function PromptForm() {
     const [selectLocations, setSelectLocations] = useState([])
     const [totalDistance, setTotalDistance] = useState(``)
     const [distanceArray, setDistanceArray] = useState([])
-    const [StopsIndex, setStopsIndex] = useState([]);
     const [debug, SetDebug] = useState(false);
     const [formSubmitted, setFormSubmitted] = useState(false);
     const [arrayposition, setCount] = useState(0);//Current image which the user is viewing
@@ -50,8 +49,21 @@ function PromptForm() {
     //const [blockedNodeIndexArray, setBlockedNodeIndexArray] = useState("")
     const [blockedArray, setBlockedArray] = useState([]); //Array of all of the nodes which were blocked by the users (In image name format: X_X_X_X_Direction_Direction_Type.jpg)
     const [stopsIndex, setStopsIndex] = useState([]);
+    const Local = false
+    let websitelink=""
+    if (Local) {
+        websitelink="http://localhost:3000"
+    } else {
+        websitelink="https://naveng-backend-vercel.vercel.app"
+    }
 
     useEffect(() => {
+        // Update clumpedArray whenever front, center, or end change
+        const newClumpedArray = [sourceLocation, ...MultiStopArrayDuplicate, destinationLocation];
+        setMultiStopArray(newClumpedArray);
+      }, [sourceLocation, MultiStopArrayDuplicate, destinationLocation]);
+
+      useEffect(() => {
         // Update clumpedArray whenever front, center, or end change
         const newClumpedArray = [sourceLocation, ...MultiStopArrayDuplicate, destinationLocation];
         setMultiStopArray(newClumpedArray);
@@ -147,9 +159,8 @@ function PromptForm() {
       }, [sourceLocation, MultiStopArrayDuplicate, destinationLocation]);
 
     const axiosFetchData = async (processing) => {
-        //await axios.get('https://naveng-backend-vercel.vercel.app/users')
-
-        await axios.get('http://localhost:4000/test')
+        await axios.get(websitelink + '/test')
+        //await axios.get('http://localhost:4000/test')
 
             .then(res => {
                 if (processing) {
@@ -159,8 +170,8 @@ function PromptForm() {
     }
 
     const axiosFetchLocations = async (processing) => {
-        //await axios.post('https://naveng-backend-vercel.vercel.app/locations')
-        await axios.post('http://localhost:4000/locations')
+        await axios.post(websitelink + '/locations')
+        //await axios.post('http://localhost:4000/locations')
             .then(res => {
                 setSelectLocations(res.data)
             })
@@ -177,7 +188,9 @@ function PromptForm() {
         };
 
         try {
-            const response = await axios.post("http://localhost:4000/formPost", postData);
+            const response = await axios.post(websitelink + '/formPost', postData);
+            //const response = await axios.post("http://localhost:4000/formPost", postData);
+
 
             // Update state variables with the response data
             setMessageError(response.data['HTML']);
@@ -206,12 +219,13 @@ function PromptForm() {
             sheltered: sheltered , 
             NoStairs : NoStairs ,  
             MultiStopArray : MultiStopArray,
-            Stops_index: StopsIndex,
+            Stops_index: stopsIndex,
             BlockedNodeIndex: blockedNodeIndex
         };
 
         try {
-            const response = await axios.post("http://localhost:4000/blockRefresh", postData);
+            const response = await axios.post(websitelink + '/blockRefresh', postData);
+            //const response = await axios.post("http://localhost:4000/blockRefresh", postData);
 
             // Update state variables with the response data
             setMessageError(response.data['HTML']);
@@ -284,7 +298,7 @@ function PromptForm() {
             };
 
             // Send POST request to insertBlocked endpoint
-            const response = await axios.post("http://localhost:4000/insertBlocked", postData);
+            const response = await axios.post(websitelink + '/insertBlocked', postData);
 
             // Update state variables after successful response
             setShowUpload(true);
@@ -321,7 +335,6 @@ function PromptForm() {
                 <div className="child1"><center>
                     <form className="desktopForm">
                         <label className="StartAndEndLocation">Start Location</label>
-                        {stopsIndex}
                         <Typography className="description" sx={{ marginBottom: "10px", fontFamily: "Lexend" }}>Search or select the location closest to you</Typography>
                         <br></br>
                         <Autocomplete
