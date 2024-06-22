@@ -50,7 +50,7 @@ function PromptForm() {
     const [blockedNodeIndex, setBlockedNodeIndex] = useState("");
     const [blockedNodeIndexArray, setBlockedNodeIndexArray] = useState("")
     const [blockedArray, setBlockedArray] = useState([]); //Array of all of the nodes which were blocked by the users (In image name format: X_X_X_X_Direction_Direction_Type.jpg)
-
+    const [stopsIndex, setStopsIndex] = useState([]);
 
 
 
@@ -201,6 +201,7 @@ function PromptForm() {
             // Perform split operation inside the then block
             const arrayFromString = response.data['HTML'].split('<img src');
             setBlocked(arrayFromString[1]);
+            setStopsIndex(response.data['Stops_index']);
 
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -338,6 +339,7 @@ function PromptForm() {
                 <div className="child1"><center>
                     <form className="desktopForm">
                         <label className="StartAndEndLocation">Start Location</label>
+                        {stopsIndex}
                         <Typography className="description" sx={{ marginBottom: "10px", fontFamily: "Lexend" }}>Search or select the location closest to you</Typography>
                         <br></br>
                         <Autocomplete
@@ -362,7 +364,7 @@ function PromptForm() {
                         <br></br>
                         <label className="StartAndEndLocation">End Location</label>
                         <Typography className="description2" sx={{ marginBottom: "10px", fontFamily: "Lexend" }}>Search or select the location closest to your end point</Typography>
-
+                        
                         <div >
 
                             {autocompleteFields.map((_, index) => (
