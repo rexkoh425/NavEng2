@@ -291,10 +291,6 @@ function PromptForm() {
             const blockdata = response.data;
             setBlockedMessage(blockdata['message']);
             setBlockedNodeID(blockdata['node']);
-            console.log("blocked message: " + blockdata['message']); // Log the message
-            console.log("blocked nodeID: " + blockdata['node']); // Log the node ID
-            console.log("before_node_id" + before_node_id)
-            setBlockedNodeID(blockdata['node'])
             const newBlocked = beforeQuote;
             const newBlockedArray = [...blockedArray, newBlocked];
             setBlockedArray(newBlockedArray)
