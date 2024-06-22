@@ -640,7 +640,6 @@ router.post('/DeleteFailedLocations', async (req, res) => {
 router.post('/formPost' , async (req ,res) => { 
     //add to formPost input ,  elements = new added node 
     const inputData = req.body;
-    console.log("Array: " + inputData.MultiStopArray)
 
     let destinations = inputData.MultiStopArray;
     
@@ -717,6 +716,7 @@ router.post('/blockRefresh' , async (req ,res) => {
     for(let i =  0; i < destinations.length ; i ++){
         destinations[i] = await room_num_to_node_id(destinations[i]);
     }
+
     console.log("stop index : " , inputData.Stops_index);
     console.log("blocked node index : " , inputData.BlockedNodeIndex);
     while(inputData.Stops_index[0] < inputData.BlockedNodeIndex){
@@ -786,7 +786,7 @@ router.post('/blockRefresh' , async (req ,res) => {
 router.post('/insertBlocked' , async (req ,res ) => {
     const input = req.body.img_string;
     console.log("input is : " + input)
-    node_id = input
+    node_id = input;
     
     /*
     const node_string = input.split("_");

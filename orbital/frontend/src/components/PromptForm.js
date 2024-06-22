@@ -33,7 +33,7 @@ function PromptForm() {
     const [selectLocations, setSelectLocations] = useState([])
     const [totalDistance, setTotalDistance] = useState(``)
     const [distanceArray, setDistanceArray] = useState([])
-    const [nodePath, setNodePath] = useState([])
+    const [StopsIndex, setStopsIndex] = useState([]);
     const [debug, SetDebug] = useState(false);
     const [formSubmitted, setFormSubmitted] = useState(false);
     const [arrayposition, setCount] = useState(0);//Current image which the user is viewing
@@ -92,10 +92,6 @@ function PromptForm() {
         updatedValues[index] = value;
         setMultiStopArrayDuplicate(updatedValues);
         
-        const duplicateArray = [...updatedValues]
-        duplicateArray.unshift(sourceLocation);
-        duplicateArray.push(destinationLocation);
-        setMultiStopArray(duplicateArray);
     };
 
     let parts = blocked.split('/');
@@ -194,8 +190,8 @@ function PromptForm() {
             setMessageError(response.data['HTML']);
             setTotalDistance(response.data['Distance'] / 10);
             const distArray = response.data['Dist_array'];
-            const nodes_path = response.data['nodes_path'];
-            setNodePath(nodes_path)
+            const Stop_indexs = response.data['Stops_index'];
+            setStopsIndex(Stop_indexs);
             handleConvertToMetres(distArray)
 
             // Perform split operation inside the then block
@@ -217,7 +213,7 @@ function PromptForm() {
             sheltered: sheltered , 
             NoStairs : NoStairs ,  
             MultiStopArray : MultiStopArray,
-            Stops_index: nodePath,
+            Stops_index: Stops_index,
             BlockedNodeIndex: blockedNodeIndex
             
         };
@@ -307,7 +303,7 @@ function PromptForm() {
             console.log("blocked nodeID: " + blockdata['node']); // Log the node ID
             console.log("before_node_id" + before_node_id)
             setBlockedNodeID(blockdata['node'])
-            const newBlocked = beforeQuote
+            const newBlocked = beforeQuote;
             const newBlockedArray = [...blockedArray, newBlocked];
             setBlockedArray(newBlockedArray)
             const newBlockedNodeIndex = blockedNodeIndex
