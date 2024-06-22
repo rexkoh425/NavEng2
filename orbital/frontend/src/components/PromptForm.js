@@ -20,6 +20,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import Instructions from "./Instructions";
+import DestinationNotification from "./DestinationNotification";
 
 
 function PromptForm() {
@@ -49,7 +50,7 @@ function PromptForm() {
     //const [blockedNodeIndexArray, setBlockedNodeIndexArray] = useState("")
     const [blockedArray, setBlockedArray] = useState([]); //Array of all of the nodes which were blocked by the users (In image name format: X_X_X_X_Direction_Direction_Type.jpg)
     const [stopsIndex, setStopsIndex] = useState([]);
-    const Local = false
+    const Local = true
     let websitelink=""
     if (Local) {
         websitelink="http://localhost:3000"
@@ -472,6 +473,8 @@ function PromptForm() {
 
                     </center>
                     {formSubmitted && <p className="imageCount">{arrayposition + 1}/{arrayFromString.length - 1}</p>}
+                    
+                    <DestinationNotification stopsIndex={stopsIndex} arrayposition={arrayposition} destinationLocation={destinationLocation} MultiStopArray={MultiStopArray} />
 
                     {formSubmitted && <div className="container">
                         <Button variant="contained" type="submit" onClick={decrementCounter} disabled={disableLeftButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "10vh", width: "3vw" }}><ArrowLeftIcon></ArrowLeftIcon></Button>

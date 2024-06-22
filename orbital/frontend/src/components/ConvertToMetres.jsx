@@ -17,5 +17,6 @@ const ConvertToMetres = ({ distanceArrayx10 }) => {
 
   // Return the modified array (dividedNumbers)
   return remainingDistances;
+
 }
 export default ConvertToMetres; // Export the component as default
