@@ -46,9 +46,8 @@ function PromptForm() {
     const [sheltered, setSheltered] = useState(false); 
     const [NoStairs, setNoStairs] = useState(false); 
     const [beforeBlocked, setBeforeBlocked] = useState('');
-    const [blockedNodeID, setBlockedNodeID] = useState('');
     const [blockedNodeIndex, setBlockedNodeIndex] = useState("");
-    const [blockedNodeIndexArray, setBlockedNodeIndexArray] = useState("")
+    //const [blockedNodeIndexArray, setBlockedNodeIndexArray] = useState("")
     const [blockedArray, setBlockedArray] = useState([]); //Array of all of the nodes which were blocked by the users (In image name format: X_X_X_X_Direction_Direction_Type.jpg)
 
 
@@ -171,7 +170,7 @@ function PromptForm() {
     const axiosPostData = async () => { //Sending main form data
         const postData = {
             Debugging: debug,
-            current_blocked: blockedNodeID,
+            blocked_array: blockedArray,
             sheltered: sheltered , 
             NoStairs : NoStairs , 
             MultiStopArray : MultiStopArray
@@ -200,7 +199,7 @@ function PromptForm() {
 
         const postData = {
             Debugging: debug,
-            current_blocked: blockedNodeID,
+            blocked_array: blockedArray,
             b4_blocked_img_path : beforebeforeQuote,
             blocked_img_path : beforeQuote ,
             sheltered: sheltered , 
@@ -280,7 +279,7 @@ function PromptForm() {
     const axiosPostBlock = async (e) => { //Sending data when block button is clicked
         try {
             let postData = {
-                img_string: blockedArray.length === 0 ? [beforeQuote] : [blockedArray, beforeQuote]
+                img_string: beforeQuote
             };
 
             // Send POST request to insertBlocked endpoint
@@ -290,13 +289,12 @@ function PromptForm() {
             setShowUpload(true);
             const blockdata = response.data;
             setBlockedMessage(blockdata['message']);
-            setBlockedNodeID(blockdata['node']);
-            const newBlocked = beforeQuote;
-            const newBlockedArray = [...blockedArray, newBlocked];
+            const new_blocked = blockdata['node'];
+            const newBlockedArray = [...blockedArray, new_blocked];
             setBlockedArray(newBlockedArray)
-            const newBlockedNodeIndex = blockedNodeIndex
-            const newBlockedIndexArray = [...blockedNodeIndexArray, newBlockedNodeIndex];
-            setBlockedNodeIndexArray(newBlockedIndexArray)
+            //const newBlockedNodeIndex = blockedNodeIndex
+            //const newBlockedIndexArray = [...blockedNodeIndexArray, newBlockedNodeIndex];
+            //setBlockedNodeIndexArray(newBlockedIndexArray)
 
         } catch (error) {
             console.error('Error posting block:', error);
