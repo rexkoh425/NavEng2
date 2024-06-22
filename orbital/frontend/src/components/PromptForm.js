@@ -25,29 +25,42 @@ import Instructions from "./Instructions";
 function PromptForm() {
     const [sourceLocation, setSourceLocation] = useState('')
     const [destinationLocation, setDestinationLocation] = useState('')
-    const [disableSubmit, setDisableSubmit] = useState(true)
-    const [autocompleteFields, setAutocompleteFields] = useState([]);
-    const [MultiStopArrayDuplicate, setMultiStopArrayDuplicate] = useState([]);
+    const [disableSubmit, setDisableSubmit] = useState(true) //Boolean to disable and enable Submit Button
+    const [autocompleteFields, setAutocompleteFields] = useState([]); //Multistop fields
+    const [MultiStopArrayDuplicate, setMultiStopArrayDuplicate] = useState([]); //Duplicate Array to store temporary Multistop Array
     const [MultiStopArray, setMultiStopArray] = useState([]);
     const [messageError, setMessageError] = useState(``) //using messageError variable for html content as well
     const [selectLocations, setSelectLocations] = useState([])
     const [totalDistance, setTotalDistance] = useState(``)
     const [distanceArray, setDistanceArray] = useState([])
-    const [nodePath, setNodePath] = useState([])
+    const [StopsIndex, setStopsIndex] = useState([])//The indexes of all of the stops for multistop
     const [debug, SetDebug] = useState(false);
     const [formSubmitted, setFormSubmitted] = useState(false);
-    const [arrayposition, setCount] = useState(0);
-    const [blockedMessage, setBlockedMessage] = useState('');
+    const [arrayposition, setCount] = useState(0);//Current image which the user is viewing
+    const [blockedMessage, setBlockedMessage] = useState(''); //Message to display whenever user blocks a node
     const [beforeBlocked, setBeforeBlocked] = useState('');
     const [blocked, setBlocked] = useState('');
     const [blockedNodeID, setBlockedNodeID] = useState('');
     const [disableRightButton, setDisableRightButton] = useState(false);
     const [disableLeftButton, setDisableLeftButton] = useState(true);
-    const [showUpload, setShowUpload] = useState(false);
-    let arrayFromString = messageError.split('<br>');
-    const [sheltered, setSheltered] = useState(false);
-    const [NoStairs, setNoStairs] = useState(false);
+    const [showUpload, setShowUpload] = useState(false); 
+    let arrayFromString = messageError.split('<br>'); //To split HTML code into array
+    const [sheltered, setSheltered] = useState(false); 
+    const [NoStairs, setNoStairs] = useState(false); 
     const [blockedNodeIndex, setBlockedNodeIndex] = useState("");
+    const [blockedNodeIndexArray, setBlockedNodeIndexArray] = useState("")
+    const [blockedArray, setBlockedArray] = useState([]); //Array of all of the nodes which were blocked by the users (In image name format: X_X_X_X_Direction_Direction_Type.jpg)
+
+
+
+
+    useEffect(() => {
+        // Update clumpedArray whenever front, center, or end change
+        const newClumpedArray = [sourceLocation, ...MultiStopArrayDuplicate, destinationLocation];
+        setMultiStopArray(newClumpedArray);
+      }, [sourceLocation, MultiStopArrayDuplicate, destinationLocation]);
+
+
 
     const disableSubmitButton = (start, end) => {
         if (start !== '' && end !== '') 
@@ -79,10 +92,6 @@ function PromptForm() {
         updatedValues[index] = value;
         setMultiStopArrayDuplicate(updatedValues);
         
-        const duplicateArray = [...updatedValues]
-        duplicateArray.unshift(sourceLocation);
-        duplicateArray.push(destinationLocation);
-        setMultiStopArray(duplicateArray);
     };
 
     let parts = blocked.split('/');
@@ -97,7 +106,7 @@ function PromptForm() {
     const node_string = beforebeforeQuote.split("_")[0];
     const before_node_id = parseInt(node_string);
 
-    const incrementCounter = (e) => {
+    const incrementCounter = (e) => { //counter for image array
         e.preventDefault();
         if (arrayposition !== (arrayFromString.length - 2)) { //Using -2 due to nature of splitting string
             setCount(arrayposition + 1);
@@ -159,10 +168,8 @@ function PromptForm() {
             .catch(err => console.log("Fetch Location Error!!"))
     }
 
-    const axiosPostData = async () => {
+    const axiosPostData = async () => { //Sending main form data
         const postData = {
-            sourceLocation: sourceLocation,
-            destinationLocation: destinationLocation,
             Debugging: debug,
             current_blocked: blockedNodeID,
             sheltered: sheltered , 
@@ -178,8 +185,8 @@ function PromptForm() {
             setMessageError(response.data['HTML']);
             setTotalDistance(response.data['Distance'] / 10);
             const distArray = response.data['Dist_array'];
-            const nodes_path = response.data['nodes_path'];
-            setNodePath(nodes_path)
+            const Stop_indexs = response.data['Stops_index'];
+            setStopsIndex(Stop_indexs);
             handleConvertToMetres(distArray)
 
             // Perform split operation inside the then block
@@ -191,19 +198,17 @@ function PromptForm() {
         }
     };
 
-    const axiosPostDataRefresh = async () => {
+    const axiosPostDataRefresh = async () => { //Sending data when alternate path button is clicked
 
         const postData = {
-            sourceLocation: sourceLocation,
-            destinationLocation: destinationLocation,
             Debugging: debug,
             current_blocked: blockedNodeID,
             b4_blocked_img_path : beforebeforeQuote,
             sheltered: sheltered , 
             NoStairs : NoStairs ,  
             MultiStopArray : MultiStopArray,
-            Stops_index: nodePath,
-            BlockedNodeIndex: blockedNodeIndex
+            Stops_index: StopsIndex,
+            BlockedNodeIndex: blockedNodeIndexArray.length === 0 ? [blockedArray] : [blockedNodeIndex, blockedNodeIndexArray]
             
         };
 
@@ -274,10 +279,10 @@ function PromptForm() {
         setShowUpload(false);
     }
 
-    const axiosPostBlock = async (e) => {
+    const axiosPostBlock = async (e) => { //Sending data when block button is clicked
         try {
-            const postData = {
-                img_string: beforeQuote
+            let postData = {
+                img_string: blockedArray.length === 0 ? [beforeQuote] : [blockedArray, beforeQuote]
             };
 
             // Send POST request to insertBlocked endpoint
@@ -292,6 +297,12 @@ function PromptForm() {
             console.log("blocked nodeID: " + blockdata['node']); // Log the node ID
             console.log("before_node_id" + before_node_id)
             setBlockedNodeID(blockdata['node'])
+            const newBlocked = beforeQuote
+            const newBlockedArray = [...blockedArray, newBlocked];
+            setBlockedArray(newBlockedArray)
+            const newBlockedNodeIndex = blockedNodeIndex
+            const newBlockedIndexArray = [...blockedNodeIndexArray, newBlockedNodeIndex];
+            setBlockedNodeIndexArray(newBlockedIndexArray)
 
         } catch (error) {
             console.error('Error posting block:', error);
@@ -318,6 +329,7 @@ function PromptForm() {
                     <form className="desktopForm">
                         <label className="StartAndEndLocation">Start Location</label>
                         <Typography className="description" sx={{ marginBottom: "10px", fontFamily: "Lexend" }}>Search or select the location closest to you</Typography>
+                        <br></br>
                         <Autocomplete
 
                             options={selectLocations} sx={{ width: 250, fontFamily: 'Georgia, serif' }} renderInput={(params) => (
@@ -348,7 +360,7 @@ function PromptForm() {
                                 <div className="Autocomplete-container" key={index}>
                                     <div className="centered-element">
                                         <Autocomplete
-                                            options={selectLocations} // Replace with your options array
+                                            options={selectLocations}
                                             value={MultiStopArrayDuplicate[index] || null}
                                             sx={{ width: 250, fontFamily: 'Georgia, serif' }}
                                             onChange={(event, value) => handleAutocompleteChange(index, value)}

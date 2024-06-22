@@ -613,6 +613,7 @@ router.post('/DeleteFailedLocations', async (req, res) => {
 router.post('/formPost' , async (req ,res) => { 
     //add to formPost input ,  elements = new added node 
     const inputData = req.body;
+    console.log("Array: " + inputData.MultiStopArray)
 
     if((inputData.MultiStopArray.length < 3) && inputData.sourceLocation && inputData.destinationLocation) {
         inputData.MultiStopArray = ([inputData.sourceLocation, inputData.destinationLocation])
@@ -683,9 +684,6 @@ router.post('/blockRefresh' , async (req ,res) => {
     
     const inputData = req.body;
     
-    if((inputData.MultiStopArray.length < 3) && inputData.sourceLocation && inputData.destinationLocation) {
-        inputData.MultiStopArray = ([inputData.sourceLocation, inputData.destinationLocation])
-    }
     /*
 
     if((inputData.MultiStopArray.length < 3) && inputData.sourceLocation && inputData.destinationLocation) {
@@ -761,8 +759,12 @@ router.post('/blockRefresh' , async (req ,res) => {
 router.post('/insertBlocked' , async (req ,res ) => {
     const input = req.body.img_string;
     console.log("input is : " + input)
+    node_id = input
+    
+    /*
     const node_string = input.split("_");
     const node_id = parseInt(node_string[0]);
+    */
     
     try {
         const { error } = await supabase

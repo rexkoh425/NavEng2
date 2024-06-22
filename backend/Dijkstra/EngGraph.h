@@ -196,6 +196,7 @@ Graph createEngGraph(vector<int> blocked_nodes){
     g.addEdge(167, 31 , 1 , UP);//extra12
     g.addEdge(166, 27 , 1 , UP);//extra12
     g.addEdge(154, 23 , 1 , UP);//extra12
+    /*
     g.addEdge(142, 176, 220 , EAST);
     g.addEdge(176, 177, 65 , EAST);
     g.addEdge(177, 178, 20 , NORTH);
@@ -279,5 +280,6 @@ Graph createEngGraph(vector<int> blocked_nodes){
     g.addEdge(245, 246, 350 , SOUTH);
     g.addEdge(246, 247, 20 , SOUTH);
     g.addEdge(246, 248, 20 , WEST);
+    */
     return g;
 }
