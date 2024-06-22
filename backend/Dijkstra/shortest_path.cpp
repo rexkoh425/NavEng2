@@ -76,8 +76,8 @@ Path shortestPath(const Graph& g, int source, int dest) {
     path.insert(path.begin() , parent_node);
   }
 
-  delete parent;
-  delete visit_table;
-  delete parent_direction;
+  delete[] parent;
+  delete[] visit_table;
+  delete[] parent_direction;
   return Path(dist_from_source, path , direction , dist_array);
 }

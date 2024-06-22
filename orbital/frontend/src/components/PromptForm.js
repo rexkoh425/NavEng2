@@ -33,7 +33,7 @@ function PromptForm() {
     const [selectLocations, setSelectLocations] = useState([])
     const [totalDistance, setTotalDistance] = useState(``)
     const [distanceArray, setDistanceArray] = useState([])
-    const [StopsIndex, setStopsIndex] = useState([])//The indexes of all of the stops for multistop
+    const [StopsIndex, setStopsIndex] = useState([]);
     const [debug, SetDebug] = useState(false);
     const [formSubmitted, setFormSubmitted] = useState(false);
     const [arrayposition, setCount] = useState(0);//Current image which the user is viewing
@@ -91,7 +91,6 @@ function PromptForm() {
         const updatedValues = [...MultiStopArrayDuplicate];
         updatedValues[index] = value;
         setMultiStopArrayDuplicate(updatedValues);
-        
     };
 
     let parts = blocked.split('/');
@@ -146,6 +145,12 @@ function PromptForm() {
         }
     }, [])
 
+    useEffect(() => {
+        // Update clumpedArray whenever front, center, or end change
+        const newClumpedArray = [sourceLocation, ...MultiStopArrayDuplicate, destinationLocation];
+        setMultiStopArray(newClumpedArray);
+      }, [sourceLocation, MultiStopArrayDuplicate, destinationLocation]);
+
     const axiosFetchData = async (processing) => {
         //await axios.get('https://naveng-backend-vercel.vercel.app/users')
 
@@ -175,7 +180,6 @@ function PromptForm() {
             sheltered: sheltered , 
             NoStairs : NoStairs , 
             MultiStopArray : MultiStopArray
-            
         };
 
         try {
@@ -187,7 +191,7 @@ function PromptForm() {
             const distArray = response.data['Dist_array'];
             const Stop_indexs = response.data['Stops_index'];
             setStopsIndex(Stop_indexs);
-            handleConvertToMetres(distArray)
+            handleConvertToMetres(distArray);
 
             // Perform split operation inside the then block
             const arrayFromString = response.data['HTML'].split('<img src');
@@ -204,6 +208,7 @@ function PromptForm() {
             Debugging: debug,
             current_blocked: blockedNodeID,
             b4_blocked_img_path : beforebeforeQuote,
+            blocked_img_path : beforeQuote ,
             sheltered: sheltered , 
             NoStairs : NoStairs ,  
             MultiStopArray : MultiStopArray,
@@ -220,8 +225,8 @@ function PromptForm() {
             setTotalDistance(response.data['Distance'] / 10);
             const distArray = response.data['Dist_array'];
             handleConvertToMetres(distArray);
-            
-            // Perform split operation inside the then block
+            setStopsIndex(response.data['Stops_index']);
+            setMultiStopArray(response.data['Destinations']);
             const arrayFromString = response.data['HTML'].split('<img src');
             setBlocked(arrayFromString[1]);
 

@@ -13,7 +13,6 @@
 using namespace std;
 using namespace rapidjson;
 
-
 int main(){
     
     std::string inputData;
@@ -62,7 +61,7 @@ int main(){
     vector<int> final_directions = result.direction();
     vector<int> dist_between = result.dist_array();
     int distance = result.total_distance();
-
+    
     int size = final_path.size();
     for(int i = 0 ; i < size ; i++){
       cout << final_path[i] + 1;

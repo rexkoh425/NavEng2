@@ -1,7 +1,7 @@
 #include "graph.h"
 
 Graph createEngGraph(vector<int> blocked_nodes){
-    Graph g(249  ,blocked_nodes);
+    Graph g(249  , blocked_nodes);
     g.addEdge(0, 1, 50 , EAST);
     g.addEdge(1, 153, 70 , SOUTH);
     g.addEdge(153, 2, 40 , SOUTH);
@@ -125,10 +125,10 @@ Graph createEngGraph(vector<int> blocked_nodes){
     g.addEdge(106, 113, 1 , UP); //extra
     g.addEdge(91 , 138 , 1 , UP); //extra
     g.addEdge(97 , 137 , 1,  UP); //extra
-    g.addEdge(110, 111, 20 , EAST);
-    g.addEdge(111, 112, 40 , NORTH);
+    g.addEdge(110, 111, 20 , EAST);//(111 , 110 , 20 , WEST)
+    g.addEdge(111, 112, 40 , NORTH);////////////
     g.addEdge(112, 113, 20 , WEST);
-    g.addEdge(111, 114, 40 , SOUTH);
+    g.addEdge(111, 114, 40 , SOUTH);////////////
     g.addEdge(114, 115, 95 , SOUTH);
     g.addEdge(115, 116, 30 , WEST);
     g.addEdge(115, 117, 20 , EAST);
@@ -185,7 +185,7 @@ Graph createEngGraph(vector<int> blocked_nodes){
     g.addEdge(162, 167, 20 , EAST);
     g.addEdge(158, 168, 120 , SOUTH);
     g.addEdge(168, 169, 80 , SOUTH);
-    g.addEdge(168, 162, 110 , EAST);//////////
+    g.addEdge(168, 162, 110 , EAST);
     g.addEdge(169, 170, 90 , SOUTH);
     g.addEdge(10, 171, 130 , EAST);
     g.addEdge(171, 172, 10 , NORTH);
@@ -196,90 +196,5 @@ Graph createEngGraph(vector<int> blocked_nodes){
     g.addEdge(167, 31 , 1 , UP);//extra12
     g.addEdge(166, 27 , 1 , UP);//extra12
     g.addEdge(154, 23 , 1 , UP);//extra12
-    /*
-    g.addEdge(142, 176, 220 , EAST);
-    g.addEdge(176, 177, 65 , EAST);
-    g.addEdge(177, 178, 20 , NORTH);
-    g.addEdge(177, 179, 240 , EAST);
-    g.addEdge(179, 180, 240 , SOUTH);
-    g.addEdge(180, 181, 50 , WEST);
-    g.addEdge(181, 182, 115 , SOUTH);
-    g.addEdge(182, 183, 20 , WEST);
-    g.addEdge(182, 184, 25 , SOUTH);
-    g.addEdge(180, 185, 30 , EAST);
-    g.addEdge(184, 186, 30 , WEST);
-    g.addEdge(186, 187, 20 , SOUTH);
-    g.addEdge(186, 188, 410 , WEST);
-    g.addEdge(188, 189, 55 , SOUTH);
-    g.addEdge(189, 190, 40 , SOUTH);
-    g.addEdge(190, 191, 20 , EAST);
-    g.addEdge(130, 189, 40 , WEST);//closed loop EA floor 6 to E1A
-    g.addEdge(246, 242, 95 , WEST);//closed loop EA floor 7 to E1A
-    g.addEdge(187, 192, 1 , UP);
-    g.addEdge(192, 193, 20 , NORTH);
-    g.addEdge(193, 194, 20 , EAST);
-    g.addEdge(194, 195, 25 , NORTH);
-    g.addEdge(195, 196, 20 , WEST);
-    g.addEdge(192, 197, 1 , UP);
-    g.addEdge(197, 198, 25 , NORTH);
-    g.addEdge(198, 199, 20 , WEST);
-    g.addEdge(197, 200, 1 , UP);
-    g.addEdge(200, 201, 25 , NORTH);
-    g.addEdge(201, 202, 20 , WEST);
-    g.addEdge(200, 203, 1 , UP);
-    g.addEdge(203, 204, 25 , NORTH);
-    g.addEdge(204, 205, 20 , WEST);
-    g.addEdge(187, 206, 1 , DOWN);
-    g.addEdge(206, 207, 25 , NORTH);
-    g.addEdge(207, 208, 20 , WEST);
-    g.addEdge(208, 183, 1 , UP);//E1A FLOOR 2-3 stairs
-    g.addEdge(183, 196 , 1 , UP);//E1A FLOOR 3-4 stairs
-    g.addEdge(196, 199 , 1 , UP);//E1A FLOOR 4-5 stairs
-    g.addEdge(199, 202 , 1 , UP);//E1A FLOOR 5-6 stairs
-    g.addEdge(202, 205 , 1 , UP);//E1A FLOOR 6-7 stairs
-    //////////////////////////alleyside//////////////////////
-    g.addEdge(237, 226 , 1 , UP);//E1A FLOOR 5-6 stairs
-    g.addEdge(226, 221 , 1 , UP);//E1A FLOOR 6-7 stairs
-    g.addEdge(207, 209, 30 , NORTH);
-    g.addEdge(209, 210, 80 , NORTH);
-    g.addEdge(210, 211, 25 , EAST);
-    g.addEdge(211, 212, 80 , EAST);
-    g.addEdge(212, 213, 60 , EAST);
-    g.addEdge(213, 214, 50 , EAST);
-    g.addEdge(214, 215, 30 , EAST);
-    g.addEdge(209, 216, 20 , EAST);
-    g.addEdge(204, 217, 30 , NORTH);
-    g.addEdge(217, 218, 20 , EAST);
-    g.addEdge(217, 219, 75 , NORTH);
-    g.addEdge(219, 220, 480 , EAST);
-    g.addEdge(220, 221, 150 , SOUTH);
-    g.addEdge(201, 222, 150 , NORTH);
-    g.addEdge(222, 223, 405 , EAST);
-    g.addEdge(223, 224, 20 , SOUTH);
-    g.addEdge(223, 225, 75 , EAST);
-    g.addEdge(225, 226, 150 , SOUTH);
-    g.addEdge(198, 227, 90 , NORTH);
-    g.addEdge(227, 228, 20 , EAST);
-    g.addEdge(227, 229, 60 , NORTH);
-    g.addEdge(229, 230, 175 , EAST);
-    g.addEdge(230, 231, 20 , SOUTH);
-    g.addEdge(230, 232, 10 , EAST);
-    g.addEdge(232, 233, 20 , SOUTH);
-    g.addEdge(232, 234, 80 , EAST);
-    g.addEdge(234, 235, 20 , SOUTH);
-    g.addEdge(234, 236, 215 , EAST);
-    g.addEdge(236, 237, 150 , SOUTH);
-    g.addEdge(195, 238, 45 , NORTH);
-    g.addEdge(238, 239, 65 , NORTH);
-    g.addEdge(180, 240, 30 , SOUTH);
-    g.addEdge(193, 241, 410 , WEST);
-    g.addEdge(241, 242, 55 , SOUTH);
-    g.addEdge(242, 243, 30 , SOUTH);
-    g.addEdge(243, 244, 20 , EAST);
-    g.addEdge(147, 245, 135 , SOUTH);
-    g.addEdge(245, 246, 350 , SOUTH);
-    g.addEdge(246, 247, 20 , SOUTH);
-    g.addEdge(246, 248, 20 , WEST);
-    */
     return g;
 }
