@@ -33,7 +33,7 @@ function PromptForm() {
     const [selectLocations, setSelectLocations] = useState([])
     const [totalDistance, setTotalDistance] = useState(``)
     const [distanceArray, setDistanceArray] = useState([])
-    const [nodePath, setNodePath] = useState([])
+    const [StopsIndex, setStopsIndex] = useState([]);
     const [debug, SetDebug] = useState(false);
     const [formSubmitted, setFormSubmitted] = useState(false);
     const [arrayposition, setCount] = useState(0);
@@ -78,11 +78,6 @@ function PromptForm() {
         const updatedValues = [...MultiStopArrayDuplicate];
         updatedValues[index] = value;
         setMultiStopArrayDuplicate(updatedValues);
-        
-        const duplicateArray = [...updatedValues]
-        duplicateArray.unshift(sourceLocation);
-        duplicateArray.push(destinationLocation);
-        setMultiStopArray(duplicateArray);
     };
 
     let parts = blocked.split('/');
@@ -137,6 +132,12 @@ function PromptForm() {
         }
     }, [])
 
+    useEffect(() => {
+        // Update clumpedArray whenever front, center, or end change
+        const newClumpedArray = [sourceLocation, ...MultiStopArrayDuplicate, destinationLocation];
+        setMultiStopArray(newClumpedArray);
+      }, [sourceLocation, MultiStopArrayDuplicate, destinationLocation]);
+
     const axiosFetchData = async (processing) => {
         //await axios.get('https://naveng-backend-vercel.vercel.app/users')
 
@@ -161,14 +162,11 @@ function PromptForm() {
 
     const axiosPostData = async () => {
         const postData = {
-            sourceLocation: sourceLocation,
-            destinationLocation: destinationLocation,
             Debugging: debug,
             current_blocked: blockedNodeID,
             sheltered: sheltered , 
             NoStairs : NoStairs , 
             MultiStopArray : MultiStopArray
-            
         };
 
         try {
@@ -178,9 +176,9 @@ function PromptForm() {
             setMessageError(response.data['HTML']);
             setTotalDistance(response.data['Distance'] / 10);
             const distArray = response.data['Dist_array'];
-            const nodes_path = response.data['nodes_path'];
-            setNodePath(nodes_path)
-            handleConvertToMetres(distArray)
+            const Stop_indexs = response.data['Stops_index'];
+            setStopsIndex(Stop_indexs);
+            handleConvertToMetres(distArray);
 
             // Perform split operation inside the then block
             const arrayFromString = response.data['HTML'].split('<img src');
@@ -194,15 +192,14 @@ function PromptForm() {
     const axiosPostDataRefresh = async () => {
 
         const postData = {
-            sourceLocation: sourceLocation,
-            destinationLocation: destinationLocation,
             Debugging: debug,
             current_blocked: blockedNodeID,
             b4_blocked_img_path : beforebeforeQuote,
+            blocked_img_path : beforeQuote ,
             sheltered: sheltered , 
             NoStairs : NoStairs ,  
             MultiStopArray : MultiStopArray,
-            Stops_index: nodePath,
+            Stops_index: StopsIndex,
             BlockedNodeIndex: blockedNodeIndex
             
         };
@@ -215,8 +212,8 @@ function PromptForm() {
             setTotalDistance(response.data['Distance'] / 10);
             const distArray = response.data['Dist_array'];
             handleConvertToMetres(distArray);
-            
-            // Perform split operation inside the then block
+            setStopsIndex(response.data['Stops_index']);
+            setMultiStopArray(response.data['Destinations']);
             const arrayFromString = response.data['HTML'].split('<img src');
             setBlocked(arrayFromString[1]);
 

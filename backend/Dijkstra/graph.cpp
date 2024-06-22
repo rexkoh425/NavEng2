@@ -25,6 +25,7 @@ void Graph::addEdge(int source, int dest, int weight , int dir) {
       return;
     }
   }
+  
   _vertices[source].emplace_front(dest, weight , dir);
   int opposite_dir = 180 - dir;
   if(dir == EAST || dir == WEST || dir == UP || dir == DOWN){

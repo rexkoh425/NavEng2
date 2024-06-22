@@ -37,6 +37,25 @@ async function NESW_ENUM(input){
     }
 }
 
+async function get_opposite(input){
+    switch(input){ 
+        case "1" :
+            return "3";
+        case "2" :
+            return "4";
+        case "3" :
+            return "1";
+        case "4" :
+            return "2";
+        case "5" :
+            return "6";
+        case "6" :
+            return "5";
+        default : 
+            return "no opposite";
+    }
+}//add function testing
+
 async function get_pov(pov , arrow_direction){
     let incoming = await NESW_ENUM(pov);
     if(incoming == "not NESW"){
@@ -272,6 +291,7 @@ async function break_down_img_path(img_name){
 
 async function full_query(source , destination , blocked_nodes , previous_node){
     return new Promise((resolve, reject) => {
+        console.log(blocked_nodes);
         const inputObj = { source : source , destination : destination , blocked : blocked_nodes};
         const serializedData = JSON.stringify(inputObj);
         const cppProcess = spawn(__dirname + '/../Dijkstra/main' , []);
@@ -280,9 +300,10 @@ async function full_query(source , destination , blocked_nodes , previous_node){
         
         cppProcess.stdout.on('data', async (cpp_data) => {
             try {
-                
+                console.log(cpp_data.toString());
                 const outputData = cpp_data.toString().split("|");
                 let nodes = outputData[0].split(",");
+                console.log(nodes);
                 if(nodes.length == 1){
                     throw new Error("cannot find dest");
                 }
@@ -291,10 +312,11 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                 let distance = outputData[2];
                 let dist_array = outputData[3].split(",");
                 if(previous_node.have_previous){
-                    const pre_pov = await dir_string_to_ENUM(previous_node.pov);
-                    nodes[0] += pre_pov;
-                    const pre_pov_angle = await convert_ENUM_to_angle(pre_pov);
-                    const arrow = await get_arrow_dir(pre_pov_angle , directions[1]);
+                    const blocked_pov = await dir_string_to_ENUM(previous_node.blocked_pov);
+                    const incoming_pov = await get_opposite(blocked_pov);
+                    nodes[0] += incoming_pov;
+                    const incoming_pov_angle = await convert_ENUM_to_angle(incoming_pov);
+                    const arrow = await get_arrow_dir(incoming_pov_angle , directions[0]);
                     nodes[0] += arrow;
                 }else{
                     nodes[0] += "67";
@@ -316,7 +338,8 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                     }
                 }
                 nodes[directions.length] += "67";
-                
+                console.log(nodes);
+                console.log(directions);
                 // Query the 'users' table for a specific user by ID
                 const { data, error } = await supabase
                     .from('pictures')
@@ -344,7 +367,7 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                     debug_array[debug_array_index] = result.unique_id;
                     debug_array_index++;
                 });
-                
+                console.log(get_diff(nodes , debug_array));
                 const final = fixedLengthArray.join('');
                 const FinalResults = {
                     Expected : nodes.length ,
@@ -391,14 +414,16 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                 let distance = outputData[2];
                 let dist_array = outputData[3].split(",");
                 if(previous_node.have_previous){
-                    const pre_pov = await dir_string_to_ENUM(previous_node.pov);
-                    nodes[0] += pre_pov;
-                    const pre_pov_angle = await convert_ENUM_to_angle(pre_pov);
-                    const arrow = await get_arrow_dir(pre_pov_angle , directions[0]);
+                    const blocked_pov = await dir_string_to_ENUM(previous_node.blocked_pov);
+                    const incoming_pov = await get_opposite(blocked_pov);
+                    nodes[0] += incoming_pov;
+                    const incoming_pov_angle = await convert_ENUM_to_angle(incoming_pov);
+                    const arrow = await get_arrow_dir(incoming_pov_angle , directions[0]);
                     nodes[0] += arrow;
                 }else{
                     nodes[0] += "67";
                 }
+                
                 let directions_array_len = directions.length;
                 for(i = 1 ; i < directions_array_len ; i ++){
                     const is_up_down = await is_moving_up_down(directions[i-1] , directions[i]);
@@ -415,7 +440,8 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                     }
                 }
                 nodes[directions.length] += "67";
-        
+                console.log(nodes);
+                console.log(directions);
                 // Query the 'users' table for a specific user by ID
                 const { data, error } = await supabase
                     .from('pictures')
@@ -442,6 +468,7 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                     debug_array[debug_array_index] = result.unique_id;
                     debug_array_index++;
                 });
+                console.log(get_diff(nodes , debug_array));
                 fixedLengthArray.pop();
                 nodes_path.pop();
                 let last_dist = dist_array.pop();
@@ -614,15 +641,17 @@ router.post('/formPost' , async (req ,res) => {
     //add to formPost input ,  elements = new added node 
     const inputData = req.body;
 
-    if((inputData.MultiStopArray.length < 3) && inputData.sourceLocation && inputData.destinationLocation) {
-        inputData.MultiStopArray = ([inputData.sourceLocation, inputData.destinationLocation])
-    }
-    /*
+    let destinations = inputData.MultiStopArray;
+    
     if(inputData.MultiStopArray.length < 2){
         console.log("data incorrectly labelled or source and destination not filled"); 
         return res.send({HTML : "<p>sorry no path is available</p>" , Distance : 0 });
     }
-    */
+
+    for(let i =  0; i < destinations.length ; i ++){
+        destinations[i] = await room_num_to_node_id(destinations[i]);
+    }
+    console.log(destinations);
     let blocked_array = await get_blocked();
     if(inputData.current_blocked !== ''){
         blocked_array.push(inputData.current_blocked - 1);
@@ -636,12 +665,7 @@ router.post('/formPost' , async (req ,res) => {
         stairs = await get_stairs();
     }
     let mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered , ...stairs]));
-    
-    let destinations = inputData.MultiStopArray;
-    for(let i =  0; i < destinations.length ; i ++){
-        destinations[i] = await room_num_to_node_id(destinations[i]);
-    }
-    
+    console.log(mergedArray);
     const TotalResult = {
         Expected : 0 ,
         Queried : 0 , 
@@ -651,7 +675,7 @@ router.post('/formPost' , async (req ,res) => {
         nodes_path : [] , 
         Stops_index : []
     }
-    const previous_node = { have_previous : false , pov : "" , arrow : ""};
+    const previous_node = { have_previous : false , blocked_pov : ""};
     for(let i = 1 ; i < destinations.length ; i++){
         let result;
         try{
@@ -682,21 +706,27 @@ router.post('/formPost' , async (req ,res) => {
 router.post('/blockRefresh' , async (req ,res) => { 
     
     const inputData = req.body;
-    
-    if((inputData.MultiStopArray.length < 3) && inputData.sourceLocation && inputData.destinationLocation) {
-        inputData.MultiStopArray = ([inputData.sourceLocation, inputData.destinationLocation])
-    }
-    /*
+    let destinations = inputData.MultiStopArray;
 
-    if((inputData.MultiStopArray.length < 3) && inputData.sourceLocation && inputData.destinationLocation) {
-        inputData.MultiStopArray = ([inputData.sourceLocation, inputData.destinationLocation])
-    }
     if(inputData.MultiStopArray.length < 2){
-        console.log("data incorrectly labelled or source and destination not filled")  
+        console.log("data incorrectly labelled or source and destination not filled"); 
         return res.send({HTML : "<p>sorry no path is available</p>" , Distance : 0 });
     }
-    */
 
+    for(let i =  0; i < destinations.length ; i ++){
+        destinations[i] = await room_num_to_node_id(destinations[i]);
+    }
+    console.log("stop index : " , inputData.Stops_index);
+    console.log("blocked node index : " , inputData.BlockedNodeIndex);
+    while(inputData.Stops_index[0] < inputData.BlockedNodeIndex){
+        destinations.splice(0,1);
+        inputData.Stops_index.splice(0,1);
+    }
+    destinations.splice(0,1);
+    const previous_node_component = await break_down_img_path(inputData.b4_blocked_img_path);
+    destinations.unshift(parseInt(previous_node_component.node_id));
+    const blocked_node_component = await break_down_img_path(inputData.blocked_img_path);
+    console.log("destinations are : " , destinations);
     let blocked_array = await get_blocked();
     if(inputData.current_blocked !== ''){
         blocked_array.push(inputData.current_blocked - 1);
@@ -706,13 +736,6 @@ router.post('/blockRefresh' , async (req ,res) => {
         non_sheltered = await get_non_sheltered();
     }
     let mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered]));
-    const previous_node_component = await break_down_img_path(inputData.b4_blocked_img_path);
-
-    let destinations = inputData.MultiStopArray;
-    //destinations[0] = parseInt(previous_node_component.node_id);/////////////////////////////to remove
-    for(let i =  0; i < destinations.length ; i ++){
-        destinations[i] = await room_num_to_node_id(destinations[i]);
-    }
     
     const TotalResult = {
         Expected : 0 ,
@@ -721,10 +744,11 @@ router.post('/blockRefresh' , async (req ,res) => {
         Distance : 0 ,
         Dist_array : [] , 
         nodes_path : [] , 
-        Stops_index : []
+        Stops_index : [] ,
+        Destinations : destinations
     }
     const no_previous = { have_previous : false , pov : "" , arrow : ""};
-    const previous_node = { have_previous : true , pov : previous_node_component.pov , arrow : previous_node_component.arrow};
+    const previous_node = { have_previous : true , blocked_pov : blocked_node_component.pov};
     for(let i = 1 ; i < destinations.length ; i++){
         let result;
         try{
