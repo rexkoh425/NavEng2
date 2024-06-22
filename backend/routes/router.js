@@ -640,7 +640,6 @@ router.post('/DeleteFailedLocations', async (req, res) => {
 router.post('/formPost' , async (req ,res) => { 
     //add to formPost input ,  elements = new added node 
     const inputData = req.body;
-    console.log("Array: " + inputData.MultiStopArray)
 
     let destinations = inputData.MultiStopArray;
     
@@ -654,8 +653,8 @@ router.post('/formPost' , async (req ,res) => {
     }
     console.log(destinations);
     let blocked_array = await get_blocked();
-    if(inputData.current_blocked !== ''){
-        blocked_array.push(inputData.current_blocked - 1);
+    for(let i = 0 ; i < inputData.blocked_array.length ; i++){
+        blocked_array.push(inputData.blocked_array[i]);
     }
     let non_sheltered = [];
     if(inputData.sheltered){
@@ -717,6 +716,7 @@ router.post('/blockRefresh' , async (req ,res) => {
     for(let i =  0; i < destinations.length ; i ++){
         destinations[i] = await room_num_to_node_id(destinations[i]);
     }
+
     console.log("stop index : " , inputData.Stops_index);
     console.log("blocked node index : " , inputData.BlockedNodeIndex);
     while(inputData.Stops_index[0] < inputData.BlockedNodeIndex){
@@ -729,15 +729,18 @@ router.post('/blockRefresh' , async (req ,res) => {
     const blocked_node_component = await break_down_img_path(inputData.blocked_img_path);
     console.log("destinations are : " , destinations);
     let blocked_array = await get_blocked();
-    if(inputData.current_blocked !== ''){
-        blocked_array.push(inputData.current_blocked - 1);
+    for(let i = 0 ; i < inputData.blocked_array.length ; i++){
+        blocked_array.push(inputData.blocked_array[i]);
     }
     let non_sheltered = [];
     if(inputData.sheltered){
         non_sheltered = await get_non_sheltered();
     }
-    let mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered]));
-    
+    let stairs = [];
+    if(inputData.NoStairs){
+        stairs = await get_stairs();
+    }
+    let mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered , ...stairs]));
     const TotalResult = {
         Expected : 0 ,
         Queried : 0 , 
@@ -786,12 +789,9 @@ router.post('/blockRefresh' , async (req ,res) => {
 router.post('/insertBlocked' , async (req ,res ) => {
     const input = req.body.img_string;
     console.log("input is : " + input)
-    node_id = input
-    
-    /*
     const node_string = input.split("_");
     const node_id = parseInt(node_string[0]);
-    */
+    
     
     try {
         const { error } = await supabase

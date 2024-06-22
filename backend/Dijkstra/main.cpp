@@ -41,7 +41,7 @@ int main(){
 
           for (SizeType i = 0; i < blocked.Size(); ++i) {
               if (blocked[i].IsInt()) {
-                  blocked_nodes.push_back(blocked[i].GetInt());
+                  blocked_nodes.push_back(blocked[i].GetInt() - 1);
               } else {
                   std::cerr << "Non-integer value in \"blocked\" array" << std::endl;
                   return 1;
@@ -52,7 +52,7 @@ int main(){
       std::cerr << "Input is not a JSON object" << std::endl;
       return 1;
     }
-    
+
     //vector<int> blocked_nodes;
     Graph test1 = createEngGraph(blocked_nodes);
     Path result = shortestPath(test1 , source ,  dest);

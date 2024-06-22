@@ -33,34 +33,29 @@ function PromptForm() {
     const [selectLocations, setSelectLocations] = useState([])
     const [totalDistance, setTotalDistance] = useState(``)
     const [distanceArray, setDistanceArray] = useState([])
-    const [nodePath, setNodePath] = useState([])
+    const [StopsIndex, setStopsIndex] = useState([]);
     const [debug, SetDebug] = useState(false);
     const [formSubmitted, setFormSubmitted] = useState(false);
     const [arrayposition, setCount] = useState(0);//Current image which the user is viewing
     const [blockedMessage, setBlockedMessage] = useState(''); //Message to display whenever user blocks a node
-    const [beforeBlocked, setBeforeBlocked] = useState('');
     const [blocked, setBlocked] = useState('');
-    const [blockedNodeID, setBlockedNodeID] = useState('');
     const [disableRightButton, setDisableRightButton] = useState(false);
     const [disableLeftButton, setDisableLeftButton] = useState(true);
     const [showUpload, setShowUpload] = useState(false); 
     let arrayFromString = messageError.split('<br>'); //To split HTML code into array
     const [sheltered, setSheltered] = useState(false); 
     const [NoStairs, setNoStairs] = useState(false); 
+    const [beforeBlocked, setBeforeBlocked] = useState('');
     const [blockedNodeIndex, setBlockedNodeIndex] = useState("");
-    const [blockedNodeIndexArray, setBlockedNodeIndexArray] = useState("")
+    //const [blockedNodeIndexArray, setBlockedNodeIndexArray] = useState("")
     const [blockedArray, setBlockedArray] = useState([]); //Array of all of the nodes which were blocked by the users (In image name format: X_X_X_X_Direction_Direction_Type.jpg)
     const [stopsIndex, setStopsIndex] = useState([]);
-
-
 
     useEffect(() => {
         // Update clumpedArray whenever front, center, or end change
         const newClumpedArray = [sourceLocation, ...MultiStopArrayDuplicate, destinationLocation];
         setMultiStopArray(newClumpedArray);
       }, [sourceLocation, MultiStopArrayDuplicate, destinationLocation]);
-
-
 
     const disableSubmitButton = (start, end) => {
         if (start !== '' && end !== '') 
@@ -91,11 +86,6 @@ function PromptForm() {
         const updatedValues = [...MultiStopArrayDuplicate];
         updatedValues[index] = value;
         setMultiStopArrayDuplicate(updatedValues);
-        
-        const duplicateArray = [...updatedValues]
-        duplicateArray.unshift(sourceLocation);
-        duplicateArray.push(destinationLocation);
-        setMultiStopArray(duplicateArray);
     };
 
     let parts = blocked.split('/');
@@ -168,7 +158,6 @@ function PromptForm() {
             .catch(err => console.log("Fetch Error!!"))
     }
 
-
     const axiosFetchLocations = async (processing) => {
         //await axios.post('https://naveng-backend-vercel.vercel.app/locations')
         await axios.post('http://localhost:4000/locations')
@@ -181,7 +170,7 @@ function PromptForm() {
     const axiosPostData = async () => { //Sending main form data
         const postData = {
             Debugging: debug,
-            current_blocked: blockedNodeID,
+            blocked_array: blockedArray,
             sheltered: sheltered , 
             NoStairs : NoStairs , 
             MultiStopArray : MultiStopArray
@@ -194,9 +183,8 @@ function PromptForm() {
             setMessageError(response.data['HTML']);
             setTotalDistance(response.data['Distance'] / 10);
             const distArray = response.data['Dist_array'];
-            const nodes_path = response.data['nodes_path'];
-            setNodePath(nodes_path)
-            handleConvertToMetres(distArray)
+            setStopsIndex(response.data['Stops_index']);
+            handleConvertToMetres(distArray);
 
             // Perform split operation inside the then block
             const arrayFromString = response.data['HTML'].split('<img src');
@@ -212,15 +200,14 @@ function PromptForm() {
 
         const postData = {
             Debugging: debug,
-            current_blocked: blockedNodeID,
+            blocked_array: blockedArray,
             b4_blocked_img_path : beforebeforeQuote,
             blocked_img_path : beforeQuote ,
             sheltered: sheltered , 
             NoStairs : NoStairs ,  
             MultiStopArray : MultiStopArray,
-            Stops_index: nodePath,
+            Stops_index: StopsIndex,
             BlockedNodeIndex: blockedNodeIndex
-            
         };
 
         try {
@@ -293,7 +280,7 @@ function PromptForm() {
     const axiosPostBlock = async (e) => { //Sending data when block button is clicked
         try {
             let postData = {
-                img_string: blockedArray.length === 0 ? [beforeQuote] : [blockedArray, beforeQuote]
+                img_string: beforeQuote
             };
 
             // Send POST request to insertBlocked endpoint
@@ -303,17 +290,12 @@ function PromptForm() {
             setShowUpload(true);
             const blockdata = response.data;
             setBlockedMessage(blockdata['message']);
-            setBlockedNodeID(blockdata['node']);
-            console.log("blocked message: " + blockdata['message']); // Log the message
-            console.log("blocked nodeID: " + blockdata['node']); // Log the node ID
-            console.log("before_node_id" + before_node_id)
-            setBlockedNodeID(blockdata['node'])
-            const newBlocked = beforeQuote
-            const newBlockedArray = [...blockedArray, newBlocked];
+            const new_blocked = blockdata['node'];
+            const newBlockedArray = [...blockedArray, new_blocked];
             setBlockedArray(newBlockedArray)
-            const newBlockedNodeIndex = blockedNodeIndex
-            const newBlockedIndexArray = [...blockedNodeIndexArray, newBlockedNodeIndex];
-            setBlockedNodeIndexArray(newBlockedIndexArray)
+            //const newBlockedNodeIndex = blockedNodeIndex
+            //const newBlockedIndexArray = [...blockedNodeIndexArray, newBlockedNodeIndex];
+            //setBlockedNodeIndexArray(newBlockedIndexArray)
 
         } catch (error) {
             console.error('Error posting block:', error);
