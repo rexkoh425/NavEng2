@@ -38,20 +38,18 @@ function PromptForm() {
     const [formSubmitted, setFormSubmitted] = useState(false);
     const [arrayposition, setCount] = useState(0);//Current image which the user is viewing
     const [blockedMessage, setBlockedMessage] = useState(''); //Message to display whenever user blocks a node
-    const [beforeBlocked, setBeforeBlocked] = useState('');
     const [blocked, setBlocked] = useState('');
-    const [blockedNodeID, setBlockedNodeID] = useState('');
     const [disableRightButton, setDisableRightButton] = useState(false);
     const [disableLeftButton, setDisableLeftButton] = useState(true);
     const [showUpload, setShowUpload] = useState(false); 
     let arrayFromString = messageError.split('<br>'); //To split HTML code into array
     const [sheltered, setSheltered] = useState(false); 
     const [NoStairs, setNoStairs] = useState(false); 
+    const [beforeBlocked, setBeforeBlocked] = useState('');
+    const [blockedNodeID, setBlockedNodeID] = useState('');
     const [blockedNodeIndex, setBlockedNodeIndex] = useState("");
     const [blockedNodeIndexArray, setBlockedNodeIndexArray] = useState("")
     const [blockedArray, setBlockedArray] = useState([]); //Array of all of the nodes which were blocked by the users (In image name format: X_X_X_X_Direction_Direction_Type.jpg)
-
-
 
 
     useEffect(() => {
@@ -59,8 +57,6 @@ function PromptForm() {
         const newClumpedArray = [sourceLocation, ...MultiStopArrayDuplicate, destinationLocation];
         setMultiStopArray(newClumpedArray);
       }, [sourceLocation, MultiStopArrayDuplicate, destinationLocation]);
-
-
 
     const disableSubmitButton = (start, end) => {
         if (start !== '' && end !== '') 
@@ -91,7 +87,6 @@ function PromptForm() {
         const updatedValues = [...MultiStopArrayDuplicate];
         updatedValues[index] = value;
         setMultiStopArrayDuplicate(updatedValues);
-        
     };
 
     let parts = blocked.split('/');
@@ -164,7 +159,6 @@ function PromptForm() {
             .catch(err => console.log("Fetch Error!!"))
     }
 
-
     const axiosFetchLocations = async (processing) => {
         //await axios.post('https://naveng-backend-vercel.vercel.app/locations')
         await axios.post('http://localhost:4000/locations')
@@ -190,9 +184,8 @@ function PromptForm() {
             setMessageError(response.data['HTML']);
             setTotalDistance(response.data['Distance'] / 10);
             const distArray = response.data['Dist_array'];
-            const Stop_indexs = response.data['Stops_index'];
-            setStopsIndex(Stop_indexs);
-            handleConvertToMetres(distArray)
+            setStopsIndex(response.data['Stops_index']);
+            handleConvertToMetres(distArray);
 
             // Perform split operation inside the then block
             const arrayFromString = response.data['HTML'].split('<img src');
@@ -213,9 +206,8 @@ function PromptForm() {
             sheltered: sheltered , 
             NoStairs : NoStairs ,  
             MultiStopArray : MultiStopArray,
-            Stops_index: Stops_index,
+            Stops_index: StopsIndex,
             BlockedNodeIndex: blockedNodeIndex
-            
         };
 
         try {
