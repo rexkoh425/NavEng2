@@ -33,7 +33,7 @@ function PromptForm() {
     const [selectLocations, setSelectLocations] = useState([])
     const [totalDistance, setTotalDistance] = useState(``)
     const [distanceArray, setDistanceArray] = useState([])
-    const [StopsIndex, setStopsIndex] = useState([]);
+    const [nodePath, setNodePath] = useState([])
     const [debug, SetDebug] = useState(false);
     const [formSubmitted, setFormSubmitted] = useState(false);
     const [arrayposition, setCount] = useState(0);//Current image which the user is viewing
@@ -91,6 +91,11 @@ function PromptForm() {
         const updatedValues = [...MultiStopArrayDuplicate];
         updatedValues[index] = value;
         setMultiStopArrayDuplicate(updatedValues);
+        
+        const duplicateArray = [...updatedValues]
+        duplicateArray.unshift(sourceLocation);
+        duplicateArray.push(destinationLocation);
+        setMultiStopArray(duplicateArray);
     };
 
     let parts = blocked.split('/');
@@ -189,9 +194,9 @@ function PromptForm() {
             setMessageError(response.data['HTML']);
             setTotalDistance(response.data['Distance'] / 10);
             const distArray = response.data['Dist_array'];
-            const Stop_indexs = response.data['Stops_index'];
-            setStopsIndex(Stop_indexs);
-            handleConvertToMetres(distArray);
+            const nodes_path = response.data['nodes_path'];
+            setNodePath(nodes_path)
+            handleConvertToMetres(distArray)
 
             // Perform split operation inside the then block
             const arrayFromString = response.data['HTML'].split('<img src');
@@ -212,8 +217,8 @@ function PromptForm() {
             sheltered: sheltered , 
             NoStairs : NoStairs ,  
             MultiStopArray : MultiStopArray,
-            Stops_index: StopsIndex,
-            BlockedNodeIndex: blockedNodeIndexArray.length === 0 ? [blockedArray] : [blockedNodeIndex, blockedNodeIndexArray]
+            Stops_index: nodePath,
+            BlockedNodeIndex: blockedNodeIndex
             
         };
 
