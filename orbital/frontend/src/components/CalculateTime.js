@@ -1,13 +1,13 @@
 import React from 'react';
 
 const CalculateTime = ({ distance }) => {
-    if (Math.round((distance/1.4)/60) > 1.5) {return (
+    if (Math.round((distance/1.2)/60) > 1.5) {return (
         <p className='time-taken'>
-          {Math.round((distance/1.4)/60)} minute
+          {Math.round((distance/1.2)/60)} minute
           
         </p>
       )}
-      else if (Math.round((distance/1.4)/60) > 0.5) {return (
+      else if (Math.round((distance/1.2)/60) > 0.5) {return (
         <p className='time-taken'>
           1 minute
         </p>

@@ -471,10 +471,8 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                 console.log(get_diff(nodes , debug_array));
                 fixedLengthArray.pop();
                 nodes_path.pop();
-                let last_dist = dist_array.pop();
                 nodes.pop();
                 data_length -= 1;
-                distance = `${parseInt(distance)-parseInt(last_dist)}`;
                 const final = fixedLengthArray.join('');
                 const FinalResults = {
                     Expected : nodes.length ,

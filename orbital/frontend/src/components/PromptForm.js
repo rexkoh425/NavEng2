@@ -58,6 +58,20 @@ function PromptForm() {
         websitelink="https://naveng-backend-vercel.vercel.app"
     }
 
+    function hasSameEntries(array) {
+        let set = new Set();
+    
+        for (let element of array) {
+            if (set.has(element)) {
+                return true;
+            }
+            set.add(element);
+        }
+    
+        return false;
+    }
+    
+
     useEffect(() => {
         // Update clumpedArray whenever front, center, or end change
         const newClumpedArray = [sourceLocation, ...MultiStopArrayDuplicate, destinationLocation];
@@ -249,7 +263,7 @@ function PromptForm() {
 
         console.log(sourceLocation + ' | ' + destinationLocation)
 
-        if (sourceLocation === destinationLocation) {
+        if (hasSameEntries(MultiStopArray)) {
             alert('Entries cannot be the same');
             return;
         }
@@ -473,7 +487,7 @@ function PromptForm() {
 
                     </center>
                     {formSubmitted && <p className="imageCount">{arrayposition + 1}/{arrayFromString.length - 1}</p>}
-                    
+
                     <DestinationNotification stopsIndex={stopsIndex} arrayposition={arrayposition} destinationLocation={destinationLocation} MultiStopArray={MultiStopArray} />
 
                     {formSubmitted && <div className="container">
