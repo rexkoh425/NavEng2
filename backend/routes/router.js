@@ -11,7 +11,8 @@ const { fail } = require('assert');
 const supabaseUrl = process.env.SUPABASE_URL
 const supabaseKey = process.env.SUPABASE_KEY
 const supabase = createClient(supabaseUrl, supabaseKey);
-
+const no_alt_path_url = 'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/Specials/No_alternate_path.png?t=2024-06-22T15%3A22%3A29.729Z' ;
+const database_down_url = 'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/Specials/No_alternate_path.png?t=2024-06-22T15%3A22%3A29.729Z';
 let blocked_node = ""
 
 function template_img(img_path){
@@ -33,6 +34,7 @@ async function NESW_ENUM(input){
         case WEST:
             return "4";
         default :
+            //throw new Error("not NESW");
             return "not NESW";
     }
 }
@@ -52,9 +54,10 @@ async function get_opposite(input){
         case "6" :
             return "5";
         default : 
+            //throw new Error("no opposite");
             return "no opposite";
     }
-}//add function testing
+}
 
 async function get_pov(pov , arrow_direction){
     let incoming = await NESW_ENUM(pov);
@@ -63,6 +66,7 @@ async function get_pov(pov , arrow_direction){
     }else{
         return incoming;
     }
+        
 }
 
 async function handle_up_down(incoming , outgoing){
@@ -144,7 +148,7 @@ async function room_num_to_node_id(room_number){
             return data[0].node_id;
 
         } catch (error) {
-            return error.message;
+            throw new Error("room_num to node_id cannot query database");
         } 
     }else{
         return room_number;
@@ -180,8 +184,7 @@ async function get_blocked(){
         return blocked_array;
 
     } catch (error) {
-        console.log(error);
-        return "failed" ;
+        throw new Error("get_blocked cannot query database");
     }
 }
 
@@ -202,7 +205,7 @@ async function convert_ENUM_to_angle(ENUM){
         default : 
             return "not convertable";
     }
-}/////to add function testing for this
+}
 
 async function get_non_sheltered(){
     try {
@@ -221,8 +224,7 @@ async function get_non_sheltered(){
         return non_sheltered;
 
     } catch (error) {
-        console.log(error);
-        return "failed" ;
+        throw new Error("get_non_sheltered cannot query database");
     }
 }
 
@@ -244,8 +246,7 @@ async function get_stairs(){
         return stairs;
 
     } catch (error) {
-        console.log(error);
-        return "failed" ;
+        throw new Error("get_stairs cannot query database");
     }
 }
 
@@ -367,7 +368,8 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                     debug_array[debug_array_index] = result.unique_id;
                     debug_array_index++;
                 });
-                console.log(get_diff(nodes , debug_array));
+                const diff = get_diff(nodes , debug_array);
+                console.log("diff is " , diff);
                 const final = fixedLengthArray.join('');
                 const FinalResults = {
                     Expected : nodes.length ,
@@ -468,13 +470,11 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                     debug_array[debug_array_index] = result.unique_id;
                     debug_array_index++;
                 });
-                console.log(get_diff(nodes , debug_array));
+                console.log("diff is " , get_diff(nodes , debug_array));
                 fixedLengthArray.pop();
                 nodes_path.pop();
-                let last_dist = dist_array.pop();
                 nodes.pop();
                 data_length -= 1;
-                distance = `${parseInt(distance)-parseInt(last_dist)}`;
                 const final = fixedLengthArray.join('');
                 const FinalResults = {
                     Expected : nodes.length ,
@@ -499,6 +499,37 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
             console.log(`C++ process exited with code: ${code}`);
         });
     })
+}
+
+async function is_failed_location(source , destination){
+    
+    try { 
+        const { data, error } = await supabase
+            .from('failedtest')
+            .select('*')
+            .eq('source', source)
+            .eq('destination' , destination);
+        if (error) {
+            throw error;
+        }
+        if(data.length >= 1){
+            return true;
+        }
+        return false;
+
+    } catch (error) {
+        console.log(error);
+        return "failed" ;
+    }
+    /*
+    const failed_location = await is_failed_location(destinations[0] , destinations[1])
+    if(failed_location){
+        console.log("failed");
+    }else{
+        console.log("not failed");
+    }
+    code to filter failed location
+    */
 }
 
 router.get('/test', (req, res) => {
@@ -640,32 +671,36 @@ router.post('/DeleteFailedLocations', async (req, res) => {
 router.post('/formPost' , async (req ,res) => { 
     //add to formPost input ,  elements = new added node 
     const inputData = req.body;
-
-    let destinations = inputData.MultiStopArray;
     
+    let destinations = inputData.MultiStopArray;
+    let mergedArray = [];
     if(inputData.MultiStopArray.length < 2){
         console.log("data incorrectly labelled or source and destination not filled"); 
-        return res.send({HTML : "<p>sorry no path is available</p>" , Distance : 0 });
+        return res.send({HTML : template_img(no_alt_path_url) , Distance : 0 });
     }
 
-    for(let i =  0; i < destinations.length ; i ++){
-        destinations[i] = await room_num_to_node_id(destinations[i]);
+    try{
+        for(let i =  0; i < destinations.length ; i ++){
+            destinations[i] = await room_num_to_node_id(destinations[i]);
+        }
+        console.log(destinations);
+        let blocked_array = await get_blocked();
+        for(let i = 0 ; i < inputData.blocked_array.length ; i++){
+            blocked_array.push(inputData.blocked_array[i]);
+        }
+        let non_sheltered = [];
+        if(inputData.sheltered){
+            non_sheltered = await get_non_sheltered();
+        }
+        let stairs = [];
+        if(inputData.NoStairs){
+            stairs = await get_stairs();
+        }
+        mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered , ...stairs]));
+        console.log(mergedArray);
+    }catch(error){
+        return res.send({HTML : template_img(database_down_url) , Distance : 0 });
     }
-    console.log(destinations);
-    let blocked_array = await get_blocked();
-    for(let i = 0 ; i < inputData.blocked_array.length ; i++){
-        blocked_array.push(inputData.blocked_array[i]);
-    }
-    let non_sheltered = [];
-    if(inputData.sheltered){
-        non_sheltered = await get_non_sheltered();
-    }
-    let stairs = [];
-    if(inputData.NoStairs){
-        stairs = await get_stairs();
-    }
-    let mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered , ...stairs]));
-    console.log(mergedArray);
     const TotalResult = {
         Expected : 0 ,
         Queried : 0 , 
@@ -675,6 +710,7 @@ router.post('/formPost' , async (req ,res) => {
         nodes_path : [] , 
         Stops_index : []
     }
+
     const previous_node = { have_previous : false , blocked_pov : ""};
     for(let i = 1 ; i < destinations.length ; i++){
         let result;
@@ -697,7 +733,7 @@ router.post('/formPost' , async (req ,res) => {
             }
         } catch(error){
             console.error('Error caught:', error.message);
-            return res.send({HTML : "<p>sorry no path is available</p>" , Distance : 0 });
+            return res.send({HTML : template_img(no_alt_path_url) , Distance : 0 });
         }
     }
     return res.send(TotalResult);
@@ -710,37 +746,42 @@ router.post('/blockRefresh' , async (req ,res) => {
 
     if(inputData.MultiStopArray.length < 2){
         console.log("data incorrectly labelled or source and destination not filled"); 
-        return res.send({HTML : "<p>sorry no path is available</p>" , Distance : 0 });
+        return res.send({HTML : template_img(no_alt_path_url) , Distance : 0 });
     }
+    let blocked_node_component;
+    let mergedArray;
+    try{
+        for(let i =  0; i < destinations.length ; i ++){
+            destinations[i] = await room_num_to_node_id(destinations[i]);
+        }
 
-    for(let i =  0; i < destinations.length ; i ++){
-        destinations[i] = await room_num_to_node_id(destinations[i]);
-    }
-
-    console.log("stop index : " , inputData.Stops_index);
-    console.log("blocked node index : " , inputData.BlockedNodeIndex);
-    while(inputData.Stops_index[0] < inputData.BlockedNodeIndex){
+        console.log("stop index : " , inputData.Stops_index);
+        console.log("blocked node index : " , inputData.BlockedNodeIndex);
+        while(inputData.Stops_index[0] < inputData.BlockedNodeIndex){
+            destinations.splice(0,1);
+            inputData.Stops_index.splice(0,1);
+        }
         destinations.splice(0,1);
-        inputData.Stops_index.splice(0,1);
+        const previous_node_component = await break_down_img_path(inputData.b4_blocked_img_path);
+        destinations.unshift(parseInt(previous_node_component.node_id));
+        blocked_node_component = await break_down_img_path(inputData.blocked_img_path);
+        console.log("destinations are : " , destinations);
+        let blocked_array = await get_blocked();
+        for(let i = 0 ; i < inputData.blocked_array.length ; i++){
+            blocked_array.push(inputData.blocked_array[i]);
+        }
+        let non_sheltered = [];
+        if(inputData.sheltered){
+            non_sheltered = await get_non_sheltered();
+        }
+        let stairs = [];
+        if(inputData.NoStairs){
+            stairs = await get_stairs();
+        }
+        mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered , ...stairs]));
+    }catch(error){
+        return res.send({HTML : template_img(database_down_url) , Distance : 0 });
     }
-    destinations.splice(0,1);
-    const previous_node_component = await break_down_img_path(inputData.b4_blocked_img_path);
-    destinations.unshift(parseInt(previous_node_component.node_id));
-    const blocked_node_component = await break_down_img_path(inputData.blocked_img_path);
-    console.log("destinations are : " , destinations);
-    let blocked_array = await get_blocked();
-    for(let i = 0 ; i < inputData.blocked_array.length ; i++){
-        blocked_array.push(inputData.blocked_array[i]);
-    }
-    let non_sheltered = [];
-    if(inputData.sheltered){
-        non_sheltered = await get_non_sheltered();
-    }
-    let stairs = [];
-    if(inputData.NoStairs){
-        stairs = await get_stairs();
-    }
-    let mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered , ...stairs]));
     const TotalResult = {
         Expected : 0 ,
         Queried : 0 , 
@@ -780,7 +821,7 @@ router.post('/blockRefresh' , async (req ,res) => {
             }
         }catch(error){
             console.error('Error caught:', error.message);
-            return res.send({HTML : "<p>sorry no path is available</p>" , Distance : 0 });
+            return res.send({HTML : template_img(no_alt_path_url) , Distance : 0 });
         }
     }
     return res.send(TotalResult);
@@ -852,6 +893,24 @@ router.post('/NESW_ENUM' , async (req , res) => {
     let passed = 0;
     for(let i = 0 ; i < test_cases ; i ++){
         const result = await NESW_ENUM(inputs[i]);
+        if(result == expected[i]){
+            passed ++;
+        }
+    }
+    if(passed == test_cases){
+        res.send({ passed : true });
+    }else{
+        res.send({ passed : false});
+    }
+});
+
+router.post('/get_opposite' , async (req , res) => {
+    const inputs = req.body.Input;
+    const expected = req.body.Expected;
+    const test_cases = inputs.length;
+    let passed = 0;
+    for(let i = 0 ; i < test_cases ; i ++){
+        const result = await get_opposite(inputs[i]);
         if(result == expected[i]){
             passed ++;
         }
@@ -1049,6 +1108,24 @@ router.post('/get_blocked' , async (req , res) => {
         res.send({ passed : false});
     }
 
+});
+
+router.post('/convert_ENUM_to_angle' , async (req , res) => {
+    const inputs = req.body.Input;
+    const expected = req.body.Expected;
+    const test_cases = inputs.length;
+    let passed = 0;
+    for(let i = 0 ; i < test_cases ; i ++){
+        const result = await convert_ENUM_to_angle(inputs[i]);
+        if(result == expected[i]){
+            passed ++;
+        }
+    }
+    if(passed == test_cases){
+        res.send({ passed : true });
+    }else{
+        res.send({ passed : false});
+    }
 });
 
 router.post('/get_non_sheltered' , async (req , res) => {

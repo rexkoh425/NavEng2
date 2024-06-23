@@ -114,6 +114,27 @@ describe('Testing Functions..........', function () {
         }
     })
 
+    it('get_opposite returns number in string corresponding opposite of input direction', async function () {
+        try {
+            const input = { 
+                Input : ['1' , '2' , '3' , '4' , '5' , '6'], 
+                Expected : ['3' , '4' , '1' , '2' , '6' , '5'] 
+            }
+            const response = await request(app)
+                .post('/get_opposite')
+                .send(input);
+            
+            if(response.body.passed == false){
+                throw new Error("get_opposite function failed")
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
+
     it('get_pov returns direction the user is facing', async function () {
         try {
             const input = { 
@@ -339,6 +360,27 @@ describe('Testing Functions..........', function () {
         }
     })
 
+    it('convert_ENUM_to_angle returns number in string corresponding opposite of input direction', async function () {
+        try {
+            const input = { 
+                Input : ['1' , '2' , '3' , '4' , '5' , '6'], 
+                Expected : ['0' , '90' , '180' , '-90' , '45' , '-45'] 
+            }
+            const response = await request(app)
+                .post('/convert_ENUM_to_angle')
+                .send(input);
+            
+            if(response.body.passed == false){
+                throw new Error("convert_ENUM_to_angle function failed")
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
+
     it('get_stairs is able to query from database' , async function() {
         try {
             const response = await request(app)
@@ -370,7 +412,6 @@ describe('Testing Functions..........', function () {
             global.gc();
         }
     })
-
 })
 
 describe('Testing whether location pairs output correct number of pictures', function () {

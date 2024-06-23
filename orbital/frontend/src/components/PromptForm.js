@@ -49,10 +49,10 @@ function PromptForm() {
     //const [blockedNodeIndexArray, setBlockedNodeIndexArray] = useState("")
     const [blockedArray, setBlockedArray] = useState([]); //Array of all of the nodes which were blocked by the users (In image name format: X_X_X_X_Direction_Direction_Type.jpg)
     const [stopsIndex, setStopsIndex] = useState([]);
-    const Local = false
+    const Local = true;
     let websitelink=""
     if (Local) {
-        websitelink="http://localhost:3000"
+        websitelink="http://localhost:4000"
     } else {
         websitelink="https://naveng-backend-vercel.vercel.app"
     }
@@ -203,7 +203,6 @@ function PromptForm() {
             const arrayFromString = response.data['HTML'].split('<img src');
             setBlocked(arrayFromString[1]);
             setStopsIndex(response.data['Stops_index']);
-
         } catch (error) {
             console.error('Error fetching data:', error);
         }
@@ -479,7 +478,7 @@ function PromptForm() {
                             <div className="htmlContent" dangerouslySetInnerHTML={{ __html: arrayFromString[arrayposition] }} />
                             <br></br>
                             <Tooltip title="Block?" arrow>
-                                <Button className="overlay-button" onClick={axiosPostBlock}><img src="block_logo.png" className="block-logo"></img></Button>
+                                <Button className="overlay-button" onClick={axiosPostBlock}><img src="block_logo.png" alt = "cannot display" className="block-logo"></img></Button>
                             </Tooltip>
                             {showUpload && <div className="overlay-refresh">
                                 <Button variant="contained" type="submit" onClick={handleSubmitRefresh} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }}>Give me an alternate path</Button>
