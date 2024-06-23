@@ -13,8 +13,14 @@ const supabaseKey = process.env.SUPABASE_KEY
 const supabase = createClient(supabaseUrl, supabaseKey);
 const no_alt_path_url = 'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/Specials/No_alternate_path.png?t=2024-06-22T15%3A22%3A29.729Z' ;
 const database_down_url = 'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/Specials/No_alternate_path.png?t=2024-06-22T15%3A22%3A29.729Z';
-let blocked_node = ""
+let blocked_node = "";
 
+function debug_log(input){
+    let debug = false;
+    if(debug){
+        console.log(input);
+    }
+}
 function template_img(img_path){
   return `<img src = "${img_path}" alt = "cannot be displayed" class="htmlData"><br>`;
 }
@@ -292,7 +298,7 @@ async function break_down_img_path(img_name){
 
 async function full_query(source , destination , blocked_nodes , previous_node){
     return new Promise((resolve, reject) => {
-        console.log(blocked_nodes);
+        debug_log(blocked_nodes);
         const inputObj = { source : source , destination : destination , blocked : blocked_nodes};
         const serializedData = JSON.stringify(inputObj);
         const cppProcess = spawn(__dirname + '/../Dijkstra/main' , []);
@@ -301,10 +307,10 @@ async function full_query(source , destination , blocked_nodes , previous_node){
         
         cppProcess.stdout.on('data', async (cpp_data) => {
             try {
-                console.log(cpp_data.toString());
+                debug_log(cpp_data.toString());
                 const outputData = cpp_data.toString().split("|");
                 let nodes = outputData[0].split(",");
-                console.log(nodes);
+                debug_log(nodes);
                 if(nodes.length == 1){
                     throw new Error("cannot find dest");
                 }
@@ -339,8 +345,8 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                     }
                 }
                 nodes[directions.length] += "67";
-                console.log(nodes);
-                console.log(directions);
+                debug_log(nodes);
+                debug_log(directions);
                 // Query the 'users' table for a specific user by ID
                 const { data, error } = await supabase
                     .from('pictures')
@@ -369,7 +375,7 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                     debug_array_index++;
                 });
                 const diff = get_diff(nodes , debug_array);
-                console.log("diff is " , diff);
+                debug_log("diff is " , diff);
                 const final = fixedLengthArray.join('');
                 const FinalResults = {
                     Expected : nodes.length ,
@@ -391,7 +397,7 @@ async function full_query(source , destination , blocked_nodes , previous_node){
         });
 
         cppProcess.on('exit', (code) => {
-            console.log(`C++ process exited with code: ${code}`);
+            debug_log(`C++ process exited with code: ${code}`);
         });
     })
 }
@@ -442,8 +448,8 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                     }
                 }
                 nodes[directions.length] += "67";
-                console.log(nodes);
-                console.log(directions);
+                debug_log(nodes);
+                debug_log(directions);
                 // Query the 'users' table for a specific user by ID
                 const { data, error } = await supabase
                     .from('pictures')
@@ -470,7 +476,7 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                     debug_array[debug_array_index] = result.unique_id;
                     debug_array_index++;
                 });
-                console.log("diff is " , get_diff(nodes , debug_array));
+                debug_log("diff is " , get_diff(nodes , debug_array));
                 fixedLengthArray.pop();
                 nodes_path.pop();
                 nodes.pop();
@@ -496,7 +502,7 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
         });
 
         cppProcess.on('exit', (code) => {
-            console.log(`C++ process exited with code: ${code}`);
+            debug_log(`C++ process exited with code: ${code}`);
         });
     })
 }
@@ -518,15 +524,15 @@ async function is_failed_location(source , destination){
         return false;
 
     } catch (error) {
-        console.log(error);
+        debug_log(error);
         return "failed" ;
     }
     /*
     const failed_location = await is_failed_location(destinations[0] , destinations[1])
     if(failed_location){
-        console.log("failed");
+        debug_log("failed");
     }else{
-        console.log("not failed");
+        debug_log("not failed");
     }
     code to filter failed location
     */
@@ -543,7 +549,7 @@ router.get('/test', (req, res) => {
 router.post('/contact', (req, res) => {
   const {email, message} = req.body
 
-  console.log(email + ' | ' + message)
+  debug_log(email + ' | ' + message)
   res.send("Message sent. Thank you.")
 }) 
 
@@ -589,19 +595,19 @@ router.post('/feedback' , async(req,res) => {
         if (error) {
             throw error;
         }
-        console.log('Data added to database successfully.');
+        debug_log('Data added to database successfully.');
         //res.send('Data added to database successfully.'); 
     } catch (error) {
         console.error('Error appending data to database:', error);
         //res.status(500).send('Failed to append data to database.'); 
     }
 
-    //console.log('feedback type:' + feedbackType)
-    //console.log('bug details:' + bugDetails)
-    //console.log('blocked node:'+ blockedNode)
-    //console.log('source location:'+ sourceLocation)
-    //console.log('destination location: '+ destinationLocation)
-    //console.log('path nodes: '+ nodes)
+    //debug_log('feedback type:' + feedbackType)
+    //debug_log('bug details:' + bugDetails)
+    //debug_log('blocked node:'+ blockedNode)
+    //debug_log('source location:'+ sourceLocation)
+    //debug_log('destination location: '+ destinationLocation)
+    //debug_log('path nodes: '+ nodes)
 
     res.send("Thank you for your feedback!") //sending conformation message back to frontend
 })
@@ -640,7 +646,7 @@ router.post('/InsertFailedLocations', async (req, res) => {
             }
         }
 
-        console.log('Data added to database successfully.');
+        debug_log('Data added to database successfully.');
         res.send('Data added to database successfully.'); 
     } catch (error) {
         console.error('Error appending data to database:', err);
@@ -660,7 +666,7 @@ router.post('/DeleteFailedLocations', async (req, res) => {
             throw error;
         }
 
-        console.log('Data deleted from database successfully.');
+        debug_log('Data deleted from database successfully.');
         res.send('Data deleted from database successfully.'); 
     } catch (error) {
         console.error('Error deleting data from database:', err);
@@ -675,15 +681,15 @@ router.post('/formPost' , async (req ,res) => {
     let destinations = inputData.MultiStopArray;
     let mergedArray = [];
     if(inputData.MultiStopArray.length < 2){
-        console.log("data incorrectly labelled or source and destination not filled"); 
-        return res.send({HTML : template_img(no_alt_path_url) , Distance : 0 });
+        debug_log("data incorrectly labelled or source and destination not filled"); 
+        return res.send({HTML : template_img(no_alt_path_url) , Distance : 0 , passed : false});
     }
 
     try{
         for(let i =  0; i < destinations.length ; i ++){
             destinations[i] = await room_num_to_node_id(destinations[i]);
         }
-        console.log(destinations);
+        debug_log(destinations);
         let blocked_array = await get_blocked();
         for(let i = 0 ; i < inputData.blocked_array.length ; i++){
             blocked_array.push(inputData.blocked_array[i]);
@@ -697,9 +703,9 @@ router.post('/formPost' , async (req ,res) => {
             stairs = await get_stairs();
         }
         mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered , ...stairs]));
-        console.log(mergedArray);
+        debug_log(mergedArray);
     }catch(error){
-        return res.send({HTML : template_img(database_down_url) , Distance : 0 });
+        return res.send({HTML : template_img(database_down_url) , Distance : 0 , passed : false });
     }
     const TotalResult = {
         Expected : 0 ,
@@ -708,7 +714,8 @@ router.post('/formPost' , async (req ,res) => {
         Distance : 0 ,
         Dist_array : [] , 
         nodes_path : [] , 
-        Stops_index : []
+        Stops_index : [] ,
+        passed : true
     }
 
     const previous_node = { have_previous : false , blocked_pov : ""};
@@ -733,7 +740,7 @@ router.post('/formPost' , async (req ,res) => {
             }
         } catch(error){
             console.error('Error caught:', error.message);
-            return res.send({HTML : template_img(no_alt_path_url) , Distance : 0 });
+            return res.send({HTML : template_img(no_alt_path_url) , Distance : 0 , passed : false });
         }
     }
     return res.send(TotalResult);
@@ -745,8 +752,8 @@ router.post('/blockRefresh' , async (req ,res) => {
     let destinations = inputData.MultiStopArray;
 
     if(inputData.MultiStopArray.length < 2){
-        console.log("data incorrectly labelled or source and destination not filled"); 
-        return res.send({HTML : template_img(no_alt_path_url) , Distance : 0 });
+        //debug_log("data incorrectly labelled or source and destination not filled"); 
+        return res.send({HTML : template_img(no_alt_path_url) , Distance : 0 , passed : false});
     }
     let blocked_node_component;
     let mergedArray;
@@ -755,8 +762,8 @@ router.post('/blockRefresh' , async (req ,res) => {
             destinations[i] = await room_num_to_node_id(destinations[i]);
         }
 
-        console.log("stop index : " , inputData.Stops_index);
-        console.log("blocked node index : " , inputData.BlockedNodeIndex);
+        debug_log("stop index : " , inputData.Stops_index);
+        debug_log("blocked node index : " , inputData.BlockedNodeIndex);
         while(inputData.Stops_index[0] < inputData.BlockedNodeIndex){
             destinations.splice(0,1);
             inputData.Stops_index.splice(0,1);
@@ -765,7 +772,7 @@ router.post('/blockRefresh' , async (req ,res) => {
         const previous_node_component = await break_down_img_path(inputData.b4_blocked_img_path);
         destinations.unshift(parseInt(previous_node_component.node_id));
         blocked_node_component = await break_down_img_path(inputData.blocked_img_path);
-        console.log("destinations are : " , destinations);
+        debug_log("destinations are : " , destinations);
         let blocked_array = await get_blocked();
         for(let i = 0 ; i < inputData.blocked_array.length ; i++){
             blocked_array.push(inputData.blocked_array[i]);
@@ -780,7 +787,7 @@ router.post('/blockRefresh' , async (req ,res) => {
         }
         mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered , ...stairs]));
     }catch(error){
-        return res.send({HTML : template_img(database_down_url) , Distance : 0 });
+        return res.send({HTML : template_img(database_down_url) , Distance : 0 , passed : false});
     }
     const TotalResult = {
         Expected : 0 ,
@@ -790,7 +797,8 @@ router.post('/blockRefresh' , async (req ,res) => {
         Dist_array : [] , 
         nodes_path : [] , 
         Stops_index : [] ,
-        Destinations : destinations
+        Destinations : destinations ,
+        passed : true
     }
     const no_previous = { have_previous : false , pov : "" , arrow : ""};
     const previous_node = { have_previous : true , blocked_pov : blocked_node_component.pov};
@@ -821,7 +829,7 @@ router.post('/blockRefresh' , async (req ,res) => {
             }
         }catch(error){
             console.error('Error caught:', error.message);
-            return res.send({HTML : template_img(no_alt_path_url) , Distance : 0 });
+            return res.send({HTML : template_img(no_alt_path_url) , Distance : 0 , passed : false});
         }
     }
     return res.send(TotalResult);
@@ -829,7 +837,7 @@ router.post('/blockRefresh' , async (req ,res) => {
 
 router.post('/insertBlocked' , async (req ,res ) => {
     const input = req.body.img_string;
-    console.log("input is : " + input)
+    debug_log("input is : " + input)
     const node_string = input.split("_");
     const node_id = parseInt(node_string[0]);
     
@@ -839,8 +847,8 @@ router.post('/insertBlocked' , async (req ,res ) => {
         .from('block_shelter')
         .update({ blocked : true })
         .eq('id', node_id);
-        console.log('Data added to database successfully.');
-        console.log('Blocked ID is : ' + node_id)
+        debug_log('Data added to database successfully.');
+        debug_log('Blocked ID is : ' + node_id)
         res.send({ message : 'Data added to database successfully.' , node : node_id} ); 
     } catch (error) {
         console.error('Error appending data to database:', err);
@@ -860,14 +868,13 @@ const storage = multer.diskStorage({
   
 const upload = multer({ storage: storage });
 
-
 //////////////////////////////////////////////////////////////////////////////
 ///////////////////////function testing region////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 router.post('/blocked_img', upload.single('photo'), (req, res) => {
     try {
       // File is uploaded successfully, you can process further if needed
-      console.log('image uploaded:', req.file);
+      debug_log('image uploaded:', req.file);
       res.status(200).send('Image uploaded successfully, thank you for helping make NavEng up to date for users');
     } catch (err) {
       console.error('Error uploading image:', err);
@@ -998,7 +1005,12 @@ router.post('/room_num_to_node_id' , async (req , res) => {
     const test_cases = inputs.length;
     let passed = 0;
     for(let i = 0 ; i < test_cases ; i ++){
-        const result = await room_num_to_node_id(inputs[i]);
+        let result;
+        try{ 
+            result = await room_num_to_node_id(inputs[i]);
+        }catch(error){
+            result = "failed to query database";
+        }
         if(result == expected[i]){
             passed ++;
         }
@@ -1090,22 +1102,32 @@ router.post('/break_down_img_path' , async (req , res) => {
 
 router.post('/get_stairs' , async (req , res) => {
 
-    const result = await get_stairs();
-    if(result != "failed"){
-        res.send({ passed : true });
+    let result;
+    try{ 
+        result = await get_stairs();
+    }catch(error){
+        result = "failed";
+    }
+    if(result == "failed"){
+        res.send({ passed : false });
     }else{
-        res.send({ passed : false});
+        res.send({ passed : true });
     }
 
 });
 
 router.post('/get_blocked' , async (req , res) => {
 
-    const result = await get_blocked();
-    if(result != "failed"){
-        res.send({ passed : true });
+    let result;
+    try{
+        result = await get_blocked();
+    }catch(error){
+        result = "failed";
+    }
+    if(result == "failed"){
+        res.send({ passed : false });
     }else{
-        res.send({ passed : false});
+        res.send({ passed : true });
     }
 
 });
@@ -1130,11 +1152,16 @@ router.post('/convert_ENUM_to_angle' , async (req , res) => {
 
 router.post('/get_non_sheltered' , async (req , res) => {
 
-    const result = await get_non_sheltered();
-    if(result != "failed"){
-        res.send({ passed : true });
+    let result;
+    try{
+        result = await get_non_sheltered();
+    }catch(error){
+        result = "failed";
+    }
+    if(result == "failed"){
+        res.send({ passed : false });
     }else{
-        res.send({ passed : false});
+        res.send({ passed : true });
     }
 
 });
