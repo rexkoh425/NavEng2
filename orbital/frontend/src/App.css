@@ -324,3 +324,9 @@
 .fileupload-mobile {
   margin-top: 20vh;
 }
+
+.destinationNotification {
+  text-align:center;
+  font-family: "Lexend";
+  color: #187D36;
+}

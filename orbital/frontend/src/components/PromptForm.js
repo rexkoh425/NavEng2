@@ -20,6 +20,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import Instructions from "./Instructions";
+import DestinationNotification from "./DestinationNotification";
 
 
 function PromptForm() {
@@ -56,6 +57,20 @@ function PromptForm() {
     } else {
         websitelink="https://naveng-backend-vercel.vercel.app"
     }
+
+    function hasSameEntries(array) {
+        let set = new Set();
+    
+        for (let element of array) {
+            if (set.has(element)) {
+                return true;
+            }
+            set.add(element);
+        }
+    
+        return false;
+    }
+    
 
     useEffect(() => {
         // Update clumpedArray whenever front, center, or end change
@@ -247,7 +262,7 @@ function PromptForm() {
 
         console.log(sourceLocation + ' | ' + destinationLocation)
 
-        if (sourceLocation === destinationLocation) {
+        if (hasSameEntries(MultiStopArray)) {
             alert('Entries cannot be the same');
             return;
         }
@@ -471,6 +486,8 @@ function PromptForm() {
 
                     </center>
                     {formSubmitted && <p className="imageCount">{arrayposition + 1}/{arrayFromString.length - 1}</p>}
+
+                    <DestinationNotification stopsIndex={stopsIndex} arrayposition={arrayposition} destinationLocation={destinationLocation} MultiStopArray={MultiStopArray} />
 
                     {formSubmitted && <div className="container">
                         <Button variant="contained" type="submit" onClick={decrementCounter} disabled={disableLeftButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "10vh", width: "3vw" }}><ArrowLeftIcon></ArrowLeftIcon></Button>
