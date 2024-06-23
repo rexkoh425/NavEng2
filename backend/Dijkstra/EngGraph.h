@@ -6,7 +6,7 @@ Graph createEngGraph(vector<int> blocked_nodes){
     g.addEdge(1, 153, 70 , SOUTH);
     g.addEdge(153, 2, 40 , SOUTH);
     g.addEdge(2, 3, 30 , WEST);
-    g.addEdge(3, 4, 1 , UP);
+    g.addEdge(3, 4, 40 , UP);
     g.addEdge(4, 5, 10 , EAST);
     g.addEdge(5, 6, 35 , SOUTH);
     g.addEdge(6, 7, 65 , SOUTH);
@@ -34,13 +34,13 @@ Graph createEngGraph(vector<int> blocked_nodes){
     g.addEdge(28, 29, 40 , SOUTH);
     g.addEdge(29, 30, 10 , SOUTH);
     g.addEdge(28, 31, 20 , EAST);
-    g.addEdge(31, 32, 1 , UP); //free
+    g.addEdge(31, 32, 40 , UP); //free
     g.addEdge(32, 33, 20 , WEST);
     g.addEdge(33, 34, 40 , NORTH);
     g.addEdge(34, 35, 20 , EAST);
     g.addEdge(33, 36, 40 , SOUTH);
     g.addEdge(36, 37, 40 , WEST);
-    g.addEdge(27, 35, 1 , UP); //extra
+    g.addEdge(27, 35, 40 , UP); //extra
     g.addEdge(37, 38, 65 , SOUTH);
     g.addEdge(38, 39, 150 , SOUTH);
     g.addEdge(37, 40, 80 , NORTH);
@@ -53,8 +53,8 @@ Graph createEngGraph(vector<int> blocked_nodes){
     g.addEdge(45, 47, 50 , NORTH);///////
     g.addEdge(47, 48, 20 , WEST);
     g.addEdge(45, 49, 20 , WEST);
-    g.addEdge(23, 48, 1 , UP); //extra
-    g.addEdge(4, 49, 1 , UP); //extra
+    g.addEdge(23, 48, 40 , UP); //extra
+    g.addEdge(4, 49, 40 , UP); //extra
     g.addEdge(44, 50, 135 , SOUTH);
     g.addEdge(50, 51, 20 , WEST);
     g.addEdge(50, 52, 70 , SOUTH);
@@ -67,7 +67,7 @@ Graph createEngGraph(vector<int> blocked_nodes){
     g.addEdge(58, 59, 20 , WEST);
     g.addEdge(58, 60, 35 , SOUTH);
     g.addEdge(60, 61, 20 , WEST);
-    g.addEdge(49, 62, 1 , UP);//free
+    g.addEdge(49, 62, 40 , UP);//free
     g.addEdge(62, 63, 20 , EAST);
     g.addEdge(63, 64, 40 , SOUTH);
     g.addEdge(63, 65, 40 , NORTH);
@@ -96,10 +96,10 @@ Graph createEngGraph(vector<int> blocked_nodes){
     g.addEdge(87, 88, 20 , EAST);
     g.addEdge(87, 89, 40 , SOUTH);
     g.addEdge(89, 90, 20 , SOUTH);
-    g.addEdge(32, 88 , 1 , UP); //extra
-    g.addEdge(48, 66 , 1 , UP); //extra
-    g.addEdge(35, 85 , 1 , UP); //extra
-    g.addEdge(88, 91, 1 , UP); //free
+    g.addEdge(32, 88 , 40 , UP); //extra
+    g.addEdge(48, 66 , 40 , UP); //extra
+    g.addEdge(35, 85 , 40 , UP); //extra
+    g.addEdge(88, 91, 40 , UP); //free
     g.addEdge(91, 92, 20 , WEST);
     g.addEdge(92, 93, 40 , SOUTH);
     g.addEdge(93, 94, 20 , SOUTH);
@@ -118,13 +118,13 @@ Graph createEngGraph(vector<int> blocked_nodes){
     g.addEdge(105, 107, 40 , SOUTH);
     g.addEdge(107, 108, 20 , WEST);
     g.addEdge(107, 109, 40 , SOUTH);
-    g.addEdge(62, 108 , 1 , UP); //extra
-    g.addEdge(66, 106 , 1 , UP); //extra
-    g.addEdge(85, 97 , 1 , UP); //extra
-    g.addEdge(108, 110, 1 , UP); //free56
-    g.addEdge(106, 113, 1 , UP); //extra
-    g.addEdge(91 , 138 , 1 , UP); //extra
-    g.addEdge(97 , 137 , 1,  UP); //extra
+    g.addEdge(62, 108 , 40 , UP); //extra
+    g.addEdge(66, 106 , 40 , UP); //extra
+    g.addEdge(85, 97 , 40 , UP); //extra
+    g.addEdge(108, 110, 40 , UP); //free56
+    g.addEdge(106, 113, 40 , UP); //extra
+    g.addEdge(91 , 138 , 40 , UP); //extra
+    g.addEdge(97 , 137 , 40,  UP); //extra
     g.addEdge(110, 111, 20 , EAST);//(111 , 110 , 20 , WEST)
     g.addEdge(111, 112, 40 , NORTH);////////////
     g.addEdge(112, 113, 20 , WEST);
@@ -158,14 +158,14 @@ Graph createEngGraph(vector<int> blocked_nodes){
     g.addEdge(139, 141, 95 , SOUTH);
     g.addEdge(141, 142, 75 , EAST);
     g.addEdge(142, 143, 35 , NORTH);
-    g.addEdge(110, 144, 1 , UP);//free
+    g.addEdge(110, 144, 40 , UP);//free
     g.addEdge(144, 145, 20 , EAST);
     g.addEdge(145, 146, 40 , NORTH);
     g.addEdge(145, 147, 40 , SOUTH);
     g.addEdge(146, 148, 20 , WEST);
-    g.addEdge(138, 149, 1 , UP);//free
-    g.addEdge(137, 152, 1 , UP);//extra67
-    g.addEdge(113, 148 , 1 , UP);//extra67
+    g.addEdge(138, 149, 40 , UP);//free
+    g.addEdge(137, 152, 40 , UP);//extra67
+    g.addEdge(113, 148 , 40 , UP);//extra67
     g.addEdge(149, 150, 20 , WEST);
     g.addEdge(150, 151, 40 , NORTH);
     g.addEdge(151, 152, 20 , EAST);
@@ -189,12 +189,12 @@ Graph createEngGraph(vector<int> blocked_nodes){
     g.addEdge(169, 170, 90 , SOUTH);
     g.addEdge(10, 171, 130 , EAST);
     g.addEdge(171, 172, 10 , NORTH);
-    g.addEdge(170, 172 , 1 , UP);//EA Stairs level 1 -2 
+    g.addEdge(170, 172 , 40 , UP);//EA Stairs level 1 -2 
     g.addEdge(171, 173, 30 , SOUTH);
-    g.addEdge(173, 174, 1 , UP); //level 2- 3
+    g.addEdge(173, 174, 40 , UP); //level 2- 3
     g.addEdge(174, 175, 30 , SOUTH);
-    g.addEdge(167, 31 , 1 , UP);//extra12
-    g.addEdge(166, 27 , 1 , UP);//extra12
-    g.addEdge(154, 23 , 1 , UP);//extra12
+    g.addEdge(167, 31 , 40 , UP);//extra12
+    g.addEdge(166, 27 , 40 , UP);//extra12
+    g.addEdge(154, 23 , 40 , UP);//extra12
     return g;
 }
