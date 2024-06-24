@@ -39,6 +39,7 @@ function PromptForm() {
     const [arrayposition, setCount] = useState(0);//Current image which the user is viewing
     const [blockedMessage, setBlockedMessage] = useState(''); //Message to display whenever user blocks a node
     const [blocked, setBlocked] = useState('');
+    const [blockedIMGName, setBlockedIMGName] = useState('');
     const [disableRightButton, setDisableRightButton] = useState(false);
     const [disableLeftButton, setDisableLeftButton] = useState(true);
     const [showUpload, setShowUpload] = useState(false); 
@@ -50,6 +51,8 @@ function PromptForm() {
     //const [blockedNodeIndexArray, setBlockedNodeIndexArray] = useState("")
     const [blockedArray, setBlockedArray] = useState([]); //Array of all of the nodes which were blocked by the users (In image name format: X_X_X_X_Direction_Direction_Type.jpg)
     const [stopsIndex, setStopsIndex] = useState([]);
+    const [noPath, setNoPath] = useState("");
+    const [showBlockConfirmation, setShowBlockConfirmation] = useState(false);
     const Local = true;
     let websitelink=""
     if (Local) {
@@ -70,7 +73,13 @@ function PromptForm() {
     
         return false;
     }
-    
+    useEffect(() => {
+        // Update clumpedArray whenever front, center, or end change
+        const newClumpedArray = [sourceLocation, ...MultiStopArrayDuplicate, destinationLocation];
+        console.log(newClumpedArray)
+        setMultiStopArray(newClumpedArray);
+        disableSubmitButton(newClumpedArray)
+      }, [sourceLocation, MultiStopArrayDuplicate, destinationLocation]);
 
     useEffect(() => {
         // Update clumpedArray whenever front, center, or end change
@@ -79,18 +88,33 @@ function PromptForm() {
       }, [sourceLocation, MultiStopArrayDuplicate, destinationLocation]);
 
       useEffect(() => {
-        // Update clumpedArray whenever front, center, or end change
-        const newClumpedArray = [sourceLocation, ...MultiStopArrayDuplicate, destinationLocation];
-        setMultiStopArray(newClumpedArray);
-      }, [sourceLocation, MultiStopArrayDuplicate, destinationLocation]);
+        const image = arrayFromString[arrayposition]
+        console.log(arrayFromString[arrayposition])
+        
+        const URL = '<img src = "https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/Specials/No_alternate_path.png?t=2024-06-22T15%3A22%3A29.729Z" alt = "cannot be displayed" class="htmlData">'
+        
+        if (image === URL) {
+          setNoPath(true);
+        } else {
+          setNoPath(false); // Ensure it's false if condition is not met
+        }
+      }, [arrayFromString, arrayposition]);
 
-    const disableSubmitButton = (start, end) => {
-        if (start !== '' && end !== '') 
-            {
-                setDisableSubmit(false);
-                return;
-            }
-        setDisableSubmit(true);
+    const disableSubmitButton = (MultiStopArray) => {
+        const noEmptyStrings = MultiStopArray.every(item => item !== "");
+        const hasNullValues = MultiStopArray.some(item => item === null);
+        if (noEmptyStrings && !hasNullValues) {
+            setDisableSubmit(false)
+            console.log("enabled")
+          } else {
+            setDisableSubmit(true)
+            console.log("disabled")
+          }
+
+    }
+
+    const blockConfirmation = () => {
+        setShowBlockConfirmation(true)
         return;
     }
 
@@ -115,10 +139,21 @@ function PromptForm() {
         setMultiStopArrayDuplicate(updatedValues);
     };
 
-    let parts = blocked.split('/');
-    let remainder = parts.slice(8).join('/');
-    let indexOfQuote = remainder.indexOf('"');
-    let beforeQuote = remainder.slice(0, indexOfQuote);
+    useEffect(() => {
+        if (blocked && typeof blocked === 'string') {
+        const parts = blocked.split('/');
+        const remainder = parts.slice(8).join('/');
+        const indexOfQuote = remainder.indexOf('"');
+        setBlockedIMGName(remainder.slice(0, indexOfQuote));
+    
+        const beforeparts = beforeBlocked.split('/');
+        const beforeremainder = beforeparts.slice(8).join('/');
+        const beforeindexOfQuote = beforeremainder.indexOf('"');
+        const beforebeforeQuote = beforeremainder.slice(0, beforeindexOfQuote);
+        const node_string = beforebeforeQuote.split("_")[0];
+        const before_node_id = parseInt(node_string);
+        }
+      }, [blocked]);
 
     let beforeparts = beforeBlocked.split('/');
     let beforeremainder = beforeparts.slice(8).join('/');
@@ -139,6 +174,7 @@ function PromptForm() {
             setDisableRightButton(true)
         }
         setDisableLeftButton(false)
+        setShowBlockConfirmation(false)
     };
 
     const decrementCounter = (e) => {
@@ -155,6 +191,7 @@ function PromptForm() {
             setDisableLeftButton(true)
         }
         setDisableRightButton(false)
+        setShowBlockConfirmation(false)
     };
 
     useEffect(() => {
@@ -229,7 +266,7 @@ function PromptForm() {
             Debugging: debug,
             blocked_array: blockedArray,
             b4_blocked_img_path : beforebeforeQuote,
-            blocked_img_path : beforeQuote ,
+            blocked_img_path : blockedIMGName ,
             sheltered: sheltered , 
             NoStairs : NoStairs ,  
             MultiStopArray : MultiStopArray,
@@ -279,6 +316,7 @@ function PromptForm() {
         setCount(0);
         setDisableRightButton(false);
         setDisableLeftButton(true);
+        setShowBlockConfirmation(false)
     }
 
     const handleSubmitRefresh = (e) => {
@@ -308,7 +346,7 @@ function PromptForm() {
     const axiosPostBlock = async (e) => { //Sending data when block button is clicked
         try {
             let postData = {
-                img_string: beforeQuote
+                img_string: blockedIMGName
             };
 
             // Send POST request to insertBlocked endpoint
@@ -321,6 +359,7 @@ function PromptForm() {
             const new_blocked = blockdata['node'];
             const newBlockedArray = [...blockedArray, new_blocked];
             setBlockedArray(newBlockedArray)
+            setShowBlockConfirmation(false)
             //const newBlockedNodeIndex = blockedNodeIndex
             //const newBlockedIndexArray = [...blockedNodeIndexArray, newBlockedNodeIndex];
             //setBlockedNodeIndexArray(newBlockedIndexArray)
@@ -363,13 +402,11 @@ function PromptForm() {
                                     setSourceLocation(""); // Handle case when value is cleared
 
                                 }
-                                disableSubmitButton(event.target.value, destinationLocation);
                             }
                             }
                         >
                         </Autocomplete>
                         <br></br>
-
                         <br></br>
                         <label className="StartAndEndLocation">End Location</label>
                         <Typography className="description2" sx={{ marginBottom: "10px", fontFamily: "Lexend" }}>Search or select the location closest to your end point</Typography>
@@ -414,7 +451,6 @@ function PromptForm() {
                                             } else {
                                                 setDestinationLocation(""); // Handle case when value is cleared
                                             }
-                                            disableSubmitButton(sourceLocation, event.target.value);
                                         }
                                         }
                                     >
@@ -467,43 +503,45 @@ function PromptForm() {
                                 textAlign: 'center', justifyContent: 'center', color: 'grey', fontFamily: "Lexend"
                             }}>Please select the starting and ending <br></br> locations to view the pictures</Box></div>}
                     <center>
-                        {formSubmitted && <p className="parametricsDescription">Total Distance: </p>}
-                        {formSubmitted && <p className="parametricsContent">{totalDistance}m</p>}
+                        
+                        {!noPath && formSubmitted && <p className="parametricsDescription">Total Distance: </p>}
+                        {!noPath && formSubmitted && <p className="parametricsContent">{totalDistance}m</p>}
 
                         <div></div>
-                        {formSubmitted && <p className="parametricsDescription">Total Estimated Time Taken: </p>}
-                        {formSubmitted && <div className="parametricsContent"><CalculateTime distance={totalDistance} /></div>}
+                        {!noPath && formSubmitted && <p className="parametricsDescription">Total Estimated Time Taken: </p>}
+                        {!noPath && formSubmitted && <div className="parametricsContent"><CalculateTime distance={totalDistance} /></div>}
                         <br></br>
                         <br></br>
-                        {formSubmitted && <p className="parametricsDescription">Remaining Distance: </p>}
-                        {formSubmitted && <p className="parametricsContent">{distanceArray[arrayposition]}m</p>}
+                        {!noPath && formSubmitted && <p className="parametricsDescription">Distance Remaining: </p>}
+                        {!noPath && formSubmitted && <p className="parametricsContent">{distanceArray[arrayposition]}m</p>}
 
                         <div></div>
-                        {formSubmitted && <p className="parametricsDescription">Time to Destination: </p>}
-                        {formSubmitted && <div className="parametricsContent"><CalculateTime distance={distanceArray[arrayposition]} /></div>}
+                        {!noPath && formSubmitted && <p className="parametricsDescription">Time to Destination: </p>}
+                        {!noPath && formSubmitted && <div className="parametricsContent"><CalculateTime distance={distanceArray[arrayposition]} /></div>}
 
 
 
                     </center>
-                    {formSubmitted && <p className="imageCount">{arrayposition + 1}/{arrayFromString.length - 1}</p>}
+                    {!noPath && formSubmitted && <p className="imageCount">{arrayposition + 1}/{arrayFromString.length - 1}</p>}
 
                     <DestinationNotification stopsIndex={stopsIndex} arrayposition={arrayposition} destinationLocation={destinationLocation} MultiStopArray={MultiStopArray} />
 
                     {formSubmitted && <div className="container">
-                        <Button variant="contained" type="submit" onClick={decrementCounter} disabled={disableLeftButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "10vh", width: "3vw" }}><ArrowLeftIcon></ArrowLeftIcon></Button>
+                        {!noPath  && <Button variant="contained" type="submit" onClick={decrementCounter} disabled={disableLeftButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "10vh", width: "3vw" }}><ArrowLeftIcon></ArrowLeftIcon></Button>}
                         <div className="imageContainer">
                             <div className="htmlContent" dangerouslySetInnerHTML={{ __html: arrayFromString[arrayposition] }} />
                             <br></br>
                             <Tooltip title="Block?" arrow>
-                                <Button className="overlay-button" onClick={axiosPostBlock}><img src="block_logo.png" alt = "cannot display" className="block-logo"></img></Button>
+                            {!noPath && !showBlockConfirmation && <Button className="overlay-button" onClick={blockConfirmation}><img src="block_logo.png" alt = "cannot display" className="block-logo"></img></Button>}
                             </Tooltip>
+                            {!noPath && showBlockConfirmation && <Button variant="contained" className="overlay-confirmation-button" sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }} onClick={axiosPostBlock}>Block this point?</Button>}
                             {showUpload && <div className="overlay-refresh">
                                 <Button variant="contained" type="submit" onClick={handleSubmitRefresh} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }}>Give me an alternate path</Button>
                             </div>}
 
                         </div>
                         <div className="rightArrow">
-                            <Button variant="contained" type="submit" onClick={incrementCounter} disabled={disableRightButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "10vh", width: "3vw" }}><ArrowRightIcon></ArrowRightIcon></Button>
+                        {!noPath && <Button variant="contained" type="submit" onClick={incrementCounter} disabled={disableRightButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "10vh", width: "3vw" }}><ArrowRightIcon></ArrowRightIcon></Button>}
                         </div>
                     </div>}
 
