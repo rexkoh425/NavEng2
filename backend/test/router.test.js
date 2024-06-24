@@ -16,28 +16,27 @@ async function CheckLocation(receivedData) {
 
         let data = res.body;
 
-        if (data['Expected'] !== data['Queried']) {
-            //console.log(data['Expected']);
-            //console.log(data['Queried']);
-            //console.log(`${receivedData.source} to ${receivedData.destination} : failed`);
-            const res_obj = { source: `${receivedData.source}`, destination: `${receivedData.destination}`, passed: false , nodes_path : [] };
+        if (data['Expected'] !== data['Queried'] || data['passed'] == false){
+            console.log(data['Expected']);
+            console.log(data['Queried']);
+            console.log(`${receivedData.MultiStopArray[0]} to ${receivedData.MultiStopArray[1]} : failed`);
+            const res_obj = { source: `${receivedData.MultiStopArray[0]}`, destination: `${receivedData.MultiStopArray[1]}`, passed: false , nodes_path : [] };
             return res_obj;
         }
-        return { source: receivedData.source, destination: receivedData.destination, passed: true , nodes_path : data.nodes_path};
+        return { source: receivedData.MultiStopArray[0], destination: receivedData.MultiStopArray[1], passed: true , nodes_path : data.nodes_path};
     } catch (error) {
-        //console.log(`${error}`);
-        //console.log(`${receivedData.source} to ${receivedData.destination} : failed`);
-        return { source: receivedData.source, destination: receivedData.destination, passed: false , nodes_path : [] };
+        console.log(`${error}`);
+        console.log(`${receivedData.source} to ${receivedData.destination} : failed`);
+        return { source: receivedData.MultiStopArray[0], destination: receivedData.MultiStopArray[1], passed: false , nodes_path : [] };
     }
 }
 
-async function performTest(source, destination , blocked_input) {
+async function performTest(destinations , blocked_input) {
     const inputData = {
-        source: `${source}`,
-        destination: `${destination}`,
-        Debugging: false , 
-        current_blocked: blocked_input,
-        sheltered: false
+        blocked_array: blocked_input,
+        sheltered: false , 
+        NoStairs : false , 
+        MultiStopArray : destinations
     };
     return await CheckLocation(inputData);
 }
@@ -427,8 +426,8 @@ describe('Testing whether location pairs output correct number of pictures', fun
             let test_cases = no_of_locations * (no_of_locations - 1);
             let failed_locations = [];
             let non_block_pass = 0;
-            let block_pass = 0;
-            let both_pass = 0;
+            //let block_pass = 0;
+            //let both_pass = 0;
             let processed_count = 0;
             const tasks = [];
 
@@ -436,22 +435,27 @@ describe('Testing whether location pairs output correct number of pictures', fun
                 for (let destination of locations) {
                     if (source !== destination) {
                         
-                        tasks.push(async () => {
-                            const non_block_result = await performTest(source, destination , '');
-                            //const blocked = await choose_middle_blocked(non_block_result.nodes_path);
-                            //const block_result = await performTest(source , destination , blocked);
+                        tasks.push(async () => {  
+                            const non_block_result = await performTest([source , destination] , []);
                             processed_count ++;
-                            const block_result = { passed : true};
                             if(non_block_result.passed){   non_block_pass ++ ;  }
+                            
+                            const blocked = await choose_middle_blocked(non_block_result.nodes_path);
+                            const block_result = await performTest([source , destination] , [blocked]);
                             if(block_result.passed){   block_pass ++;  }
+                            //const block_result = { passed : true};
+                            
+                            /*
                             if (non_block_result.passed && block_result.passed) {
                                 both_pass++;
                             } else {
                                 failed_locations.push({ source: non_block_result.source, destination: non_block_result.destination });
                             }
+                            */
                             if (processed_count > 0 && processed_count % 100 == 0) {
                                 console.log(`${processed_count} out of ${test_cases} test cases processed`);
                             }
+                            
                             if (global.gc) {
                                 global.gc();
                             }
@@ -476,10 +480,10 @@ describe('Testing whether location pairs output correct number of pictures', fun
 
             console.log(`${non_block_pass} out of ${test_cases} test cases passed without blocking`);
             console.log(`${test_cases - non_block_pass} out of ${test_cases} test cases failed without blocking`);
-            console.log(`${block_pass} out of ${test_cases} test cases passed with blocking`);
-            console.log(`${test_cases - block_pass} out of ${test_cases} test cases failed with blocking`);
-            console.log(`${both_pass} out of ${test_cases} test cases passed`);
-            console.log(`${test_cases - both_pass} out of ${test_cases} test cases failed`);
+            //console.log(`${block_pass} out of ${test_cases} test cases passed with blocking`);
+            //console.log(`${test_cases - block_pass} out of ${test_cases} test cases failed with blocking`);
+            //console.log(`${both_pass} out of ${test_cases} test cases passed`);
+            //console.log(`${test_cases - both_pass} out of ${test_cases} test cases failed`);
         } catch (error) {
             throw error;
         }

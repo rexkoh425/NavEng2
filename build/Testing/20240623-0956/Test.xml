@@ -21,14 +21,14 @@
 	TotalVirtualMemory="37304"
 	TotalPhysicalMemory="32440"
 	LogicalProcessorsPerPhysical="1"
-	ProcessorClockFrequency="2496"
+	ProcessorClockFrequency="2495"
 	>
 	<Testing>
-		<StartDateTime>Jun 23 17:56 Malay Peninsula Standard Time</StartDateTime>
-		<StartTestTime>1719136605</StartTestTime>
+		<StartDateTime>Jun 23 20:41 Malay Peninsula Standard Time</StartDateTime>
+		<StartTestTime>1719146488</StartTestTime>
 		<TestList/>
-		<EndDateTime>Jun 23 17:56 Malay Peninsula Standard Time</EndDateTime>
-		<EndTestTime>1719136605</EndTestTime>
+		<EndDateTime>Jun 23 20:41 Malay Peninsula Standard Time</EndDateTime>
+		<EndTestTime>1719146488</EndTestTime>
 		<ElapsedMinutes>0</ElapsedMinutes>
 	</Testing>
 </Site>

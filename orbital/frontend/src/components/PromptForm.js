@@ -232,7 +232,6 @@ function PromptForm() {
 
     const axiosPostData = async () => { //Sending main form data
         const postData = {
-            Debugging: debug,
             blocked_array: blockedArray,
             sheltered: sheltered , 
             NoStairs : NoStairs , 
@@ -263,7 +262,6 @@ function PromptForm() {
     const axiosPostDataRefresh = async () => { //Sending data when alternate path button is clicked
 
         const postData = {
-            Debugging: debug,
             blocked_array: blockedArray,
             b4_blocked_img_path : beforebeforeQuote,
             blocked_img_path : blockedIMGName ,
