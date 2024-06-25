@@ -330,3 +330,12 @@
   font-family: "Lexend";
   color: #187D36;
 }
+
+.overlay-confirmation-button {
+  position: absolute;
+  height: 7vh;
+  width: 20vh;
+  bottom: 75vh;
+  right: -22vh;
+  display: inline-block
+}

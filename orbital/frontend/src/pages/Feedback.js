@@ -23,6 +23,8 @@ function Feedback() {
     const [bugDetails, setBugDetails] = useState('')
     const [nodes, setnodes] = useState([""]); // State to store autocomplete nodes
 
+    const [disableSubmit, setDisableSubmit] = useState(true) //Boolean to disable and enable Submit Button
+
     const handlenodeChange = (index, value) => {
         const newnodes = [...nodes];
         newnodes[index] = value;
@@ -130,6 +132,23 @@ function Feedback() {
         arrayFromString = messageError.split('<img src');
     }
 
+    const disableSubmitButton = (nodes) => {
+        const noEmptyStrings = nodes.every(item => item !== "");
+        const hasNullValues = nodes.some(item => item === null);
+        if (noEmptyStrings && !hasNullValues) {
+            setDisableSubmit(false)
+            console.log("enabled")
+          } else {
+            setDisableSubmit(true)
+            console.log("disabled")
+          }
+
+    }
+
+    useEffect(() => {
+        disableSubmitButton(nodes)
+      }, [nodes]);
+
     const handleSubmit = (e) => {
         e.preventDefault()
         setFeedbackSubmission("")
@@ -141,6 +160,10 @@ function Feedback() {
         if (showBugQs && !bugDetails) {
             setFeedbackMessage("Please provide some details about the bug")
             return;
+        }
+        if (showSuggestPathQs && disableSubmit) {
+            setFeedbackMessage("Please fill out the nodes")
+            return
         }
         setFeedbackMessage('')
         console.log('feedback type:' + feedbackType + ' | bug details:' + bugDetails)
@@ -154,7 +177,7 @@ function Feedback() {
         }
     }
 
-    const typeOfFeedback = ["Report bug with website", "Suggest a better path"]
+    const typeOfFeedback = ["Report bug with website", "Report a path"]
 
     const handleFeedbackType = (event, value) => {
     // To determine what type of questions to show
@@ -169,7 +192,7 @@ function Feedback() {
             setDestinationLocation("")
             setFormSubmitted(false)
         }
-        if (value === "Suggest a better path"){
+        if (value === "Report a path"){
             
             setBugDetails("")
             setSourceLocation("")
@@ -183,7 +206,7 @@ function Feedback() {
             setDestinationLocation("")
             setFormSubmitted(false)
         }
-        setShowSuggestPathQs(value === "Suggest a better path")
+        setShowSuggestPathQs(value === "Report a path")
         setShowBugQs(value === "Report bug with website");
     }
 
@@ -224,7 +247,7 @@ function Feedback() {
             </div>}
 
             {showSuggestPathQs && <div>
-                <Typography sx={{marginBottom: "10px", fontFamily: "Lexend"}}>Please provide us with the step by step nodes along your path</Typography>
+                <Typography sx={{marginBottom: "10px", fontFamily: "Lexend"}}>Please provide us with the stops along the path</Typography>
                 {nodes.map((node, index) => (
                     <Autocomplete
                     key={index}
@@ -250,7 +273,7 @@ function Feedback() {
             <br></br>
             <div className="feedbackUserInfo">{feedbackMessage}</div>
             <br></br>
-            <Button variant="contained" type="submit" onClick={handleSubmit} sx={{ bgcolor: "#cdd8e6", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }}>Submit</Button>
+            <Button variant="contained" disabled={!feedbackType} type="submit" onClick={handleSubmit} sx={{ bgcolor: "#cdd8e6", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }}>Submit</Button>
             <br></br>
             <br></br>
             {feedbackSubmission}
