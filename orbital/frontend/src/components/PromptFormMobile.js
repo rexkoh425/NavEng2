@@ -549,12 +549,12 @@ function PromptFormMobile() {
                         {/* Preload the next image */}
                         <div dangerouslySetInnerHTML={{ __html: arrayFromString[(arrayposition + 1) % arrayFromString.length] }} />
                     </div>
-                    {formSubmitted && <div className="containerMobile">
-                        <div className="imageContainer"><div>
+                    <center>
+                    {formSubmitted && <div>
+                        <div className="imageContainer">
                             <div {...handlers}>
                                 <div className="htmlContent" dangerouslySetInnerHTML={{ __html: arrayFromString[arrayposition] }} />
                             </div>
-                        </div>
                             <br></br>
                             <Tooltip title="Block?" arrow>
                                 {!noPath && !showBlockConfirmation && <Button className="overlay-button-mobile" onClick={blockConfirmation}><img src="block_logo.png" alt="cannot display" className="block-logo"></img></Button>}
@@ -569,6 +569,7 @@ function PromptFormMobile() {
 
 
                     </div>}
+                    </center>
                     <br></br>
                     <div className="fileupload-mobile">
                     <Button variant="contained" type="submit" onClick={decrementCounter}
