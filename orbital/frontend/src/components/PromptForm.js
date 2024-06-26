@@ -25,6 +25,7 @@ import DestinationNotification from "./DestinationNotification";
 
 
 function PromptForm() {
+
     const [sourceLocation, setSourceLocation] = useState('')
     const [destinationLocation, setDestinationLocation] = useState('')
     const [disableSubmit, setDisableSubmit] = useState(true) //Boolean to disable and enable Submit Button
@@ -77,6 +78,7 @@ function PromptForm() {
     
         return false;
     }
+    
     useEffect(() => {
         // Update clumpedArray whenever front, center, or end change
         const newClumpedArray = [sourceLocation, ...MultiStopArrayDuplicate, destinationLocation];

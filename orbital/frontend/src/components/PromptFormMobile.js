@@ -8,6 +8,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
 import "@fontsource/lexend"; // Defaults to weight 400
+import "@fontsource/lexend/500.css";
 import "@fontsource/lexend/400.css";
 import "@fontsource/lexend/300.css";
 import Tooltip from '@mui/material/Tooltip';
@@ -20,71 +21,145 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import Instructions from "./Instructions";
+import DestinationNotification from "./DestinationNotification";
 
 
 function PromptFormMobile() {
 
     const [sourceLocation, setSourceLocation] = useState('')
     const [destinationLocation, setDestinationLocation] = useState('')
-    const [autocompleteFields, setAutocompleteFields] = useState([]);
-    const [MultiStop, setMultiStop] = useState([false]);
-    const [MultiStopArrayDuplicate, setMultiStopArrayDuplicate] = useState([]);
+    const [disableSubmit, setDisableSubmit] = useState(true) //Boolean to disable and enable Submit Button
+    const [autocompleteFields, setAutocompleteFields] = useState([]); //Multistop fields
+    const [MultiStopArrayDuplicate, setMultiStopArrayDuplicate] = useState([]); //Duplicate Array to store temporary Multistop Array
     const [MultiStopArray, setMultiStopArray] = useState([]);
+    const [MultiStopArrayNotification, setMultiStopArrayNotification] = useState([]);
     const [messageError, setMessageError] = useState(``) //using messageError variable for html content as well
     const [selectLocations, setSelectLocations] = useState([])
     const [totalDistance, setTotalDistance] = useState(``)
     const [distanceArray, setDistanceArray] = useState([])
     const [debug, SetDebug] = useState(false);
     const [formSubmitted, setFormSubmitted] = useState(false);
-    const [arrayposition, setCount] = useState(0);
-    const [blockedMessage, setBlockedMessage] = useState('');
-    const [beforeBlocked, setBeforeBlocked] = useState('');
+    const [arrayposition, setCount] = useState(0);//Current image which the user is viewing
+    const [blockedMessage, setBlockedMessage] = useState(''); //Message to display whenever user blocks a node
     const [blocked, setBlocked] = useState('');
-    const [blockedNodeID, setBlockedNodeID] = useState('');
+    const [blockedIMGName, setBlockedIMGName] = useState('');
     const [disableRightButton, setDisableRightButton] = useState(false);
     const [disableLeftButton, setDisableLeftButton] = useState(true);
-    const [showUpload, setShowUpload] = useState(false);
-    let arrayFromString = messageError.split('<br>');
-    const [sheltered, setSheltered] = useState(false);
-    const [NoStairs, setNoStairs] = useState(false);
+    const [showUpload, setShowUpload] = useState(false); 
+    let arrayFromString = messageError.split('<br>'); //To split HTML code into array
+    const [sheltered, setSheltered] = useState(false); 
+    const [NoStairs, setNoStairs] = useState(false); 
+    const [beforeBlocked, setBeforeBlocked] = useState('');
+    const [blockedNodeIndex, setBlockedNodeIndex] = useState("");
+    //const [blockedNodeIndexArray, setBlockedNodeIndexArray] = useState("")
+    const [blockedArray, setBlockedArray] = useState([]); //Array of all of the nodes which were blocked by the users (In image name format: X_X_X_X_Direction_Direction_Type.jpg)
+    const [stopsIndex, setStopsIndex] = useState([]);
+    const [noPath, setNoPath] = useState("");
+    const [showBlockConfirmation, setShowBlockConfirmation] = useState(false);
+    const [hideTimeTaken, setHideTimeTaken] = useState(false)
+    const [pathInstructions, setPathInstructions] = useState([])
+    const Local = true;
+    let websitelink=""
+    if (Local) {
+        websitelink="http://localhost:4000"
+    } else {
+        websitelink="https://naveng-backend-vercel.vercel.app"
+    }
+
+    function hasSameEntries(array) {
+        let set = new Set();
+    
+        for (let element of array) {
+            if (set.has(element)) {
+                return true;
+            }
+            set.add(element);
+        }
+    
+        return false;
+    }
+
+    useEffect(() => {
+        // Update clumpedArray whenever front, center, or end change
+        const newClumpedArray = [sourceLocation, ...MultiStopArrayDuplicate, destinationLocation];
+        console.log(newClumpedArray)
+        setMultiStopArray(newClumpedArray);
+        disableSubmitButton(newClumpedArray)
+      }, [sourceLocation, MultiStopArrayDuplicate, destinationLocation]);
+
+    useEffect(() => {
+        // Update clumpedArray whenever front, center, or end change
+        const newClumpedArray = [sourceLocation, ...MultiStopArrayDuplicate, destinationLocation];
+        setMultiStopArray(newClumpedArray);
+      }, [sourceLocation, MultiStopArrayDuplicate, destinationLocation]);
+
+      useEffect(() => {
+        const image = arrayFromString[arrayposition]
+        console.log(arrayFromString[arrayposition])
+        
+        const URL = '<img src = "https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/Specials/No_alternate_path.png?t=2024-06-22T15%3A22%3A29.729Z" alt = "cannot be displayed" class="htmlData">'
+        
+        if (image === URL) {
+          setNoPath(true);
+        } else {
+          setNoPath(false); // Ensure it's false if condition is not met
+        }
+      }, [arrayFromString, arrayposition]);
+
+    const disableSubmitButton = (MultiStopArray) => {
+        const noEmptyStrings = MultiStopArray.every(item => item !== "");
+        const hasNullValues = MultiStopArray.some(item => item === null);
+        if (noEmptyStrings && !hasNullValues) {
+            setDisableSubmit(false)
+            console.log("enabled")
+          } else {
+            setDisableSubmit(true)
+            console.log("disabled")
+          }
+
+    }
+
+    const blockConfirmation = () => {
+        setShowBlockConfirmation(true)
+        return;
+    }
 
     const addAutocomplete = () => {
         setAutocompleteFields([...autocompleteFields, {}]);
         setMultiStopArrayDuplicate([...MultiStopArrayDuplicate, null]);
-      };
+    };
 
-      const removeAutocomplete = (index) => {
+    const removeAutocomplete = (index) => {
         const updatedAutocompletes = [...autocompleteFields];
         updatedAutocompletes.splice(index, 1);
         setAutocompleteFields(updatedAutocompletes);
-    
+
         const updatedMultiStopArray = [...MultiStopArrayDuplicate];
         updatedMultiStopArray.splice(index, 1);
         setMultiStopArrayDuplicate(updatedMultiStopArray);
+    };
 
-        const hasInfo = updatedMultiStopArray.some(value => value !== null && value !== undefined && value !== '');
-        setMultiStop(hasInfo);
-      };
-
-      const handleAutocompleteChange = (index, value) => {
+    const handleAutocompleteChange = (index, value) => {
         const updatedValues = [...MultiStopArrayDuplicate];
         updatedValues[index] = value;
         setMultiStopArrayDuplicate(updatedValues);
+    };
+
+    useEffect(() => {
+        if (blocked && typeof blocked === 'string') {
+        const parts = blocked.split('/');
+        const remainder = parts.slice(8).join('/');
+        const indexOfQuote = remainder.indexOf('"');
+        setBlockedIMGName(remainder.slice(0, indexOfQuote));
     
-        const hasInfo = updatedValues.some(value => value !== null && value !== undefined && value !== '');
-        setMultiStop(hasInfo);
-        const duplicateArray = [...updatedValues]
-        duplicateArray.unshift(sourceLocation);
-        duplicateArray.push(destinationLocation)
-        setMultiStopArray(duplicateArray)
-
-      };
-
-    let blockedNodeid = ""
-    let parts = blocked.split('/');
-    let remainder = parts.slice(8).join('/');
-    let indexOfQuote = remainder.indexOf('"');
-    let beforeQuote = remainder.slice(0, indexOfQuote);
+        const beforeparts = beforeBlocked.split('/');
+        const beforeremainder = beforeparts.slice(8).join('/');
+        const beforeindexOfQuote = beforeremainder.indexOf('"');
+        const beforebeforeQuote = beforeremainder.slice(0, beforeindexOfQuote);
+        const node_string = beforebeforeQuote.split("_")[0];
+        const before_node_id = parseInt(node_string);
+        }
+      }, [blocked]);
 
     let beforeparts = beforeBlocked.split('/');
     let beforeremainder = beforeparts.slice(8).join('/');
@@ -93,17 +168,20 @@ function PromptFormMobile() {
     const node_string = beforebeforeQuote.split("_")[0];
     const before_node_id = parseInt(node_string);
 
-    const incrementCounter = (e) => {
+    const incrementCounter = (e) => { //counter for image array
         e.preventDefault();
         if (arrayposition !== (arrayFromString.length - 2)) { //Using -2 due to nature of splitting string
             setCount(arrayposition + 1);
             setBlocked(arrayFromString[arrayposition + 1])
             setBeforeBlocked(arrayFromString[arrayposition])
+            setBlockedNodeIndex(arrayposition + 1)
         }
         if (arrayposition === (arrayFromString.length - 3)) {
             setDisableRightButton(true)
+            setHideTimeTaken(true)
         }
         setDisableLeftButton(false)
+        setShowBlockConfirmation(false)
     };
 
     const decrementCounter = (e) => {
@@ -111,17 +189,20 @@ function PromptFormMobile() {
         if (arrayposition !== (0)) {
             setCount(arrayposition - 1);
             setBlocked(arrayFromString[arrayposition - 1])
+            setBlockedNodeIndex(arrayposition - 1)
             if (arrayposition !== (1)) {
-            setBeforeBlocked(arrayFromString[arrayposition-2])
-        }
+                setBeforeBlocked(arrayFromString[arrayposition - 2])
+            }
         }
         if (arrayposition === 1) {
             setDisableLeftButton(true)
         }
         setDisableRightButton(false)
+        setHideTimeTaken(false)
+        setShowBlockConfirmation(false)
     };
 
-    useEffect( () => {
+    useEffect(() => {
         let processing = true
         axiosFetchData(processing)
         axiosFetchLocations(processing)
@@ -129,82 +210,88 @@ function PromptFormMobile() {
         return () => {
             processing = false
         }
-    },[])
-    
-    const axiosFetchData = async (processing) => {
-        //await axios.get('https://naveng-backend-vercel.vercel.app/users')
+    }, [])
 
-        await axios.get('http://localhost:4000/test')
+    useEffect(() => {
+        // Update clumpedArray whenever front, center, or end change
+        const newClumpedArray = [sourceLocation, ...MultiStopArrayDuplicate, destinationLocation];
+        setMultiStopArray(newClumpedArray);
+      }, [sourceLocation, MultiStopArrayDuplicate, destinationLocation]);
+
+    const axiosFetchData = async (processing) => {
+        await axios.get(websitelink + '/test')
+        //await axios.get('http://localhost:4000/test')
 
             .then(res => {
                 if (processing) {
                 }
             })
             .catch(err => console.log("Fetch Error!!"))
-
     }
 
     const axiosFetchLocations = async (processing) => {
-        //await axios.post('https://naveng-backend-vercel.vercel.app/locations')
-        await axios.post('http://localhost:4000/locations')
+        await axios.post(websitelink + '/locations')
+        //await axios.post('http://localhost:4000/locations')
             .then(res => {
                 setSelectLocations(res.data)
             })
             .catch(err => console.log("Fetch Location Error!!"))
     }
 
-    const axiosPostData = async () => {
+    const axiosPostData = async () => { //Sending main form data
         const postData = {
-            source: sourceLocation,
-            destination: destinationLocation,
-            Debugging: debug,
-            current_blocked: blockedNodeID,
+            blocked_array: blockedArray,
             sheltered: sheltered , 
-            NoStairs : NoStairs,
-            MultiStop: MultiStop,
-            MultiStopArray: MultiStopArray,
+            NoStairs : NoStairs , 
+            MultiStopArray : MultiStopArray
         };
 
         try {
-            const response = await axios.post("http://localhost:4000/formPost", postData);
+            const response = await axios.post(websitelink + '/formPost', postData);
+            //const response = await axios.post("http://localhost:4000/formPost", postData);
+
 
             // Update state variables with the response data
             setMessageError(response.data['HTML']);
             setTotalDistance(response.data['Distance'] / 10);
             const distArray = response.data['Dist_array'];
-            handleConvertToMetres(distArray)
+            setPathInstructions(response.data['Instructions'])
+            setStopsIndex(response.data['Stops_index']);
+            handleConvertToMetres(distArray);
 
             // Perform split operation inside the then block
             const arrayFromString = response.data['HTML'].split('<img src');
             setBlocked(arrayFromString[1]);
-
+            setStopsIndex(response.data['Stops_index']);
         } catch (error) {
             console.error('Error fetching data:', error);
         }
     };
-    const axiosPostDataRefresh = async () => {
+
+    const axiosPostDataRefresh = async () => { //Sending data when alternate path button is clicked
+
         const postData = {
-            source: before_node_id,
-            destination: destinationLocation,
-            Debugging: debug,
-            current_blocked: blockedNodeID,
+            blocked_array: blockedArray,
             b4_blocked_img_path : beforebeforeQuote,
+            blocked_img_path : blockedIMGName ,
             sheltered: sheltered , 
-            NoStairs : NoStairs,
-            MultiStop: MultiStop,
-            MultiStopArray: MultiStopArray
+            NoStairs : NoStairs ,  
+            MultiStopArray : MultiStopArray,
+            Stops_index: stopsIndex,
+            BlockedNodeIndex: blockedNodeIndex
         };
 
         try {
-            const response = await axios.post("http://localhost:4000/blockRefresh", postData);
+            const response = await axios.post(websitelink + '/blockRefresh', postData);
+            //const response = await axios.post("http://localhost:4000/blockRefresh", postData);
 
             // Update state variables with the response data
             setMessageError(response.data['HTML']);
             setTotalDistance(response.data['Distance'] / 10);
             const distArray = response.data['Dist_array'];
-            handleConvertToMetres(distArray)
-
-            // Perform split operation inside the then block
+            handleConvertToMetres(distArray);
+            setStopsIndex(response.data['Stops_index']);
+            setMultiStopArray(response.data['Destinations']);
             const arrayFromString = response.data['HTML'].split('<img src');
             setBlocked(arrayFromString[1]);
 
@@ -212,13 +299,14 @@ function PromptFormMobile() {
             console.error('Error fetching data:', error);
         }
     };
+
 
     const handleSubmit = (e) => {
         e.preventDefault()
 
-        console.log(sourceLocation + ' | '  + destinationLocation)
+        console.log(sourceLocation + ' | ' + destinationLocation)
 
-        if (sourceLocation === destinationLocation) {
+        if (hasSameEntries(MultiStopArray)) {
             alert('Entries cannot be the same');
             return;
         }
@@ -228,18 +316,22 @@ function PromptFormMobile() {
         } else {
             setMessageError("")
         }
+
         setMessageError("");
         axiosPostData();
         setFormSubmitted(true);
         setCount(0);
         setDisableRightButton(false);
+        setHideTimeTaken(false)
         setDisableLeftButton(true);
+        setShowBlockConfirmation(false)
+        setMultiStopArrayNotification(MultiStopArray)
     }
 
     const handleSubmitRefresh = (e) => {
         e.preventDefault()
 
-        console.log(sourceLocation + ' | '  + destinationLocation)
+        console.log(sourceLocation + ' | ' + destinationLocation)
 
         if (sourceLocation === destinationLocation) {
             alert('Entries cannot be the same');
@@ -256,42 +348,49 @@ function PromptFormMobile() {
         setFormSubmitted(true);
         setCount(0);
         setDisableRightButton(false);
+        setHideTimeTaken(false)
         setDisableLeftButton(true);
         setShowUpload(false);
     }
 
-    const axiosPostBlock = async (e) => {
+    const axiosPostBlock = async (e) => { //Sending data when block button is clicked
         try {
-          const postData = {
-            img_string: beforeQuote
-          };
-    
-          // Send POST request to insertBlocked endpoint
-          const response = await axios.post("http://localhost:4000/insertBlocked", postData);
-    
-          // Update state variables after successful response
-          setShowUpload(true);
-          const blockdata = response.data;
-          setBlockedMessage(blockdata['message']);
-          console.log("blocked message: " + blockdata['message']); // Log the message
-          console.log("blocked nodeID: " + blockdata['node']); // Log the node ID
-          console.log("blocked nodeID variable: " + blockedNodeid); // Log the node ID
-          console.log("before_node_id" + before_node_id)
-          setBlockedNodeID(blockdata['node'])
+            let postData = {
+                img_string: blockedIMGName
+            };
+
+            // Send POST request to insertBlocked endpoint
+            const response = await axios.post(websitelink + '/insertBlocked', postData);
+
+            // Update state variables after successful response
+            setShowUpload(true);
+            const blockdata = response.data;
+            setBlockedMessage(blockdata['message']);
+            const new_blocked = blockdata['node'];
+            const newBlockedArray = [...blockedArray, new_blocked];
+            setBlockedArray(newBlockedArray)
+            setShowBlockConfirmation(false)
+            //const newBlockedNodeIndex = blockedNodeIndex
+            //const newBlockedIndexArray = [...blockedNodeIndexArray, newBlockedNodeIndex];
+            //setBlockedNodeIndexArray(newBlockedIndexArray)
 
         } catch (error) {
-          console.error('Error posting block:', error);
+            console.error('Error posting block:', error);
         }
-      };
+    };
 
     const handleConvertToMetres = (distArray) => {
-        const dividedDistance = ConvertToMetres({ distanceArrayx10: distArray }); 
-        setDistanceArray(dividedDistance); 
+        const dividedDistance = ConvertToMetres({ distanceArrayx10: distArray });
+        setDistanceArray(dividedDistance);
     }
 
-    const handleCheckbox = (event) => {
+    const handleShelteredCheckbox = (event) => {
         setSheltered(event.target.checked);
-      };
+    };
+
+    const handleStairsCheckbox = (event) => {
+        setNoStairs(event.target.checked);
+    };
 
     return (
         <>
@@ -372,13 +471,20 @@ function PromptFormMobile() {
 </div>
 </div>
             <br></br>
+            <FormControlLabel control={<Checkbox sx={{
+                            color: "#cdd8e6",
+                            '&.Mui-checked': {
+                                color: "#F05C2C",
+                            },
+                        }} checked={NoStairs}
+                            onChange={handleStairsCheckbox} />} label="No Stairs" sx={{ fontFamily: "Lexend" }} />
                         <FormControlLabel control={<Checkbox defaultChecked sx={{
                             color: "#cdd8e6",
                             '&.Mui-checked': {
                                 color: "#F05C2C",
                             },
                         }} checked={sheltered}
-                        onChange={handleCheckbox}/>} label="Sheltered Path" sx={{ fontFamily: "Lexend" }} />
+                        onChange={handleShelteredCheckbox}/>} label="Sheltered Path" sx={{ fontFamily: "Lexend" }} />
             <br></br>
             <Button variant="contained" type="submit" onClick={handleSubmit} sx ={{ bgcolor: "#cdd8e6", "&:hover": { bgcolor: "#F05C2C"}, }}>Submit</Button>
             <br></br>
@@ -399,22 +505,23 @@ function PromptFormMobile() {
              textAlign: 'center', justifyContent: 'center', color: 'grey'}}>Please select the starting and ending <br></br> locations to view the pictures</Box></div>}
             
             <center>
-            {formSubmitted && <p className="parametricsDescription">Total Distance: </p>}     
-                        {formSubmitted && <p className="parametricsContent">{totalDistance}m</p>}
+            {!noPath && formSubmitted && <p className="parametricsDescription">Total Distance: </p>}
+                        {!noPath && formSubmitted && <p className="parametricsContent">{totalDistance}m</p>}
 
                         <div></div>
-                        {formSubmitted && <p className="parametricsDescription">Total Estimated Time Taken: </p>}
-                        {formSubmitted && <div className="parametricsContent"><CalculateTime distance={totalDistance} /></div>}
+                        {!noPath && formSubmitted && <p className="parametricsDescription">Total Estimated Time Taken: </p>}
+                        {!noPath && formSubmitted && <div className="parametricsContent"><CalculateTime distance={totalDistance} /></div>}
                         <br></br>
                         <br></br>
-                        {formSubmitted && <p className="parametricsDescription">Remaining Distance: </p>}
-                        {formSubmitted && <p className="parametricsContent">{distanceArray[arrayposition]}m</p>}
+                        {!noPath && formSubmitted  && !hideTimeTaken && <p className="parametricsDescription">Distance Remaining: </p>}
+                        {!noPath && formSubmitted  && !hideTimeTaken && <p className="parametricsContent">{distanceArray[arrayposition]}m</p>}
 
                         <div></div>
-                        {formSubmitted && <p className="parametricsDescription">Time to Destination: </p>}
-                        {formSubmitted && <div className="parametricsContent"><CalculateTime distance={distanceArray[arrayposition]} /></div>}
+                        {!noPath && formSubmitted && !hideTimeTaken && <p className="parametricsDescription">Time to Destination: </p>}
+                        {!noPath && formSubmitted && !hideTimeTaken && <div className="parametricsContent"><CalculateTime distance={distanceArray[arrayposition]} /></div>}
 
-            {formSubmitted && <p className="imageCountMobile">{arrayposition+1}/{arrayFromString.length-1}</p>}
+                        {!noPath && formSubmitted && <p className="imageCount">{arrayposition + 1}/{arrayFromString.length - 1}</p>}
+                        {!noPath && formSubmitted && <DestinationNotification stopsIndex={stopsIndex} arrayposition={arrayposition} MultiStopArray={MultiStopArrayNotification} pathInstructions={pathInstructions}/>}
              { formSubmitted && <div className="containerMobile">
              <Button variant="contained" type="submit" onClick={decrementCounter} 
              sx ={{ bgcolor: "#D95328" , "&:hover": { bgcolor: "#F05C2C"}, minWidth: 'unset', 
@@ -423,8 +530,9 @@ function PromptFormMobile() {
                             <div className="htmlContent" dangerouslySetInnerHTML={{ __html: arrayFromString[arrayposition] }} />
                             <br></br>
                             <Tooltip title="Block?" arrow>
-                                <Button className="overlay-button-mobile" onClick={axiosPostBlock}><img src="block_logo.png" className="block-logo"></img></Button>
+                            {!noPath && !showBlockConfirmation && <Button className="overlay-button-mobile" onClick={blockConfirmation}><img src="block_logo.png" alt = "cannot display" className="block-logo"></img></Button>}
                             </Tooltip>
+                            {!noPath && showBlockConfirmation && <Button variant="contained" className="overlay-confirmation-button-mobile" sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }} onClick={axiosPostBlock}>Block this point?</Button>}
                             {showUpload && <div className="overlay-refresh">
                             <Button variant="contained" type="submit" onClick={handleSubmitRefresh} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }}>Give me an alternate path</Button>
                         </div>}

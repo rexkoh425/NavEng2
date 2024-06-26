@@ -352,3 +352,21 @@
   right: -22vh;
   display: inline-block
 }
+
+.overlay-confirmation-button {
+  position: absolute;
+  height: 7vh;
+  width: 20vh;
+  bottom: 75vh;
+  right: -22vh;
+  display: inline-block
+}
+
+.overlay-confirmation-button-mobile {
+  position: absolute;
+  height: 7vh;
+  width: 20vh;
+  bottom: 75vh;
+  right: -10vh;
+  display: inline-block
+}
