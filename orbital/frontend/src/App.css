@@ -325,9 +325,22 @@
   margin-top: 20vh;
 }
 
+.pathInstructions {
+  text-align:center;
+  font-family: "Lexend";
+}
+
+.startNotification {
+  text-align:center;
+  font-family: "Lexend";
+  color: #187D36;
+}
+
 .destinationNotification {
   text-align:center;
   font-family: "Lexend";
+  font-weight: 500;
+  font-size:large;
   color: #187D36;
 }
 

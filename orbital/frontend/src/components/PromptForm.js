@@ -8,6 +8,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
 import "@fontsource/lexend"; // Defaults to weight 400
+import "@fontsource/lexend/500.css";
 import "@fontsource/lexend/400.css";
 import "@fontsource/lexend/300.css";
 import Tooltip from '@mui/material/Tooltip';
@@ -30,6 +31,7 @@ function PromptForm() {
     const [autocompleteFields, setAutocompleteFields] = useState([]); //Multistop fields
     const [MultiStopArrayDuplicate, setMultiStopArrayDuplicate] = useState([]); //Duplicate Array to store temporary Multistop Array
     const [MultiStopArray, setMultiStopArray] = useState([]);
+    const [MultiStopArrayNotification, setMultiStopArrayNotification] = useState([]);
     const [messageError, setMessageError] = useState(``) //using messageError variable for html content as well
     const [selectLocations, setSelectLocations] = useState([])
     const [totalDistance, setTotalDistance] = useState(``)
@@ -54,6 +56,7 @@ function PromptForm() {
     const [noPath, setNoPath] = useState("");
     const [showBlockConfirmation, setShowBlockConfirmation] = useState(false);
     const [hideTimeTaken, setHideTimeTaken] = useState(false)
+    const [pathInstructions, setPathInstructions] = useState([])
     const Local = true;
     let websitelink=""
     if (Local) {
@@ -250,6 +253,7 @@ function PromptForm() {
             setMessageError(response.data['HTML']);
             setTotalDistance(response.data['Distance'] / 10);
             const distArray = response.data['Dist_array'];
+            setPathInstructions(response.data['Instructions'])
             setStopsIndex(response.data['Stops_index']);
             handleConvertToMetres(distArray);
 
@@ -319,6 +323,7 @@ function PromptForm() {
         setHideTimeTaken(false)
         setDisableLeftButton(true);
         setShowBlockConfirmation(false)
+        setMultiStopArrayNotification(MultiStopArray)
     }
 
     const handleSubmitRefresh = (e) => {
@@ -515,8 +520,8 @@ function PromptForm() {
                         {!noPath && formSubmitted && <div className="parametricsContent"><CalculateTime distance={totalDistance} /></div>}
                         <br></br>
                         <br></br>
-                        {!noPath && formSubmitted  && <p className="parametricsDescription">Distance Remaining: </p>}
-                        {!noPath && formSubmitted  && <p className="parametricsContent">{distanceArray[arrayposition]}m</p>}
+                        {!noPath && formSubmitted  && !hideTimeTaken && <p className="parametricsDescription">Distance Remaining: </p>}
+                        {!noPath && formSubmitted  && !hideTimeTaken && <p className="parametricsContent">{distanceArray[arrayposition]}m</p>}
 
                         <div></div>
                         {!noPath && formSubmitted && !hideTimeTaken && <p className="parametricsDescription">Time to Destination: </p>}
@@ -525,8 +530,8 @@ function PromptForm() {
 
 
                     </center>
-                    <DestinationNotification stopsIndex={stopsIndex} arrayposition={arrayposition} destinationLocation={destinationLocation} MultiStopArray={MultiStopArray} />
                     {!noPath && formSubmitted && <p className="imageCount">{arrayposition + 1}/{arrayFromString.length - 1}</p>}
+                    {!noPath && formSubmitted && <DestinationNotification stopsIndex={stopsIndex} arrayposition={arrayposition} MultiStopArray={MultiStopArrayNotification} pathInstructions={pathInstructions}/>}
 
                     
 

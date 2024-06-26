@@ -31,9 +31,15 @@ async function template_instructions(distance , arrow_direction , levels){
     if(arrow_direction == 'Down' || arrow_direction == 'Up'){
         return `Go ${arrow_direction} ${levels} level`;
     }else if(arrow_direction == 'Straight' || arrow_direction == 'None'){
-        return `Walk straight for ${distance / 10} metres` ;
+        if ((distance / 10) > 1) {
+            return `Walk Straight for ${distance / 10} metres` ;
+        }
+        return `Walk Straight for ${distance / 10} metre`;
     }else{
-        return `Turn ${arrow_direction} and walk straight for ${distance / 10} metres` ;
+        if ((distance / 10) > 1) {
+        return `Turn ${arrow_direction} and Walk Straight for ${distance / 10} metres` ;
+        }
+        return `Turn ${arrow_direction} and Walk Straight for ${distance / 10} metre` ;
     }
 }
 
