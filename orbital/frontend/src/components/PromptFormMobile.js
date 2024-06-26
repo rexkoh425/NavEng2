@@ -22,6 +22,7 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import Instructions from "./Instructions";
 import DestinationNotification from "./DestinationNotification";
+import { useSwipeable } from 'react-swipeable';
 
 
 function PromptFormMobile() {
@@ -45,10 +46,10 @@ function PromptFormMobile() {
     const [blockedIMGName, setBlockedIMGName] = useState('');
     const [disableRightButton, setDisableRightButton] = useState(false);
     const [disableLeftButton, setDisableLeftButton] = useState(true);
-    const [showUpload, setShowUpload] = useState(false); 
+    const [showUpload, setShowUpload] = useState(false);
     let arrayFromString = messageError.split('<br>'); //To split HTML code into array
-    const [sheltered, setSheltered] = useState(false); 
-    const [NoStairs, setNoStairs] = useState(false); 
+    const [sheltered, setSheltered] = useState(false);
+    const [NoStairs, setNoStairs] = useState(false);
     const [beforeBlocked, setBeforeBlocked] = useState('');
     const [blockedNodeIndex, setBlockedNodeIndex] = useState("");
     //const [blockedNodeIndexArray, setBlockedNodeIndexArray] = useState("")
@@ -58,64 +59,89 @@ function PromptFormMobile() {
     const [showBlockConfirmation, setShowBlockConfirmation] = useState(false);
     const [hideTimeTaken, setHideTimeTaken] = useState(false)
     const [pathInstructions, setPathInstructions] = useState([])
+
     const Local = true;
-    let websitelink=""
+    let websitelink = ""
     if (Local) {
-        websitelink="http://localhost:4000"
+        websitelink = "http://localhost:4000"
     } else {
-        websitelink="https://naveng-backend-vercel.vercel.app"
+        websitelink = "https://naveng-backend-vercel.vercel.app"
     }
 
     function hasSameEntries(array) {
         let set = new Set();
-    
+
         for (let element of array) {
             if (set.has(element)) {
                 return true;
             }
             set.add(element);
         }
-    
+
         return false;
     }
 
+    function preloadNextImage() {
+        const nextImageIndex = (arrayposition + 2) % arrayFromString.length;
+        const imgContainer = document.createElement('div');
+        imgContainer.innerHTML = arrayFromString[nextImageIndex];
+        const img = imgContainer.firstChild;
+        console.log("Next image: " + arrayFromString[nextImageIndex])
+    }
+
+    useEffect(() => {
+        const nextImageIndex = (arrayposition + 1) % arrayFromString.length;
+        const imgContainer = document.createElement('div');
+        imgContainer.innerHTML = arrayFromString[nextImageIndex];
+        // Optionally handle onload and onerror events here
+    }, [arrayposition, arrayFromString]);
+
+    const handleSwipe = (direction) => {
+        if (direction === 'left') {
+            incrementCounter()
+        } else if (direction === 'right') {
+            decrementCounter()
+        }
+    };
+
+    const handlers = useSwipeable({
+        onSwipedLeft: () => handleSwipe('left'),
+        onSwipedRight: () => handleSwipe('right'),
+    });
+
     useEffect(() => {
         // Update clumpedArray whenever front, center, or end change
         const newClumpedArray = [sourceLocation, ...MultiStopArrayDuplicate, destinationLocation];
-        console.log(newClumpedArray)
         setMultiStopArray(newClumpedArray);
         disableSubmitButton(newClumpedArray)
-      }, [sourceLocation, MultiStopArrayDuplicate, destinationLocation]);
+    }, [sourceLocation, MultiStopArrayDuplicate, destinationLocation]);
 
     useEffect(() => {
         // Update clumpedArray whenever front, center, or end change
         const newClumpedArray = [sourceLocation, ...MultiStopArrayDuplicate, destinationLocation];
         setMultiStopArray(newClumpedArray);
-      }, [sourceLocation, MultiStopArrayDuplicate, destinationLocation]);
+    }, [sourceLocation, MultiStopArrayDuplicate, destinationLocation]);
 
-      useEffect(() => {
+    useEffect(() => {
         const image = arrayFromString[arrayposition]
-        console.log(arrayFromString[arrayposition])
-        
+
         const URL = '<img src = "https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/Specials/No_alternate_path.png?t=2024-06-22T15%3A22%3A29.729Z" alt = "cannot be displayed" class="htmlData">'
-        
+
         if (image === URL) {
-          setNoPath(true);
+            setNoPath(true);
         } else {
-          setNoPath(false); // Ensure it's false if condition is not met
+            setNoPath(false); // Ensure it's false if condition is not met
         }
-      }, [arrayFromString, arrayposition]);
+    }, [arrayFromString, arrayposition]);
 
     const disableSubmitButton = (MultiStopArray) => {
         const noEmptyStrings = MultiStopArray.every(item => item !== "");
         const hasNullValues = MultiStopArray.some(item => item === null);
         if (noEmptyStrings && !hasNullValues) {
             setDisableSubmit(false)
-            console.log("enabled")
-          } else {
+        } else {
             setDisableSubmit(true)
-            console.log("disabled")
-          }
+        }
 
     }
 
@@ -147,19 +173,19 @@ function PromptFormMobile() {
 
     useEffect(() => {
         if (blocked && typeof blocked === 'string') {
-        const parts = blocked.split('/');
-        const remainder = parts.slice(8).join('/');
-        const indexOfQuote = remainder.indexOf('"');
-        setBlockedIMGName(remainder.slice(0, indexOfQuote));
-    
-        const beforeparts = beforeBlocked.split('/');
-        const beforeremainder = beforeparts.slice(8).join('/');
-        const beforeindexOfQuote = beforeremainder.indexOf('"');
-        const beforebeforeQuote = beforeremainder.slice(0, beforeindexOfQuote);
-        const node_string = beforebeforeQuote.split("_")[0];
-        const before_node_id = parseInt(node_string);
+            const parts = blocked.split('/');
+            const remainder = parts.slice(8).join('/');
+            const indexOfQuote = remainder.indexOf('"');
+            setBlockedIMGName(remainder.slice(0, indexOfQuote));
+
+            const beforeparts = beforeBlocked.split('/');
+            const beforeremainder = beforeparts.slice(8).join('/');
+            const beforeindexOfQuote = beforeremainder.indexOf('"');
+            const beforebeforeQuote = beforeremainder.slice(0, beforeindexOfQuote);
+            const node_string = beforebeforeQuote.split("_")[0];
+            const before_node_id = parseInt(node_string);
         }
-      }, [blocked]);
+    }, [blocked]);
 
     let beforeparts = beforeBlocked.split('/');
     let beforeremainder = beforeparts.slice(8).join('/');
@@ -169,7 +195,7 @@ function PromptFormMobile() {
     const before_node_id = parseInt(node_string);
 
     const incrementCounter = (e) => { //counter for image array
-        e.preventDefault();
+        preloadNextImage()
         if (arrayposition !== (arrayFromString.length - 2)) { //Using -2 due to nature of splitting string
             setCount(arrayposition + 1);
             setBlocked(arrayFromString[arrayposition + 1])
@@ -185,7 +211,6 @@ function PromptFormMobile() {
     };
 
     const decrementCounter = (e) => {
-        e.preventDefault();
         if (arrayposition !== (0)) {
             setCount(arrayposition - 1);
             setBlocked(arrayFromString[arrayposition - 1])
@@ -216,11 +241,11 @@ function PromptFormMobile() {
         // Update clumpedArray whenever front, center, or end change
         const newClumpedArray = [sourceLocation, ...MultiStopArrayDuplicate, destinationLocation];
         setMultiStopArray(newClumpedArray);
-      }, [sourceLocation, MultiStopArrayDuplicate, destinationLocation]);
+    }, [sourceLocation, MultiStopArrayDuplicate, destinationLocation]);
 
     const axiosFetchData = async (processing) => {
         await axios.get(websitelink + '/test')
-        //await axios.get('http://localhost:4000/test')
+            //await axios.get('http://localhost:4000/test')
 
             .then(res => {
                 if (processing) {
@@ -231,7 +256,7 @@ function PromptFormMobile() {
 
     const axiosFetchLocations = async (processing) => {
         await axios.post(websitelink + '/locations')
-        //await axios.post('http://localhost:4000/locations')
+            //await axios.post('http://localhost:4000/locations')
             .then(res => {
                 setSelectLocations(res.data)
             })
@@ -241,9 +266,9 @@ function PromptFormMobile() {
     const axiosPostData = async () => { //Sending main form data
         const postData = {
             blocked_array: blockedArray,
-            sheltered: sheltered , 
-            NoStairs : NoStairs , 
-            MultiStopArray : MultiStopArray
+            sheltered: sheltered,
+            NoStairs: NoStairs,
+            MultiStopArray: MultiStopArray
         };
 
         try {
@@ -272,11 +297,11 @@ function PromptFormMobile() {
 
         const postData = {
             blocked_array: blockedArray,
-            b4_blocked_img_path : beforebeforeQuote,
-            blocked_img_path : blockedIMGName ,
-            sheltered: sheltered , 
-            NoStairs : NoStairs ,  
-            MultiStopArray : MultiStopArray,
+            b4_blocked_img_path: beforebeforeQuote,
+            blocked_img_path: blockedIMGName,
+            sheltered: sheltered,
+            NoStairs: NoStairs,
+            MultiStopArray: MultiStopArray,
             Stops_index: stopsIndex,
             BlockedNodeIndex: blockedNodeIndex
         };
@@ -304,8 +329,6 @@ function PromptFormMobile() {
     const handleSubmit = (e) => {
         e.preventDefault()
 
-        console.log(sourceLocation + ' | ' + destinationLocation)
-
         if (hasSameEntries(MultiStopArray)) {
             alert('Entries cannot be the same');
             return;
@@ -330,8 +353,6 @@ function PromptFormMobile() {
 
     const handleSubmitRefresh = (e) => {
         e.preventDefault()
-
-        console.log(sourceLocation + ' | ' + destinationLocation)
 
         if (sourceLocation === destinationLocation) {
             alert('Entries cannot be the same');
@@ -394,161 +415,178 @@ function PromptFormMobile() {
 
     return (
         <>
-        <form className="mobileForm">
-        <center>
-            <label className="StartAndEndLocation">Start Location</label>
-            <Typography  className="description" sx={{marginBottom: "10px" , fontFamily: "Lexend"}}>Search or select the location closest to you</Typography>
-            <Autocomplete
-            options={selectLocations} sx={{ width: 250 }} renderInput={(params) => (
-                <TextField {...params} label="Start Location"></TextField>
-            )}
-            onChange={(event, value) => {
-                if (value) {
-                    setSourceLocation(value);
-                } else {
-                    setSourceLocation(""); // Handle case when value is cleared
-                }
-            }
-        }
-            >
-            </Autocomplete>
+            <form className="mobileForm">
+                <center>
+                    <label className="StartAndEndLocation">Start Location</label>
+                    <Typography className="description" sx={{ marginBottom: "10px", fontFamily: "Lexend" }}>Search or select the location closest to you</Typography>
+                    <Autocomplete
+                        options={selectLocations} sx={{ width: 250 }} renderInput={(params) => (
+                            <TextField {...params} label="Start Location"></TextField>
+                        )}
+                        onChange={(event, value) => {
+                            if (value) {
+                                setSourceLocation(value);
+                            } else {
+                                setSourceLocation(""); // Handle case when value is cleared
+                            }
+                        }
+                        }
+                    >
+                    </Autocomplete>
+                    <br></br>
+                    <br></br>
+                    <label className="StartAndEndLocation">End Location</label>
+                    <Typography className="description" sx={{ marginBottom: "10px", fontFamily: "Lexend" }}>Search or select the location closest to your end point</Typography>
+
+                    <div >
+
+                        {autocompleteFields.map((_, index) => (
+
+                            <div className="Autocomplete-container" key={index}>
+                                <div className="centered-element">
+                                    <Autocomplete
+                                        options={selectLocations} // Replace with your options array
+                                        value={MultiStopArrayDuplicate[index] || null}
+                                        sx={{ width: 250, fontFamily: 'Georgia, serif' }}
+                                        onChange={(event, value) => handleAutocompleteChange(index, value)}
+                                        renderInput={(params) => (
+                                            <TextField {...params} label={"Enter a destination"} variant="outlined" fullWidth />
+                                        )}
+                                    />
+                                </div>
+                                <div className="right-element">
+                                    <Button color="secondary" sx={{ color: "#F05C2C" }} onClick={() => removeAutocomplete(index)}>
+                                        <RemoveCircleOutlineIcon />
+                                    </Button>
+                                </div>
+                            </div>
+
+                        ))}
+
+                    </div>
+
+                    <div>
+
+                        <div className="Autocomplete-container">
+                            <div className="centered-element">
+                                <Autocomplete
+                                    options={selectLocations} sx={{ width: 250 }} renderInput={(params) => (
+                                        <TextField {...params} label="End Location"></TextField>
+                                    )}
+                                    onChange={(event, value) => {
+                                        if (value) {
+                                            setDestinationLocation(value);
+                                        } else {
+                                            setDestinationLocation(""); // Handle case when value is cleared
+                                        }
+                                    }
+                                    }
+                                >
+                                </Autocomplete>
+                            </div>
+                            <div className="right-element">
+                                <Button color="primary" onClick={addAutocomplete}>
+                                    <AddCircleOutlineIcon />
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                    <br></br>
+                    <FormControlLabel control={<Checkbox sx={{
+                        color: "#cdd8e6",
+                        '&.Mui-checked': {
+                            color: "#F05C2C",
+                        },
+                    }} checked={NoStairs}
+                        onChange={handleStairsCheckbox} />} label="No Stairs" sx={{ fontFamily: "Lexend" }} />
+                    <FormControlLabel control={<Checkbox defaultChecked sx={{
+                        color: "#cdd8e6",
+                        '&.Mui-checked': {
+                            color: "#F05C2C",
+                        },
+                    }} checked={sheltered}
+                        onChange={handleShelteredCheckbox} />} label="Sheltered Path" sx={{ fontFamily: "Lexend" }} />
+                    <br></br>
+                    <Button variant="contained" type="submit" onClick={handleSubmit} sx={{ bgcolor: "#cdd8e6", "&:hover": { bgcolor: "#F05C2C" }, }}>Submit</Button>
+                    <br></br>
+                    <br></br>
+                    <Instructions></Instructions>
+                </center>
+            </form>
             <br></br>
-            <br></br>
-            <label className="StartAndEndLocation">End Location</label>
-            <Typography className="description" sx={{marginBottom: "10px" , fontFamily: "Lexend"}}>Search or select the location closest to your end point</Typography>
 
-            <div >
 
-{autocompleteFields.map((_, index) => (
+            <div className="child2mobile">
+                {!formSubmitted
+                    && <div><Box
+                        component="section"
+                        display="flex"
+                        alignItems="center"
+                        sx={{
+                            p: 2, border: '1px grey', bgcolor: '#F5F5F5', height: "68vh", marginRight: "0px",
+                            textAlign: 'center', justifyContent: 'center', color: 'grey'
+                        }}>Please select the starting and ending <br></br> locations to view the pictures</Box></div>}
 
-    <div className="Autocomplete-container" key={index}>
-        <div className="centered-element">
-            <Autocomplete
-                options={selectLocations} // Replace with your options array
-                value={MultiStopArrayDuplicate[index] || null}
-                sx={{ width: 250, fontFamily: 'Georgia, serif' }}
-                onChange={(event, value) => handleAutocompleteChange(index, value)}
-                renderInput={(params) => (
-                    <TextField {...params} label={"Enter a destination"} variant="outlined" fullWidth />
-                )}
-            />
-        </div>
-        <div className="right-element">
-            <Button color="secondary" sx={{ color: "#F05C2C" }} onClick={() => removeAutocomplete(index)}>
-                <RemoveCircleOutlineIcon />
-            </Button>
-        </div>
-    </div>
+                <center>
+                    {!noPath && formSubmitted && <p className="parametricsDescription">Total Distance: </p>}
+                    {!noPath && formSubmitted && <p className="parametricsContent">{totalDistance}m</p>}
 
-))}
+                    <div></div>
+                    {!noPath && formSubmitted && <p className="parametricsDescription">Total Estimated Time Taken: </p>}
+                    {!noPath && formSubmitted && <div className="parametricsContent"><CalculateTime distance={totalDistance} /></div>}
+                    <br></br>
+                    <br></br>
+                    {!noPath && formSubmitted && !hideTimeTaken && <p className="parametricsDescription">Distance Remaining: </p>}
+                    {!noPath && formSubmitted && !hideTimeTaken && <p className="parametricsContent">{distanceArray[arrayposition]}m</p>}
 
-</div>
+                    <div></div>
+                    {!noPath && formSubmitted && !hideTimeTaken && <p className="parametricsDescription">Time to Destination: </p>}
+                    {!noPath && formSubmitted && !hideTimeTaken && <div className="parametricsContent"><CalculateTime distance={distanceArray[arrayposition]} /></div>}
 
-<div>
-
-<div className="Autocomplete-container">
-    <div className="centered-element">
-        <Autocomplete
-            options={selectLocations} sx={{ width: 250 }} renderInput={(params) => (
-                <TextField {...params} label="End Location"></TextField>
-            )}
-            onChange={(event, value) => {
-                if (value) {
-                    setDestinationLocation(value);
-                } else {
-                    setDestinationLocation(""); // Handle case when value is cleared
-                }
-            }
-            }
-        >
-        </Autocomplete>
-    </div>
-    <div className="right-element">
-        <Button color="primary" onClick={addAutocomplete}>
-            <AddCircleOutlineIcon />
-        </Button>
-    </div>
-</div>
-</div>
-            <br></br>
-            <FormControlLabel control={<Checkbox sx={{
-                            color: "#cdd8e6",
-                            '&.Mui-checked': {
-                                color: "#F05C2C",
-                            },
-                        }} checked={NoStairs}
-                            onChange={handleStairsCheckbox} />} label="No Stairs" sx={{ fontFamily: "Lexend" }} />
-                        <FormControlLabel control={<Checkbox defaultChecked sx={{
-                            color: "#cdd8e6",
-                            '&.Mui-checked': {
-                                color: "#F05C2C",
-                            },
-                        }} checked={sheltered}
-                        onChange={handleShelteredCheckbox}/>} label="Sheltered Path" sx={{ fontFamily: "Lexend" }} />
-            <br></br>
-            <Button variant="contained" type="submit" onClick={handleSubmit} sx ={{ bgcolor: "#cdd8e6", "&:hover": { bgcolor: "#F05C2C"}, }}>Submit</Button>
-            <br></br>
-            <br></br>
-            <Instructions></Instructions>
-    </center>
-        </form>
-        <br></br>
-        
-        
-        <div className="child2mobile">
-            {!formSubmitted 
-            && <div><Box 
-            component="section"  
-            display="flex"
-            alignItems="center"
-             sx={{ p: 2, border: '1px grey', bgcolor: '#F5F5F5', height: "68vh", marginRight:"0px" , 
-             textAlign: 'center', justifyContent: 'center', color: 'grey'}}>Please select the starting and ending <br></br> locations to view the pictures</Box></div>}
-            
-            <center>
-            {!noPath && formSubmitted && <p className="parametricsDescription">Total Distance: </p>}
-                        {!noPath && formSubmitted && <p className="parametricsContent">{totalDistance}m</p>}
-
-                        <div></div>
-                        {!noPath && formSubmitted && <p className="parametricsDescription">Total Estimated Time Taken: </p>}
-                        {!noPath && formSubmitted && <div className="parametricsContent"><CalculateTime distance={totalDistance} /></div>}
-                        <br></br>
-                        <br></br>
-                        {!noPath && formSubmitted  && !hideTimeTaken && <p className="parametricsDescription">Distance Remaining: </p>}
-                        {!noPath && formSubmitted  && !hideTimeTaken && <p className="parametricsContent">{distanceArray[arrayposition]}m</p>}
-
-                        <div></div>
-                        {!noPath && formSubmitted && !hideTimeTaken && <p className="parametricsDescription">Time to Destination: </p>}
-                        {!noPath && formSubmitted && !hideTimeTaken && <div className="parametricsContent"><CalculateTime distance={distanceArray[arrayposition]} /></div>}
-
-                        {!noPath && formSubmitted && <p className="imageCount">{arrayposition + 1}/{arrayFromString.length - 1}</p>}
-                        {!noPath && formSubmitted && <DestinationNotification stopsIndex={stopsIndex} arrayposition={arrayposition} MultiStopArray={MultiStopArrayNotification} pathInstructions={pathInstructions}/>}
-             { formSubmitted && <div className="containerMobile">
-             <Button variant="contained" type="submit" onClick={decrementCounter} 
-             sx ={{ bgcolor: "#D95328" , "&:hover": { bgcolor: "#F05C2C"}, minWidth: 'unset', 
-             textAlign: 'center !important', px: '0px', py: '0px', height: "15vh", width: "10vw"}}><ArrowLeftIcon></ArrowLeftIcon></Button>
-                                     <div className="imageContainer">
-                            <div className="htmlContent" dangerouslySetInnerHTML={{ __html: arrayFromString[arrayposition] }} />
+                    {!noPath && formSubmitted && <p className="imageCount">{arrayposition + 1}/{arrayFromString.length - 1}</p>}
+                    {!noPath && formSubmitted && <DestinationNotification stopsIndex={stopsIndex} arrayposition={arrayposition} MultiStopArray={MultiStopArrayNotification} pathInstructions={pathInstructions} />}
+                    <div>
+                        {/* Preload the next image */}
+                        <div dangerouslySetInnerHTML={{ __html: arrayFromString[(arrayposition + 1) % arrayFromString.length] }} />
+                    </div>
+                    {formSubmitted && <div className="containerMobile">
+                        <div className="imageContainer"><div>
+                            <div {...handlers}>
+                                <div className="htmlContent" dangerouslySetInnerHTML={{ __html: arrayFromString[arrayposition] }} />
+                            </div>
+                        </div>
                             <br></br>
                             <Tooltip title="Block?" arrow>
-                            {!noPath && !showBlockConfirmation && <Button className="overlay-button-mobile" onClick={blockConfirmation}><img src="block_logo.png" alt = "cannot display" className="block-logo"></img></Button>}
+                                {!noPath && !showBlockConfirmation && <Button className="overlay-button-mobile" onClick={blockConfirmation}><img src="block_logo.png" alt="cannot display" className="block-logo"></img></Button>}
                             </Tooltip>
                             {!noPath && showBlockConfirmation && <Button variant="contained" className="overlay-confirmation-button-mobile" sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }} onClick={axiosPostBlock}>Block this point?</Button>}
                             {showUpload && <div className="overlay-refresh">
-                            <Button variant="contained" type="submit" onClick={handleSubmitRefresh} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }}>Give me an alternate path</Button>
-                        </div>}
-                            
-                        </div>
-          <Button variant="contained" type="submit" onClick={incrementCounter} 
-          sx ={{ bgcolor: "#D95328" , "&:hover": { bgcolor: "#F05C2C"}, minWidth: 'unset', 
-          textAlign: 'center !important', px: '0px', py: '0px', height: "15vh", width: "10vw"}}><ArrowRightIcon></ArrowRightIcon></Button>
-          
+                                <Button variant="contained" type="submit" onClick={handleSubmitRefresh} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }}>Give me an alternate path</Button>
+                            </div>}
 
-        </div>}
-        <br></br>
-        {showUpload && <div className="fileupload-mobile"><FileUpload /></div>}
-        </center>
-        </div>
-        
+                        </div>
+
+
+
+                    </div>}
+                    <br></br>
+                    <div className="fileupload-mobile">
+                    <Button variant="contained" type="submit" onClick={decrementCounter}
+                            sx={{
+                                bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset',
+                                textAlign: 'center !important', px: '0px', py: '0px', height: "6vh", width: "40vw"
+                            }}><ArrowLeftIcon></ArrowLeftIcon></Button>
+                        <Button variant="contained" type="submit" onClick={incrementCounter}
+                            sx={{
+                                bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset',
+                                textAlign: 'center !important', px: '0px', py: '0px', height: "6vh", width: "40vw"
+                            }}><ArrowRightIcon></ArrowRightIcon></Button>
+                    </div>
+                    <br></br>
+                    {showUpload && <div><FileUpload /></div>}
+                </center>
+            </div>
+
         </>
     )
 }
