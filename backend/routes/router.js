@@ -7,6 +7,7 @@ const path = require('path');
 
 const { createClient } = require('@supabase/supabase-js');
 const { fail } = require('assert');
+const { totalmem } = require('os');
 
 const supabaseUrl = process.env.SUPABASE_URL
 const supabaseKey = process.env.SUPABASE_KEY
@@ -16,11 +17,47 @@ const database_down_url = 'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/o
 let blocked_node = "";
 
 function debug_log(input){
-    let debug = false;
+    let debug = true;
     if(debug){
         console.log(input);
     }
 }
+
+async function template_instructions(distance , arrow_direction , levels){
+    
+    arrow_direction = await ENUM_to_left_right(arrow_direction);
+    
+    distance = parseInt(distance);
+    if(arrow_direction == 'Down' || arrow_direction == 'Up'){
+        return `Go ${arrow_direction} ${levels} level`;
+    }else if(arrow_direction == 'Straight' || arrow_direction == 'None'){
+        return `Walk straight for ${distance / 10} metres` ;
+    }else{
+        return `Turn ${arrow_direction} and walk straight for ${distance / 10} metres` ;
+    }
+}
+
+async function ENUM_to_left_right(input){
+    switch(input){
+        case "1" :
+            return "Straight";
+        case "2" :
+            return "Right";
+        case "3" :
+            return "around";
+        case "4" :
+            return "Left";
+        case "5" : 
+            return "Up";
+        case "6" :
+            return "Down";
+        case "7" : 
+            return "None";
+        default : 
+            return "None";
+    }
+}
+
 function template_img(img_path){
   return `<img src = "${img_path}" alt = "cannot be displayed" class="htmlData"><br>`;
 }
@@ -310,7 +347,6 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                 debug_log(cpp_data.toString());
                 const outputData = cpp_data.toString().split("|");
                 let nodes = outputData[0].split(",");
-                debug_log(nodes);
                 if(nodes.length == 1){
                     throw new Error("cannot find dest");
                 }
@@ -318,6 +354,8 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                 const directions = outputData[1].split(",");
                 let distance = outputData[2];
                 let dist_array = outputData[3].split(",");
+                const Instructions = [];
+
                 if(previous_node.have_previous){
                     const blocked_pov = await dir_string_to_ENUM(previous_node.blocked_pov);
                     const incoming_pov = await get_opposite(blocked_pov);
@@ -328,26 +366,41 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                 }else{
                     nodes[0] += "67";
                 }
-                
+                Instructions.push('');
                 let directions_array_len = directions.length;
                 for(i = 1 ; i < directions_array_len ; i ++){
-                    const is_up_down = await is_moving_up_down(directions[i-1] , directions[i])
+                    
+                    let is_up_down = await is_moving_up_down(directions[i-1] , directions[i]);
                     if(is_up_down){
-                        nodes.splice(i,1);
-                        directions.splice(i,1);
-                        i --;
-                        directions_array_len --;
+                        
+                        do{
+                            nodes.splice(i,1);
+                            directions.splice(i,1);
+                            dist_array[i-1] = `${parseInt(dist_array[i-1]) + parseInt(dist_array.splice(i,1))}`;
+                            directions_array_len --;
+                            is_up_down = await is_moving_up_down(directions[i-1] , directions[i]);
+                        }while(is_up_down)
+                        Instructions[i-1].levels = parseInt(dist_array[i-1])/40;
+                        Instructions[i-1].distance = dist_array[i-1];
+                        i--;
                     }else{
                         let pov = await get_pov(directions[i-1] , directions[i]); 
                         let direction = await get_arrow_dir(directions[i-1] , directions[i]);
                         nodes[i] += pov;
                         nodes[i] += direction;
+                        let instructions_obj = { 
+                            distance : dist_array[i] , 
+                            arrow_direction : direction ,
+                            levels : parseInt(dist_array[i])/40
+                        }
+                        Instructions.push(instructions_obj);
                     }
                 }
                 nodes[directions.length] += "67";
+                Instructions.push('');
                 debug_log(nodes);
                 debug_log(directions);
-                // Query the 'users' table for a specific user by ID
+                
                 const { data, error } = await supabase
                     .from('pictures')
                     .select('unique_id , filepath')
@@ -376,6 +429,7 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                 });
                 const diff = get_diff(nodes , debug_array);
                 debug_log("diff is " , diff);
+                //debug_log("dist array length is " + dist_array.length + " and nodes array length is " + nodes.length);
                 const final = fixedLengthArray.join('');
                 const FinalResults = {
                     Expected : nodes.length ,
@@ -383,7 +437,8 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                     HTML : final ,
                     Distance : distance ,
                     Dist_array : dist_array , 
-                    nodes_path : nodes_path
+                    nodes_path : nodes_path , 
+                    Instructions : Instructions
                 }
                 resolve(FinalResults);
             } catch (error) {
@@ -421,6 +476,7 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                 const directions = outputData[1].split(",");
                 let distance = outputData[2];
                 let dist_array = outputData[3].split(",");
+                const Instructions = [];
                 if(previous_node.have_previous){
                     const blocked_pov = await dir_string_to_ENUM(previous_node.blocked_pov);
                     const incoming_pov = await get_opposite(blocked_pov);
@@ -431,26 +487,40 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                 }else{
                     nodes[0] += "67";
                 }
-                
+                Instructions.push('');
                 let directions_array_len = directions.length;
                 for(i = 1 ; i < directions_array_len ; i ++){
-                    const is_up_down = await is_moving_up_down(directions[i-1] , directions[i]);
+                    
+                    let is_up_down = await is_moving_up_down(directions[i-1] , directions[i]);
                     if(is_up_down){
-                        nodes.splice(i,1);
-                        directions.splice(i,1);
-                        i --;
-                        directions_array_len --;
+                        
+                        do{
+                            nodes.splice(i,1);
+                            directions.splice(i,1);
+                            dist_array[i-1] = `${parseInt(dist_array[i-1]) + parseInt(dist_array.splice(i,1))}`;
+                            directions_array_len --;
+                            is_up_down = await is_moving_up_down(directions[i-1] , directions[i]);
+                        }while(is_up_down)
+                        Instructions[i-1].levels = parseInt(dist_array[i-1])/40;
+                        Instructions[i-1].distance = dist_array[i-1];
+                        i--;
                     }else{
                         let pov = await get_pov(directions[i-1] , directions[i]); 
                         let direction = await get_arrow_dir(directions[i-1] , directions[i]);
                         nodes[i] += pov;
                         nodes[i] += direction;
+                        let instructions_obj = { 
+                            distance : dist_array[i] , 
+                            arrow_direction : direction ,
+                            levels : parseInt(dist_array[i])/40
+                        }
+                        Instructions.push(instructions_obj);
                     }
                 }
                 nodes[directions.length] += "67";
                 debug_log(nodes);
                 debug_log(directions);
-                // Query the 'users' table for a specific user by ID
+
                 const { data, error } = await supabase
                     .from('pictures')
                     .select('unique_id , filepath')
@@ -488,7 +558,8 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                     HTML : final ,
                     Distance : distance ,
                     Dist_array : dist_array , 
-                    nodes_path : nodes_path
+                    nodes_path : nodes_path , 
+                    Instructions : Instructions
                 }
                 resolve(FinalResults);
             } catch (error) {
@@ -585,8 +656,6 @@ router.post('/feedback' , async(req,res) => {
             input = [{feedback_type : feedbackType , bug_details : bugDetails , blocked_node : null , source_location : null , destination_location : null , nodes : null}];    
         }else if(feedbackType == "Suggest a better path"){
             input = [{feedback_type : feedbackType , bug_details : null , blocked_node : null , source_location : null , destination_location : null , nodes : nodes}];    
-        }else if(feedbackType == "Report blocked location"){
-            input = [{feedback_type : feedbackType , bug_details : null , blocked_node : blockedNode , source_location : sourceLocation , destination_location : destinationLocation , nodes : null}];    
         }
 
         const { error } = await supabase
@@ -689,7 +758,7 @@ router.post('/formPost' , async (req ,res) => {
         for(let i =  0; i < destinations.length ; i ++){
             destinations[i] = await room_num_to_node_id(destinations[i]);
         }
-        debug_log(destinations);
+        //debug_log(destinations);
         let blocked_array = await get_blocked();
         for(let i = 0 ; i < inputData.blocked_array.length ; i++){
             blocked_array.push(inputData.blocked_array[i]);
@@ -703,11 +772,11 @@ router.post('/formPost' , async (req ,res) => {
             stairs = await get_stairs();
         }
         mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered , ...stairs]));
-        debug_log(mergedArray);
+        //debug_log(mergedArray);
     }catch(error){
         return res.send({HTML : template_img(database_down_url) , Distance : 0 , passed : false });
     }
-    const TotalResult = {
+    let TotalResult = {
         Expected : 0 ,
         Queried : 0 , 
         HTML : "" ,
@@ -715,6 +784,7 @@ router.post('/formPost' , async (req ,res) => {
         Dist_array : [] , 
         nodes_path : [] , 
         Stops_index : [] ,
+        Instructions : [] , 
         passed : true
     }
 
@@ -733,16 +803,27 @@ router.post('/formPost' , async (req ,res) => {
             TotalResult.Distance = `${parseInt(TotalResult.Distance) + parseInt(result.Distance)}` ;
             TotalResult.Dist_array = TotalResult.Dist_array.concat(result.Dist_array);
             TotalResult.nodes_path = TotalResult.nodes_path.concat(result.nodes_path);
+            TotalResult.Instructions = TotalResult.Instructions.concat(result.Instructions);
+            
             if(i == destinations.length - 1){
                 TotalResult.Stops_index.push(TotalResult.Expected - 1);
             }else{
                 TotalResult.Stops_index.push(TotalResult.Expected);
             }
+            //debug_log(TotalResult.Instructions);
         } catch(error){
             console.error('Error caught:', error.message);
             return res.send({HTML : template_img(no_alt_path_url) , Distance : 0 , passed : false });
         }
     }
+    
+    for(let i = 0 ; i < TotalResult.Instructions.length ; i ++){
+        let instructions_obj = TotalResult.Instructions[i];
+        if(instructions_obj != ''){
+            TotalResult.Instructions[i] = await template_instructions(instructions_obj.distance , instructions_obj.arrow_direction , instructions_obj.levels);
+        }
+    }
+    debug_log(TotalResult.Instructions);
     return res.send(TotalResult);
 });
 
@@ -789,7 +870,7 @@ router.post('/blockRefresh' , async (req ,res) => {
     }catch(error){
         return res.send({HTML : template_img(database_down_url) , Distance : 0 , passed : false});
     }
-    const TotalResult = {
+    let TotalResult = {
         Expected : 0 ,
         Queried : 0 , 
         HTML : "" ,
@@ -798,6 +879,7 @@ router.post('/blockRefresh' , async (req ,res) => {
         nodes_path : [] , 
         Stops_index : [] ,
         Destinations : destinations ,
+        Instructions : [] , 
         passed : true
     }
     const no_previous = { have_previous : false , pov : "" , arrow : ""};
@@ -822,6 +904,7 @@ router.post('/blockRefresh' , async (req ,res) => {
             TotalResult.Distance = `${parseInt(TotalResult.Distance) + parseInt(result.Distance)}` ;
             TotalResult.Dist_array = TotalResult.Dist_array.concat(result.Dist_array);
             TotalResult.nodes_path = TotalResult.nodes_path.concat(result.nodes_path);
+            TotalResult.Instructions = TotalResult.Instructions.concat(result.Instructions);
             if(i == destinations.length - 1){
                 TotalResult.Stops_index.push(TotalResult.Expected - 1);
             }else{
@@ -832,6 +915,14 @@ router.post('/blockRefresh' , async (req ,res) => {
             return res.send({HTML : template_img(no_alt_path_url) , Distance : 0 , passed : false});
         }
     }
+    for(let i = 0 ; i < TotalResult.Instructions.length ; i ++){
+        let instructions_obj = TotalResult.Instructions[i];
+        if(instructions_obj != ''){
+            TotalResult.Instructions[i] = await template_instructions(instructions_obj.distance , instructions_obj.arrow_direction , instructions_obj.levels);
+        }
+    }
+    //debug_log(TotalResult.Instructions.length);
+    debug_log(TotalResult.Instructions);
     return res.send(TotalResult);
 });
 
