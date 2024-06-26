@@ -550,12 +550,11 @@ function PromptFormMobile() {
                         <div dangerouslySetInnerHTML={{ __html: arrayFromString[(arrayposition + 1) % arrayFromString.length] }} />
                     </div>
                     <center>
-                    {formSubmitted && <div>
+                    {formSubmitted && <div className="NoMargins">
                         <div className="imageContainer">
-                            <div {...handlers}>
-                                <div className="htmlContent" dangerouslySetInnerHTML={{ __html: arrayFromString[arrayposition] }} />
+                            <div {...handlers} className="NoMargins">
+                                <div className="htmlContentMobile" dangerouslySetInnerHTML={{ __html: arrayFromString[arrayposition] }} />
                             </div>
-                            <br></br>
                             <Tooltip title="Block?" arrow>
                                 {!noPath && !showBlockConfirmation && <Button className="overlay-button-mobile" onClick={blockConfirmation}><img src="block_logo.png" alt="cannot display" className="block-logo"></img></Button>}
                             </Tooltip>
@@ -570,18 +569,18 @@ function PromptFormMobile() {
 
                     </div>}
                     </center>
-                    <br></br>
                     <div className="fileupload-mobile">
+                    {!noPath && formSubmitted &&
                     <Button variant="contained" type="submit" onClick={decrementCounter}
                             sx={{
                                 bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset',
                                 textAlign: 'center !important', px: '0px', py: '0px', height: "6vh", width: "40vw"
-                            }}><ArrowLeftIcon></ArrowLeftIcon></Button>
-                        <Button variant="contained" type="submit" onClick={incrementCounter}
+                            }}><ArrowLeftIcon></ArrowLeftIcon></Button>}
+                        {!noPath && formSubmitted &&<Button variant="contained" type="submit" onClick={incrementCounter}
                             sx={{
                                 bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset',
                                 textAlign: 'center !important', px: '0px', py: '0px', height: "6vh", width: "40vw"
-                            }}><ArrowRightIcon></ArrowRightIcon></Button>
+                            }}><ArrowRightIcon></ArrowRightIcon></Button>}
                     </div>
                     <br></br>
                     {showUpload && <div><FileUpload /></div>}
