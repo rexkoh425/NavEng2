@@ -545,7 +545,7 @@ function PromptFormMobile() {
 
                     {!noPath && formSubmitted && <p className="imageCount">{arrayposition + 1}/{arrayFromString.length - 1}</p>}
                     {!noPath && formSubmitted && <DestinationNotification stopsIndex={stopsIndex} arrayposition={arrayposition} MultiStopArray={MultiStopArrayNotification} pathInstructions={pathInstructions} />}
-                    <div>
+                    <div style={{ display: 'none' }}>
                         {/* Preload the next image */}
                         <div dangerouslySetInnerHTML={{ __html: arrayFromString[(arrayposition + 1) % arrayFromString.length] }} />
                     </div>
