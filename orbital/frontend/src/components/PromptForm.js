@@ -53,6 +53,7 @@ function PromptForm() {
     const [stopsIndex, setStopsIndex] = useState([]);
     const [noPath, setNoPath] = useState("");
     const [showBlockConfirmation, setShowBlockConfirmation] = useState(false);
+    const [hideTimeTaken, setHideTimeTaken] = useState(false)
     const Local = true;
     let websitelink=""
     if (Local) {
@@ -172,6 +173,7 @@ function PromptForm() {
         }
         if (arrayposition === (arrayFromString.length - 3)) {
             setDisableRightButton(true)
+            setHideTimeTaken(true)
         }
         setDisableLeftButton(false)
         setShowBlockConfirmation(false)
@@ -191,6 +193,7 @@ function PromptForm() {
             setDisableLeftButton(true)
         }
         setDisableRightButton(false)
+        setHideTimeTaken(false)
         setShowBlockConfirmation(false)
     };
 
@@ -313,6 +316,7 @@ function PromptForm() {
         setFormSubmitted(true);
         setCount(0);
         setDisableRightButton(false);
+        setHideTimeTaken(false)
         setDisableLeftButton(true);
         setShowBlockConfirmation(false)
     }
@@ -337,6 +341,7 @@ function PromptForm() {
         setFormSubmitted(true);
         setCount(0);
         setDisableRightButton(false);
+        setHideTimeTaken(false)
         setDisableLeftButton(true);
         setShowUpload(false);
     }
@@ -510,19 +515,20 @@ function PromptForm() {
                         {!noPath && formSubmitted && <div className="parametricsContent"><CalculateTime distance={totalDistance} /></div>}
                         <br></br>
                         <br></br>
-                        {!noPath && formSubmitted && <p className="parametricsDescription">Distance Remaining: </p>}
-                        {!noPath && formSubmitted && <p className="parametricsContent">{distanceArray[arrayposition]}m</p>}
+                        {!noPath && formSubmitted  && <p className="parametricsDescription">Distance Remaining: </p>}
+                        {!noPath && formSubmitted  && <p className="parametricsContent">{distanceArray[arrayposition]}m</p>}
 
                         <div></div>
-                        {!noPath && formSubmitted && <p className="parametricsDescription">Time to Destination: </p>}
-                        {!noPath && formSubmitted && <div className="parametricsContent"><CalculateTime distance={distanceArray[arrayposition]} /></div>}
+                        {!noPath && formSubmitted && !hideTimeTaken && <p className="parametricsDescription">Time to Destination: </p>}
+                        {!noPath && formSubmitted && !hideTimeTaken && <div className="parametricsContent"><CalculateTime distance={distanceArray[arrayposition]} /></div>}
 
 
 
                     </center>
+                    <DestinationNotification stopsIndex={stopsIndex} arrayposition={arrayposition} destinationLocation={destinationLocation} MultiStopArray={MultiStopArray} />
                     {!noPath && formSubmitted && <p className="imageCount">{arrayposition + 1}/{arrayFromString.length - 1}</p>}
 
-                    <DestinationNotification stopsIndex={stopsIndex} arrayposition={arrayposition} destinationLocation={destinationLocation} MultiStopArray={MultiStopArray} />
+                    
 
                     {formSubmitted && <div className="container">
                         {!noPath  && <Button variant="contained" type="submit" onClick={decrementCounter} disabled={disableLeftButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "10vh", width: "3vw" }}><ArrowLeftIcon></ArrowLeftIcon></Button>}

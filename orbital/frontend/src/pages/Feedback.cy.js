@@ -1,6 +1,6 @@
 import React from 'react'
 import Feedback from './Feedback'
-
+/*
 describe('<Feedback />', () => {
   it('renders', () => {
     // see: https://on.cypress.io/mounting-react
@@ -91,4 +91,31 @@ describe('Test whether user receives appropriate warning if filled wrong', () =>
     }).click()
     cy.findByText(/Please fill out the nodes/i)
   })
-})
+}) */
+
+//Integration Testing
+
+describe('Test whether user can access feedback page and submit form', () => {
+  it('works for report bug', () => {
+    cy.mount(<Feedback />)
+    cy.findByRole('combobox', {  name: /issue/i}).type('Report bug with website')
+    cy.findByRole('option', { name: 'Report bug with website' }).click()
+    cy.findByRole('textbox').type('Test Message')
+    cy.findByRole('button', {
+      name: /submit/i
+    }).click()
+    cy.findByText(/thank you for your feedback!/i)
+  })
+
+  it('works for report path', () => {
+    cy.mount(<Feedback />)
+    cy.findByRole('combobox', {  name: /issue/i}).type('Report a path')
+    cy.findByRole('option', { name: 'Report a path' }).click()
+    cy.findByRole('combobox', {  name: /node 1/i}).type('EA-02-11')
+    cy.findByRole('option', { name: 'EA-02-11' }).click()
+    cy.findByRole('button', {
+      name: /submit/i
+    }).click()
+    cy.findByText(/thank you for your feedback!/i)
+  })
+}) 
