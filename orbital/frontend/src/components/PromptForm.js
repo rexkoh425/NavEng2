@@ -58,6 +58,7 @@ function PromptForm() {
     const [showBlockConfirmation, setShowBlockConfirmation] = useState(false);
     const [hideTimeTaken, setHideTimeTaken] = useState(false)
     const [pathInstructions, setPathInstructions] = useState([])
+    const [blockedIndicator, setBlockedIndicator] = useState(false)
 
     const Local = true;
     let websitelink = ""
@@ -271,6 +272,7 @@ function PromptForm() {
             setPathInstructions(response.data['Instructions'])
             setStopsIndex(response.data['Stops_index']);
             handleConvertToMetres(distArray);
+            setBlockedIndicator(false)
 
             // Perform split operation inside the then block
             const arrayFromString = response.data['HTML'].split('<img src');
@@ -307,6 +309,8 @@ function PromptForm() {
             setMultiStopArray(response.data['Destinations']);
             const arrayFromString = response.data['HTML'].split('<img src');
             setBlocked(arrayFromString[1]);
+            setPathInstructions(response.data['Instructions'])
+            setBlockedIndicator(true)
 
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -543,7 +547,7 @@ function PromptForm() {
 
                     </center>
                     {!noPath && formSubmitted && <p className="imageCount">{arrayposition + 1}/{arrayFromString.length - 1}</p>}
-                    {!noPath && formSubmitted && <DestinationNotification stopsIndex={stopsIndex} arrayposition={arrayposition} MultiStopArray={MultiStopArrayNotification} pathInstructions={pathInstructions} />}
+                    {!noPath && formSubmitted && <DestinationNotification stopsIndex={stopsIndex} arrayposition={arrayposition} MultiStopArray={MultiStopArrayNotification} pathInstructions={pathInstructions} blockedIndicator={blockedIndicator} />}
                     <div style={{ display: 'none' }}>
                         {/* Preload the next image */}
                         <div dangerouslySetInnerHTML={{ __html: arrayFromString[(arrayposition + 1) % arrayFromString.length] }} />
