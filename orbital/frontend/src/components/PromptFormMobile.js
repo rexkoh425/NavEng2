@@ -107,6 +107,7 @@ function PromptFormMobile() {
     const handlers = useSwipeable({
         onSwipedLeft: () => handleSwipe('left'),
         onSwipedRight: () => handleSwipe('right'),
+        preventScrollOnSwipe: true
     });
 
     useEffect(() => {
@@ -552,7 +553,7 @@ function PromptFormMobile() {
                     <center>
                     {formSubmitted && <div className="NoMargins">
                         <div className="imageContainer">
-                            <div {...handlers} className="NoMargins">
+                            <div {...handlers} className="NoMargins" style={{ overflow: 'hidden' }}>
                                 <div className="htmlContentMobile" dangerouslySetInnerHTML={{ __html: arrayFromString[arrayposition] }} />
                             </div>
                             <Tooltip title="Block?" arrow>
