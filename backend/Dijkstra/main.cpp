@@ -52,7 +52,7 @@ int main(){
       std::cerr << "Input is not a JSON object" << std::endl;
       return 1;
     }
-
+    
     //vector<int> blocked_nodes;
     Graph test1 = createEngGraph(blocked_nodes);
     Path result = shortestPath(test1 , source ,  dest);
