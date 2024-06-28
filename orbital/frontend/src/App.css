@@ -150,6 +150,13 @@
   vertical-align: middle;
 }
 
+.htmlContentMobile {
+  display: inline-block;
+  vertical-align: middle;
+  justify-content: center;
+  margin-bottom: 0px;
+}
+
 .pictureparent 
 {
   display: flex;
@@ -277,7 +284,9 @@
   width: 8vh;
   bottom: 76vh;
   right: -16vh;
-  display: inline-block
+  display: inline-block;
+  margin-top: 0px;
+  margin-bottom: 0px;
 }
 
 .overlay-refresh {
@@ -322,12 +331,25 @@
 }
 
 .fileupload-mobile {
-  margin-top: 20vh;
+  margin-top: 0vh;
+}
+
+.pathInstructions {
+  text-align:center;
+  font-family: "Lexend";
+}
+
+.startNotification {
+  text-align:center;
+  font-family: "Lexend";
+  color: #187D36;
 }
 
 .destinationNotification {
   text-align:center;
   font-family: "Lexend";
+  font-weight: 500;
+  font-size:large;
   color: #187D36;
 }
 
@@ -338,4 +360,31 @@
   bottom: 75vh;
   right: -22vh;
   display: inline-block
+}
+
+.overlay-confirmation-button-mobile {
+  position: absolute;
+  height: 7vh;
+  width: 20vh;
+  bottom: 75vh;
+  right: -22vh;
+  display: inline-block;
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+.overlay-confirmation-button-mobile {
+  position: absolute;
+  height: 7vh;
+  width: 20vh;
+  bottom: 75vh;
+  right: -10vh;
+  display: inline-block;
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+.NoMargins {
+  margin-top: 0px;
+  margin-bottom: 0px;
 }
