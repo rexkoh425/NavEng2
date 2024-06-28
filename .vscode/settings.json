@@ -2,6 +2,13 @@
     "files.associations": {
         "iostream": "cpp",
         "cstdlib": "cpp",
-        "vector": "cpp"
+        "vector": "cpp",
+        "charconv": "cpp",
+        "chrono": "cpp",
+        "format": "cpp",
+        "locale": "cpp",
+        "ostream": "cpp",
+        "regex": "cpp",
+        "xlocale": "cpp"
     }
 }

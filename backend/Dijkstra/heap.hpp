@@ -36,7 +36,7 @@ class Heap {
   }
   void insert(const GraphEdge&);
   GraphEdge extractMin();
-  GraphEdge peekMax() const;
+  GraphEdge peekMin() const;
   void printHeapArray() const;
   void changeKey(const GraphEdge& from, const GraphEdge& to);
   void deleteItem(const GraphEdge&);
@@ -101,16 +101,6 @@ class Heap {
       bubble_down(new_index);
     }
   }
-
-  int element_index(GraphEdge value){
-          
-    for(int i = 0 ; i < heap_size ; i++){
-      if(_heap[i] == value){
-        return i;
-      }
-    }
-    return -1;
-  }
 };
 
 void Heap::insert(const GraphEdge& item){
@@ -131,7 +121,7 @@ GraphEdge Heap::extractMin() {
     return temp;
 }
 
-GraphEdge Heap::peekMax() const {
+GraphEdge Heap::peekMin() const {
   if(heap_size <= 0){
     throw std::out_of_range("empty heap");
   }
