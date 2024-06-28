@@ -59,6 +59,7 @@ function PromptForm() {
     const [hideTimeTaken, setHideTimeTaken] = useState(false)
     const [pathInstructions, setPathInstructions] = useState([])
     const [blockedIndicator, setBlockedIndicator] = useState(false)
+    const [submitTrigger, setSubmitTrigger] = useState(false)
 
     const Local = true;
     let websitelink = ""
@@ -101,13 +102,7 @@ function PromptForm() {
         const newClumpedArray = [sourceLocation, ...MultiStopArrayDuplicate, destinationLocation];
         setMultiStopArray(newClumpedArray);
         disableSubmitButton(newClumpedArray)
-    }, [sourceLocation, MultiStopArrayDuplicate, destinationLocation]);
-
-    useEffect(() => {
-        // Update clumpedArray whenever front, center, or end change
-        const newClumpedArray = [sourceLocation, ...MultiStopArrayDuplicate, destinationLocation];
-        setMultiStopArray(newClumpedArray);
-    }, [sourceLocation, MultiStopArrayDuplicate, destinationLocation]);
+    }, [sourceLocation, MultiStopArrayDuplicate, destinationLocation, submitTrigger]);
 
     useEffect(() => {
         const image = arrayFromString[arrayposition]
@@ -311,6 +306,7 @@ function PromptForm() {
             setBlocked(arrayFromString[1]);
             setPathInstructions(response.data['Instructions'])
             setBlockedIndicator(true)
+            setSubmitTrigger(!submitTrigger)
 
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -342,6 +338,7 @@ function PromptForm() {
         setDisableLeftButton(true);
         setShowBlockConfirmation(false)
         setMultiStopArrayNotification(MultiStopArray)
+        setSubmitTrigger(!submitTrigger)
     }
 
     const handleSubmitRefresh = (e) => {
