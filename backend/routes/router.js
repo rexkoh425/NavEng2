@@ -433,8 +433,9 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                     debug_array[debug_array_index] = result.unique_id;
                     debug_array_index++;
                 });
-                const diff = get_diff(nodes , debug_array);
-                debug_log("diff is " , diff);
+                const diff = await get_diff(nodes , debug_array);
+                debug_log("diff is ");
+                debug_log(diff);
                 //debug_log("dist array length is " + dist_array.length + " and nodes array length is " + nodes.length);
                 const final = fixedLengthArray.join('');
                 const FinalResults = {
