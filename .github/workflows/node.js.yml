@@ -30,5 +30,10 @@ jobs:
       working-directory: ./backend
     - run: npm run build --if-present
       working-directory: ./backend
-    - run: npm test
+
+    - env:
+        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        PORT: 4000  # Example, use directly if it's a static value 
+      run: npm test
       working-directory: ./backend
