@@ -103,9 +103,7 @@ function Feedback() {
         const postData = {
             feedbackType: feedbackType,
             bugDetails: bugDetails,
-            sourceLocation: sourceLocation,
-            destinationLocation: destinationLocation,
-            nodes: nodes,
+            nodes: nodes
         }
 
         //await axios.post("https://naveng-backend-vercel.vercel.app/formPost", postData)
