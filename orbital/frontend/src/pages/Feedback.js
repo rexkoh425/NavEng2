@@ -108,9 +108,7 @@ function Feedback() {
         const postData = {
             feedbackType: feedbackType,
             bugDetails: bugDetails,
-            sourceLocation: sourceLocation,
-            destinationLocation: destinationLocation,
-            nodes: nodes,
+            nodes: nodes
         }
 
         await axios.post(websitelink + "/feedback", postData)

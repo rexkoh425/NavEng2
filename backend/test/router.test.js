@@ -430,7 +430,7 @@ describe('Testing whether location pairs output correct number of pictures', fun
             //let both_pass = 0;
             let processed_count = 0;
             const tasks = [];
-
+            //NOTE SET DEBUG = FALSE IN DEBUG_LOG() FUNCTION IN ROUTER.JS BEFORE STARTING TEST
             for (let source of locations) {
                 for (let destination of locations) {
                     if (source !== destination) {

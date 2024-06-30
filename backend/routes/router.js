@@ -655,14 +655,14 @@ router.post('/locations' , async(req,res) => {
 })
 
 router.post('/feedback' , async(req,res) => {
-    const {feedbackType, bugDetails, blockedNode, sourceLocation, destinationLocation, nodes} = req.body
+    const {feedbackType, bugDetails,  nodes} = req.body
     try {
-        let input = [{feedback_type : null , bug_details : null , blocked_node : null , source_location : null , destination_location : null , nodes : null}];
+        let input = [{feedback_type : null , bug_details : null , nodes : null}];
 
         if(feedbackType == "Report bug with website"){
-            input = [{feedback_type : feedbackType , bug_details : bugDetails , blocked_node : null , source_location : null , destination_location : null , nodes : null}];    
-        }else if(feedbackType == "Suggest a better path"){
-            input = [{feedback_type : feedbackType , bug_details : null , blocked_node : null , source_location : null , destination_location : null , nodes : nodes}];    
+            input = [{feedback_type : feedbackType , bug_details : bugDetails , nodes : null}];    
+        }else if(feedbackType == "Report a path"){
+            input = [{feedback_type : feedbackType , bug_details : null , nodes : nodes}];    
         }
 
         const { error } = await supabase
@@ -677,13 +677,6 @@ router.post('/feedback' , async(req,res) => {
         console.error('Error appending data to database:', error);
         //res.status(500).send('Failed to append data to database.'); 
     }
-
-    //debug_log('feedback type:' + feedbackType)
-    //debug_log('bug details:' + bugDetails)
-    //debug_log('blocked node:'+ blockedNode)
-    //debug_log('source location:'+ sourceLocation)
-    //debug_log('destination location: '+ destinationLocation)
-    //debug_log('path nodes: '+ nodes)
 
     res.send("Thank you for your feedback!") //sending conformation message back to frontend
 })
