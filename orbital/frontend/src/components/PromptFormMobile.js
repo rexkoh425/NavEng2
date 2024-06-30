@@ -60,7 +60,7 @@ function PromptFormMobile() {
     const [hideTimeTaken, setHideTimeTaken] = useState(false)
     const [pathInstructions, setPathInstructions] = useState([])
 
-    const Local = true;
+    const Local = process.env.REACT_APP_LOCAL;
     let websitelink = ""
     if (Local) {
         websitelink = "http://localhost:4000"

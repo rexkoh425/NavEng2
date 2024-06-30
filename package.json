@@ -1,5 +1,21 @@
 {
   "dependencies": {
     "react-router-dom": "^6.23.1"
-  }
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+
+  
+    "scripts": {
+      "start:frontend": "cd orbital/frontend && npm start",
+      "start:backend": "cd backend && npm start",
+      "start:both": "concurrently \"npm run start:frontend\" \"npm run start:backend\"",
+      "test:e2e": "npm run start:both && cd orbital/frontend && npm test",
+      "test:components": "cypress run --headed --browser chrome --spec \"cypress/component/**/*.spec.js\"",
+      "test": "npm run start:both && npm run test:e2e && npm run test:components && npm run stop:both",
+      "stop:both": "pkill -f \"npm run start:frontend\" || true && pkill -f \"npm run start:backend\" || true"
+    }
+  
 }
+

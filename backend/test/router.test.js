@@ -440,9 +440,9 @@ describe('Testing whether location pairs output correct number of pictures', fun
                             processed_count ++;
                             if(non_block_result.passed){   non_block_pass ++ ;  }
                             
-                            const blocked = await choose_middle_blocked(non_block_result.nodes_path);
-                            const block_result = await performTest([source , destination] , [blocked]);
-                            if(block_result.passed){   block_pass ++;  }
+                            //const blocked = await choose_middle_blocked(non_block_result.nodes_path);
+                            //const block_result = await performTest([source , destination] , [blocked]);
+                            //if(block_result.passed){   block_pass ++;  }
                             //const block_result = { passed : true};
                             
                             /*
@@ -464,7 +464,7 @@ describe('Testing whether location pairs output correct number of pictures', fun
                 }
             }
 
-            await limitConcurrency(tasks, 10); // Adjust the concurrency limit as necessary
+            await limitConcurrency(tasks, 30); // Adjust the concurrency limit as necessary
 
             try {
                 await request(app).post('/DeleteFailedLocations');

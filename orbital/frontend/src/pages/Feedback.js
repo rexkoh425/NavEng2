@@ -11,7 +11,14 @@ import "@fontsource/lexend"; // Defaults to weight 400
 import "@fontsource/lexend/400.css";
 import "@fontsource/lexend/300.css";
 
-
+const Local = process.env.REACT_APP_LOCAL;
+console.log(Local)
+let websitelink = ""
+if (Local) {
+    websitelink = "http://localhost:4000"
+} else {
+    websitelink = "https://naveng-backend-vercel.vercel.app"
+}
 
 
 function Feedback() {
@@ -79,8 +86,7 @@ function Feedback() {
     },[])
     
     const axiosFetchData = async(processing) => {
-        //await axios.get('https://naveng-backend-vercel.vercel.app/users')
-        await axios.get('http://localhost:4000/test')
+        await axios.get(websitelink + '/test')
         .then(res => {
             if (processing) {
             setSelectData(res.data)
@@ -91,8 +97,7 @@ function Feedback() {
     }
 
     const axiosFetchLocations = async(processing) => {
-        //await axios.post('https://naveng-backend-vercel.vercel.app/locations')
-        await axios.post('http://localhost:4000/locations')
+        await axios.post(websitelink + '/locations')
         .then(res => {
             setSelectLocations(res.data)
         })
@@ -108,8 +113,7 @@ function Feedback() {
             nodes: nodes,
         }
 
-        //await axios.post("https://naveng-backend-vercel.vercel.app/formPost", postData)
-        await axios.post("http://localhost:4000/feedback", postData)
+        await axios.post(websitelink + "/feedback", postData)
         .then(res => {
             setFeedbackSubmission(res.data)
         })
@@ -122,8 +126,7 @@ function Feedback() {
             destination: destinationLocation,
         }
 
-        //await axios.post("https://naveng-backend-vercel.vercel.app/formPost", postData)
-        await axios.post("http://localhost:4000/formPost", postData)
+        await axios.post(websitelink + "/formPost", postData)
         .then(res => {
             setMessageError(res.data['HTML']);
             setDistance(res.data['Distance']/10);

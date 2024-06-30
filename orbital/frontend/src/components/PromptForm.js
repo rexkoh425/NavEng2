@@ -61,7 +61,8 @@ function PromptForm() {
     const [blockedIndicator, setBlockedIndicator] = useState(false)
     const [submitTrigger, setSubmitTrigger] = useState(false)
 
-    const Local = true;
+    const Local = process.env.REACT_APP_LOCAL;
+    console.log(Local)
     let websitelink = ""
     if (Local) {
         websitelink = "http://localhost:4000"
