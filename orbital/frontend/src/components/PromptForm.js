@@ -64,7 +64,7 @@ function PromptForm() {
     const Local = process.env.REACT_APP_LOCAL;
     console.log(Local)
     let websitelink = ""
-    if (Local) {
+    if (Local == "true") {
         websitelink = "http://localhost:4000"
     } else {
         websitelink = "https://naveng-backend-vercel.vercel.app"
