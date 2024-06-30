@@ -50,31 +50,8 @@ function Feedback() {
 
     const [feedbackSubmission, setFeedbackSubmission] = useState('')
     const [feedbackMessage, setFeedbackMessage] = useState('')
-
-    const [sourceLocation, setSourceLocation] = useState('')
-    const [destinationLocation, setDestinationLocation] = useState('')
-    const [messageError, setMessageError] = useState(``) //using messageError variable for html content as well
     const [selectData, setSelectData] = useState([])
-    const [selectValue, setSelectValue] = useState('')
     const [selectLocations, setSelectLocations] = useState([])
-    const [distance, setDistance] = useState(``)
-    const [formSubmitted, setFormSubmitted] = useState(false);
-    const [arrayposition, setCount] = useState(0);
-    let arrayFromString = messageError.split('<br>');
-
-    const incrementCounter = (e) => {
-        e.preventDefault();
-        if(arrayposition !== (arrayFromString.length-2)) { //Using -2 due to nature of splitting string
-            setCount(arrayposition + 1);
-        }
-      };
-
-      const decrementCounter = (e) => {
-        e.preventDefault();
-        if(arrayposition !== (0)) {
-            setCount(arrayposition - 1);
-        }
-      };
 
     useEffect( () => {
         let processing = true
@@ -118,20 +95,6 @@ function Feedback() {
         .catch(err => console.log("Fetch Location Error!!"))
     }
 
-    const axiosPostDataPathFind = async() => {
-        const postData = {
-            source: sourceLocation,
-            destination: destinationLocation,
-        }
-
-        await axios.post(websitelink + "/formPost", postData)
-        .then(res => {
-            setMessageError(res.data['HTML']);
-            setDistance(res.data['Distance']/10);
-        })
-
-        arrayFromString = messageError.split('<img src');
-    }
 
     const disableSubmitButton = (nodes) => {
         const noEmptyStrings = nodes.every(item => item !== "");
@@ -168,14 +131,9 @@ function Feedback() {
         }
         setFeedbackMessage('')
         console.log('feedback type:' + feedbackType + ' | bug details:' + bugDetails)
-        console.log("Path:", sourceLocation + '|' + destinationLocation)
         console.log("Nodes:", nodes)
 
         axiosPostDataFeedback();
-        if (sourceLocation && destinationLocation) {
-        axiosPostDataPathFind();
-        setFormSubmitted(true);
-        }
     }
 
     const typeOfFeedback = ["Report bug with website", "Report a path"]
@@ -187,25 +145,13 @@ function Feedback() {
     } else {
         setFeedbackType(''); // Handle case when value is cleared
     }
-    if (value === "Report bug with website"){
-            
-            setSourceLocation("")
-            setDestinationLocation("")
-            setFormSubmitted(false)
-        }
         if (value === "Report a path"){
             
             setBugDetails("")
-            setSourceLocation("")
-            setDestinationLocation("")
-            setFormSubmitted(false)
         }
         if (value === "Report blocked location"){
             
             setBugDetails("")
-            setSourceLocation("")
-            setDestinationLocation("")
-            setFormSubmitted(false)
         }
         setShowSuggestPathQs(value === "Report a path")
         setShowBugQs(value === "Report bug with website");
