@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon index.js",
+    "start2": "node index.js",
     "test": "node --expose-gc ./node_modules/mocha/bin/mocha test/router.test.js",
     "failed": "node --expose-gc ./node_modules/mocha/bin/mocha test/Failed_test.test.js",
     "specific": "node --expose-gc ./node_modules/mocha/bin/mocha test/TestSpecificPath.test.js"
