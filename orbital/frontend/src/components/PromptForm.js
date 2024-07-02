@@ -62,7 +62,6 @@ function PromptForm() {
     const [submitTrigger, setSubmitTrigger] = useState(false)
 
     const Local = process.env.REACT_APP_LOCAL;
-    console.log(Local)
     let websitelink = ""
     if (Local == "true") {
         websitelink = "http://localhost:4000"
@@ -294,7 +293,6 @@ function PromptForm() {
 
         try {
             const response = await axios.post(websitelink + '/blockRefresh', postData);
-            //const response = await axios.post("http://localhost:4000/blockRefresh", postData);
 
             // Update state variables with the response data
             setMessageError(response.data['HTML']);

@@ -321,6 +321,7 @@ async function dir_string_to_ENUM(input){
 }
 
 async function break_down_img_path(img_name){
+   
     let increment = 0;
     const components = img_name.split("_");
     const node_id = components[0];
@@ -616,6 +617,30 @@ async function is_failed_location(source , destination){
     */
 }
 
+class Result{
+    constructor(){
+        this.Expected = 0;
+        this.Queried = 0 ; 
+        this.HTML = "" ;
+        this.Distance = 0 ;
+        this.Dist_array = [] ;
+        this.nodes_path = [] ;
+        this.Stops_index = [] ;
+        this.Instructions = [] ; 
+        this.passed = true ;
+    }
+
+    async add(other){
+        this.Expected += other.Expected;
+        this.Queried += other.Queried ; 
+        this.HTML += other.HTML ;
+        this.Distance = `${parseInt(this.Distance) + parseInt(other.Distance)}` ;
+        this.Dist_array = this.Dist_array.concat(other.Dist_array);
+        this.nodes_path = this.nodes_path.concat(other.nodes_path);
+        this.Instructions = this.Instructions.concat(other.Instructions); 
+    }
+}
+
 router.get('/test', (req, res) => {
     const userData = 
     [
@@ -831,7 +856,6 @@ router.post('/blockRefresh' , async (req ,res) => {
     
     const inputData = req.body;
     let destinations = inputData.MultiStopArray;
-
     if(inputData.MultiStopArray.length < 2){
         //debug_log("data incorrectly labelled or source and destination not filled"); 
         return res.send({HTML : template_img(no_alt_path_url) , Distance : 0 , passed : false});

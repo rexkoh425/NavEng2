@@ -31,6 +31,30 @@ async function CheckLocation(receivedData) {
     }
 }
 
+async function CheckBlockedLocation(receivedData) {
+    try {
+        const res = await request(app)
+            .post('/blockRefresh')
+            .send(receivedData)
+            .timeout({ deadline: 3000 });
+
+        let data = res.body;
+
+        if (data['Expected'] !== data['Queried'] || data['passed'] == false){
+            console.log(data['Expected']);
+            console.log(data['Queried']);
+            console.log(`${receivedData.MultiStopArray[0]} to ${receivedData.MultiStopArray[1]} : failed`);
+            const res_obj = { source: `${receivedData.MultiStopArray[0]}`, destination: `${receivedData.MultiStopArray[1]}`, passed: false , nodes_path : [] };
+            return res_obj;
+        }
+        return { passed: true};
+    } catch (error) {
+        console.log(`${error}`);
+        console.log(`${receivedData.source} to ${receivedData.destination} : failed`);
+        return { passed: false};
+    }
+}
+
 async function performTest(destinations , blocked_input) {
     const inputData = {
         blocked_array: blocked_input,
@@ -39,6 +63,21 @@ async function performTest(destinations , blocked_input) {
         MultiStopArray : destinations
     };
     return await CheckLocation(inputData);
+}
+
+async function performBlockedTest(destinations , blocked_input , non_block_result) {
+
+    const inputData = {
+        blocked_array: [parseInt(blocked_input.blocked_filepath.split("_")[0])],
+        b4_blocked_img_path: blocked_input.before_blocked_filepath,
+        blocked_img_path: blocked_input.blocked_filepath,
+        sheltered: false,
+        NoStairs: false,
+        MultiStopArray: destinations,
+        Stops_index: non_block_result.Stops_index,
+        BlockedNodeIndex: blocked_input.index
+    };
+    return await CheckBlockedLocation(inputData);
 }
 
 async function limitConcurrency(tasks, limit) {
@@ -61,11 +100,23 @@ async function limitConcurrency(tasks, limit) {
     return Promise.all(results);
 }
 
-async function choose_middle_blocked(node_path){
-    if(node_path.length > 4){
-        return node_path[node_path.length >> 1];
+async function choose_middle_blocked(HTML){
+    const seperatedHTML = HTML.split('<br>');
+    console.log(seperatedHTML);
+    if(seperatedHTML.length > 4){
+        const blocked_HTML = seperatedHTML[seperatedHTML.length >> 1];
+        const before_blocked_HTML = seperatedHTML[(seperatedHTML.length >> 1)-1];
+        const blocked_parts = blocked_HTML.split('/');
+        const before_blocked_parts = before_blocked_HTML.split('/');
+        const blocked_remainder = blocked_parts.slice(8).join('/');
+        const before_blocked_remainder = before_blocked_parts.slice(8).join('/');
+        const Blocked_parting_index = blocked_remainder.indexOf('"');
+        const before_Blocked_parting_index = before_blocked_remainder.indexOf('"');
+        const blocked_filepath = blocked_remainder.slice(0, Blocked_parting_index);
+        const before_blocked_filepath = before_blocked_remainder.slice(0 , before_Blocked_parting_index);
+        return {blocked_filepath : blocked_filepath , before_blocked_filepath : before_blocked_filepath , index : seperatedHTML.length >> 1};
     }
-    return '';
+    return {blocked_filepath : '' , before_blocked_filepath : '' , index : seperatedHTML.length >> 1};
 }
 
 describe('Testing Functions..........', function () {
@@ -440,18 +491,14 @@ describe('Testing whether location pairs output correct number of pictures', fun
                             processed_count ++;
                             if(non_block_result.passed){   non_block_pass ++ ;  }
                             
-                            //const blocked = await choose_middle_blocked(non_block_result.nodes_path);
-                            //const block_result = await performTest([source , destination] , [blocked]);
-                            //if(block_result.passed){   block_pass ++;  }
-                            //const block_result = { passed : true};
+                            const blocked = await choose_middle_blocked(non_block_result.HTML);
                             
-                            /*
-                            if (non_block_result.passed && block_result.passed) {
-                                both_pass++;
-                            } else {
-                                failed_locations.push({ source: non_block_result.source, destination: non_block_result.destination });
+                            let block_result = { passed : true}; 
+                            if(blocked.filepath != ''){
+                                block_result = await performBlockedTest([source , destination] , blocked , non_block_result);
                             }
-                            */
+                            if(block_result.passed){   block_pass ++;  }
+                            
                             if (processed_count > 0 && processed_count % 100 == 0) {
                                 console.log(`${processed_count} out of ${test_cases} test cases processed`);
                             }
@@ -464,7 +511,7 @@ describe('Testing whether location pairs output correct number of pictures', fun
                 }
             }
 
-            await limitConcurrency(tasks, 30); // Adjust the concurrency limit as necessary
+            await limitConcurrency(tasks, 10); // Adjust the concurrency limit as necessary
 
             try {
                 await request(app).post('/DeleteFailedLocations');
