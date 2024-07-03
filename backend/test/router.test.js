@@ -17,10 +17,11 @@ async function CheckLocation(receivedData) {
         let data = res.body;
         data['source'] = receivedData.MultiStopArray[0];
         data['destination'] = receivedData.MultiStopArray[1];
-        if (data['Expected'] !== data['Queried']){
+        if (data['passed'] && data['Expected'] !== data['Queried']){
             console.log(data['Expected']);
             console.log(data['Queried']);
             console.log(`${receivedData.MultiStopArray[0]} to ${receivedData.MultiStopArray[1]} : failed`);
+            data['passed'] = false;
         }
         return data;
     } catch (error) {
@@ -40,10 +41,11 @@ async function CheckBlockedLocation(receivedData) {
         let data = res.body;
         data['source'] = receivedData.MultiStopArray[0];
         data['destination'] = receivedData.MultiStopArray[1];
-        if (data['Expected'] !== data['Queried']){
+        if (data['passed'] && data['Expected'] !== data['Queried']){
             console.log(data['Expected']);
             console.log(data['Queried']);
             console.log(`${receivedData.MultiStopArray[0]} to ${receivedData.MultiStopArray[1]} : failed`);
+            data['passed'] = false;
         }
         return data;
     } catch (error) {
@@ -160,7 +162,6 @@ class TestResult{
         this.no_of_cases = test_cases;
         this.non_block_pass = 0;
         this.block_pass = 0;
-        this.both_pass = 0;
         this.processed_count = 0;
         this.failed_locations = [];
         this.no_path = 0;
@@ -605,8 +606,16 @@ describe('Testing whether location pairs output correct number of pictures', fun
             } catch (error) {
                 throw error;
             }
-
+            
             result.print_result();
+
+            const percentage_pass = 0.005;
+            if((result.no_of_cases - result.non_block_pass) == percentage_pass * 0.005){
+                throw new Error("No. of test cases failed is above margin for non blocking");
+            }
+            if((result.no_of_cases - result.block_pass - result.no_path) == percentage_pass * 0.005){
+                throw new Error("No. of test cases failed is above margin for blocking");
+            }
             
         } catch (error) {
             throw error;

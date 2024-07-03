@@ -115,7 +115,6 @@ async function get_pov(pov , arrow_direction){
     }else{
         return incoming;
     }
-        
 }
 
 async function handle_up_down(incoming , outgoing){
@@ -378,8 +377,7 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                 for(i = 1 ; i < directions_array_len ; i ++){
                     
                     let is_up_down = await is_moving_up_down(directions[i-1] , directions[i]);
-                    if(is_up_down){
-                        
+                    if(is_up_down){//directions[i-1] == directions[i]
                         do{
                             nodes.splice(i,1);
                             directions.splice(i,1);
