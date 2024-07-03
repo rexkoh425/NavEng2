@@ -115,7 +115,6 @@ async function get_pov(pov , arrow_direction){
     }else{
         return incoming;
     }
-        
 }
 
 async function handle_up_down(incoming , outgoing){
@@ -320,7 +319,27 @@ async function dir_string_to_ENUM(input){
     }
 }
 
+async function angle_to_string_dir(input){
+    switch(input){
+        case '0' : 
+            return "North";
+        case '90' : 
+            return "East";
+        case '180' : 
+            return "South";
+        case '-90' : 
+            return "West";
+        case '45' : 
+            return "Up";
+        case '-45' : 
+            return "Down";
+        default :
+            return "cannot convert"
+    }
+}
+
 async function break_down_img_path(img_name){
+   
     let increment = 0;
     const components = img_name.split("_");
     const node_id = components[0];
@@ -377,8 +396,7 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                 for(i = 1 ; i < directions_array_len ; i ++){
                     
                     let is_up_down = await is_moving_up_down(directions[i-1] , directions[i]);
-                    if(is_up_down){
-                        
+                    if(is_up_down){//directions[i-1] == directions[i]
                         do{
                             nodes.splice(i,1);
                             directions.splice(i,1);
@@ -616,6 +634,57 @@ async function is_failed_location(source , destination){
     */
 }
 
+class Result{
+    constructor(){
+        this.Expected = 0;
+        this.Queried = 0 ; 
+        this.HTML = "" ;
+        this.Distance = 0 ;
+        this.Dist_array = [] ;
+        this.nodes_path = [] ;
+        this.Stops_index = [] ;
+        this.Instructions = [] ; 
+        this.passed = true ;
+    }
+
+    async add(other){
+        this.Expected += other.Expected;
+        this.Queried += other.Queried ; 
+        this.HTML += other.HTML ;
+        this.Distance = `${parseInt(this.Distance) + parseInt(other.Distance)}` ;
+        this.Dist_array = this.Dist_array.concat(other.Dist_array);
+        this.nodes_path = this.nodes_path.concat(other.nodes_path);
+        this.Instructions = this.Instructions.concat(other.Instructions); 
+    }
+
+    async append_stops(stop){
+        this.Stops_index.push(stop);
+    }
+
+    get_object(){
+        return {
+            Expected : this.Expected ,
+            Queried : this.Queried ,
+            HTML : this.HTML , 
+            Distance : this.Distance , 
+            Dist_array : this.Dist_array ,
+            nodes_path : this.nodes_path , 
+            Stops_index : this.Stops_index , 
+            Instructions : this.Instructions , 
+            passed : this.passed
+        }
+    }
+
+    async convert_to_instructions(){
+        for(let i = 0 ; i < this.Instructions.length ; i ++){
+            let instructions_obj = this.Instructions[i];
+            if(instructions_obj != ''){
+                this.Instructions[i] = await template_instructions(instructions_obj.distance , instructions_obj.arrow_direction , instructions_obj.levels);
+            }
+        }
+    }
+}
+
 router.get('/test', (req, res) => {
     const userData = 
     [
@@ -751,7 +820,7 @@ router.post('/formPost' , async (req ,res) => {
     let mergedArray = [];
     if(inputData.MultiStopArray.length < 2){
         debug_log("data incorrectly labelled or source and destination not filled"); 
-        return res.send({HTML : template_img(no_alt_path_url) , Distance : 0 , passed : false});
+        return res.send({HTML : template_img(no_alt_path_url) , passed : false , error_can_handle : false});
     }
 
     try{
@@ -774,19 +843,9 @@ router.post('/formPost' , async (req ,res) => {
         mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered , ...stairs]));
         //debug_log(mergedArray);
     }catch(error){
-        return res.send({HTML : template_img(database_down_url) , Distance : 0 , passed : false });
+        return res.send({HTML : template_img(database_down_url) , passed : false , error_can_handle : false});
     }
-    let TotalResult = {
-        Expected : 0 ,
-        Queried : 0 , 
-        HTML : "" ,
-        Distance : 0 ,
-        Dist_array : [] , 
-        nodes_path : [] , 
-        Stops_index : [] ,
-        Instructions : [] , 
-        passed : true
-    }
+    let TotalResult = new Result();
 
     const previous_node = { have_previous : false , blocked_pov : ""};
     for(let i = 1 ; i < destinations.length ; i++){
@@ -797,44 +856,35 @@ router.post('/formPost' , async (req ,res) => {
             }else{
                 result = await transit_query(destinations[i-1] , destinations[i] , mergedArray , previous_node);
             }
-            TotalResult.Expected += result.Expected;
-            TotalResult.Queried += result.Queried;
-            TotalResult.HTML += result.HTML;
-            TotalResult.Distance = `${parseInt(TotalResult.Distance) + parseInt(result.Distance)}` ;
-            TotalResult.Dist_array = TotalResult.Dist_array.concat(result.Dist_array);
-            TotalResult.nodes_path = TotalResult.nodes_path.concat(result.nodes_path);
-            TotalResult.Instructions = TotalResult.Instructions.concat(result.Instructions);
+            await TotalResult.add(result);
             
             if(i == destinations.length - 1){
-                TotalResult.Stops_index.push(TotalResult.Expected - 1);
+                await TotalResult.append_stops(TotalResult.Expected - 1);
             }else{
-                TotalResult.Stops_index.push(TotalResult.Expected);
+                await TotalResult.append_stops(TotalResult.Expected);
             }
             //debug_log(TotalResult.Instructions);
         } catch(error){
-            console.error('Error caught:', error.message);
-            return res.send({HTML : template_img(no_alt_path_url) , Distance : 0 , passed : false });
+            //console.error('Error caught:', error.message);
+            if(error.message == "cannot find dest"){
+                return res.send({HTML : template_img(no_alt_path_url) , passed : false , error_can_handle : true});
+            }
+            return res.send({HTML : template_img(no_alt_path_url) , passed : false , error_can_handle : false});
         }
     }
     
-    for(let i = 0 ; i < TotalResult.Instructions.length ; i ++){
-        let instructions_obj = TotalResult.Instructions[i];
-        if(instructions_obj != ''){
-            TotalResult.Instructions[i] = await template_instructions(instructions_obj.distance , instructions_obj.arrow_direction , instructions_obj.levels);
-        }
-    }
+    await TotalResult.convert_to_instructions();
     debug_log(TotalResult.Instructions);
-    return res.send(TotalResult);
+    return res.send(TotalResult.get_object());
 });
 
 router.post('/blockRefresh' , async (req ,res) => { 
     
     const inputData = req.body;
     let destinations = inputData.MultiStopArray;
-
     if(inputData.MultiStopArray.length < 2){
         //debug_log("data incorrectly labelled or source and destination not filled"); 
-        return res.send({HTML : template_img(no_alt_path_url) , Distance : 0 , passed : false});
+        return res.send({HTML : template_img(no_alt_path_url) , passed : false , error_can_handle : false});
     }
     let blocked_node_component;
     let mergedArray;
@@ -850,6 +900,7 @@ router.post('/blockRefresh' , async (req ,res) => {
             inputData.Stops_index.splice(0,1);
         }
         destinations.splice(0,1);
+        //console.log(inputData.b4_blocked_img_path);
         const previous_node_component = await break_down_img_path(inputData.b4_blocked_img_path);
         destinations.unshift(parseInt(previous_node_component.node_id));
         blocked_node_component = await break_down_img_path(inputData.blocked_img_path);
@@ -868,20 +919,10 @@ router.post('/blockRefresh' , async (req ,res) => {
         }
         mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered , ...stairs]));
     }catch(error){
-        return res.send({HTML : template_img(database_down_url) , Distance : 0 , passed : false});
+        return res.send({HTML : template_img(database_down_url) , passed : false , error_can_handle : false});
     }
-    let TotalResult = {
-        Expected : 0 ,
-        Queried : 0 , 
-        HTML : "" ,
-        Distance : 0 ,
-        Dist_array : [] , 
-        nodes_path : [] , 
-        Stops_index : [] ,
-        Destinations : destinations ,
-        Instructions : [] , 
-        passed : true
-    }
+    let TotalResult = new Result();
+    //Destinations : destinations
     const no_previous = { have_previous : false , pov : "" , arrow : ""};
     const previous_node = { have_previous : true , blocked_pov : blocked_node_component.pov};
     for(let i = 1 ; i < destinations.length ; i++){
@@ -898,32 +939,25 @@ router.post('/blockRefresh' , async (req ,res) => {
             }else{
                 result = await transit_query(destinations[i-1] , destinations[i] , mergedArray , no_previous);
             }
-            TotalResult.Expected += result.Expected;
-            TotalResult.Queried += result.Queried;
-            TotalResult.HTML += result.HTML;
-            TotalResult.Distance = `${parseInt(TotalResult.Distance) + parseInt(result.Distance)}` ;
-            TotalResult.Dist_array = TotalResult.Dist_array.concat(result.Dist_array);
-            TotalResult.nodes_path = TotalResult.nodes_path.concat(result.nodes_path);
-            TotalResult.Instructions = TotalResult.Instructions.concat(result.Instructions);
+            await TotalResult.add(result);
             if(i == destinations.length - 1){
-                TotalResult.Stops_index.push(TotalResult.Expected - 1);
+                TotalResult.append_stops(TotalResult.Expected - 1);
             }else{
-                TotalResult.Stops_index.push(TotalResult.Expected);
+                TotalResult.append_stops(TotalResult.Expected);
             }
         }catch(error){
-            console.error('Error caught:', error.message);
-            return res.send({HTML : template_img(no_alt_path_url) , Distance : 0 , passed : false});
+            //console.error('Error caught:', error.message);
+            if(error.message == "cannot find dest"){
+                return res.send({HTML : template_img(no_alt_path_url) , passed : false , error_can_handle : true});
+            }
+            return res.send({HTML : template_img(no_alt_path_url) , passed : false , error_can_handle : false});
         }
     }
-    for(let i = 0 ; i < TotalResult.Instructions.length ; i ++){
-        let instructions_obj = TotalResult.Instructions[i];
-        if(instructions_obj != ''){
-            TotalResult.Instructions[i] = await template_instructions(instructions_obj.distance , instructions_obj.arrow_direction , instructions_obj.levels);
-        }
-    }
-    //debug_log(TotalResult.Instructions.length);
+    await TotalResult.convert_to_instructions();
     debug_log(TotalResult.Instructions);
-    return res.send(TotalResult);
+    let TotalResultObj = TotalResult.get_object();
+    TotalResultObj['Destinations'] = destinations;
+    return res.send(TotalResultObj);
 });
 
 router.post('/insertBlocked' , async (req ,res ) => {
@@ -945,6 +979,100 @@ router.post('/insertBlocked' , async (req ,res ) => {
         console.error('Error appending data to database:', err);
         res.status(500).send( { message : 'Failed to append data to database.'  , node : node_id}); 
     }
+});
+
+router.post('/getfloor' , async (req , res) => {
+    const inputData = req.body.node_id; //assume its node id
+    let targeted_z = 0;
+    let nodes_with_same_z = new Set();
+    let node_label_map = {};
+    try {
+        const { data, error } = await supabase
+            .from('pictures')
+            .select('z_coordinate')
+            .eq('node_id', inputData)
+
+            targeted_z = data[0]['z_coordinate'];
+            
+        if (error) {
+            throw error;
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+    
+    try {
+        const { data, error } = await supabase
+            .from('pictures')
+            .select('node_id , self_type')
+            .eq('z_coordinate', targeted_z);
+
+            data.forEach(result => {
+                const prev_size = nodes_with_same_z.size;
+                nodes_with_same_z.add(result.node_id);
+                const aft_size = nodes_with_same_z.size;
+                if(aft_size > prev_size){
+                    node_label_map[`${result.node_id}`] = result.self_type;
+                }
+            });
+        if (error) {
+            throw error;
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+    
+    let inputObj = { nodes : [...nodes_with_same_z] };
+    const serializedData = JSON.stringify(inputObj);
+    const cppProcess = spawn(__dirname + '/../Dijkstra/TopDownMap' , []);
+    cppProcess.stdin.write(serializedData);
+    cppProcess.stdin.end();
+    
+    cppProcess.stdout.on('data', async (cpp_data) => {
+        //console.log(cpp_data.toString());
+        try{
+            let outputData = cpp_data.toString().split("|");
+            outputData.pop();
+            //console.log(outputData);
+            let FullMapObj = [];
+            await outputData.forEach(async node_data => {
+                let MapObj = {
+                    id : 0 ,
+                    connnections : [] ,
+                    label : ''
+                }
+
+                node_data = node_data.split("_");
+                MapObj.id = parseInt(node_data[0]) + 1;
+                MapObj.label = node_label_map[`${parseInt(node_data[0]) + 1}`];
+                let edges = node_data[1].split("/");
+                edges.pop();
+                await edges.forEach(async edge_data =>{
+                    edge_data = edge_data.split(",");
+                    const direction = await angle_to_string_dir(edge_data[2])
+                    let EdgeObj = {
+                        id : parseInt(edge_data[0]) + 1,
+                        distance : parseInt(edge_data[1]),
+                        direction : direction
+                    }
+                    MapObj.connnections.push(EdgeObj);
+                })
+                FullMapObj.push(MapObj);
+            })
+            res.send(FullMapObj);
+        }catch(error){
+            
+        }
+        
+        cppProcess.on('error', (error) => {
+            console.error('Error executing C++ process:', error);
+        });
+
+        cppProcess.on('exit', (code) => {
+            debug_log(`C++ process exited with code: ${code}`);
+        });
+    });
+
 });
 
 const storage = multer.diskStorage({

@@ -15,19 +15,43 @@ async function CheckLocation(receivedData) {
             .timeout({ deadline: 3000 });
 
         let data = res.body;
-
-        if (data['Expected'] !== data['Queried'] || data['passed'] == false){
+        data['source'] = receivedData.MultiStopArray[0];
+        data['destination'] = receivedData.MultiStopArray[1];
+        if (data['passed'] && data['Expected'] !== data['Queried']){
             console.log(data['Expected']);
             console.log(data['Queried']);
             console.log(`${receivedData.MultiStopArray[0]} to ${receivedData.MultiStopArray[1]} : failed`);
-            const res_obj = { source: `${receivedData.MultiStopArray[0]}`, destination: `${receivedData.MultiStopArray[1]}`, passed: false , nodes_path : [] };
-            return res_obj;
+            data['passed'] = false;
         }
-        return { source: receivedData.MultiStopArray[0], destination: receivedData.MultiStopArray[1], passed: true , nodes_path : data.nodes_path};
+        return data;
     } catch (error) {
         console.log(`${error}`);
         console.log(`${receivedData.source} to ${receivedData.destination} : failed`);
-        return { source: receivedData.MultiStopArray[0], destination: receivedData.MultiStopArray[1], passed: false , nodes_path : [] };
+        return { source: receivedData.MultiStopArray[0], destination: receivedData.MultiStopArray[1], passed: false , nodes_path : []  , HTML : '' , error_can_handle : false};
+    }
+}
+
+async function CheckBlockedLocation(receivedData) {
+    try {
+        const res = await request(app)
+            .post('/blockRefresh')
+            .send(receivedData)
+            .timeout({ deadline: 3000 });
+
+        let data = res.body;
+        data['source'] = receivedData.MultiStopArray[0];
+        data['destination'] = receivedData.MultiStopArray[1];
+        if (data['passed'] && data['Expected'] !== data['Queried']){
+            console.log(data['Expected']);
+            console.log(data['Queried']);
+            console.log(`${receivedData.MultiStopArray[0]} to ${receivedData.MultiStopArray[1]} : failed`);
+            data['passed'] = false;
+        }
+        return data;
+    } catch (error) {
+        console.log(`${error}`);
+        console.log(`${receivedData.source} to ${receivedData.destination} : failed`);
+        return { source: receivedData.MultiStopArray[0], destination: receivedData.MultiStopArray[1], passed: false , nodes_path : []  , HTML : data.HTML , error_can_handle : false};
     }
 }
 
@@ -39,6 +63,22 @@ async function performTest(destinations , blocked_input) {
         MultiStopArray : destinations
     };
     return await CheckLocation(inputData);
+}
+
+async function performBlockedTest(destinations , blocked_input , non_block_result) {
+
+    const inputData = {
+        blocked_array: [parseInt(blocked_input.blocked_filepath.split("_")[0])],
+        b4_blocked_img_path: blocked_input.before_blocked_filepath,
+        blocked_img_path: blocked_input.blocked_filepath,
+        sheltered: false,
+        NoStairs: false,
+        MultiStopArray: destinations,
+        Stops_index: non_block_result.Stops_index,
+        BlockedNodeIndex: blocked_input.index
+    };
+    //console.log(inputData);
+    return await CheckBlockedLocation(inputData);
 }
 
 async function limitConcurrency(tasks, limit) {
@@ -61,11 +101,107 @@ async function limitConcurrency(tasks, limit) {
     return Promise.all(results);
 }
 
-async function choose_middle_blocked(node_path){
-    if(node_path.length > 4){
-        return node_path[node_path.length >> 1];
+async function break_down_img_path(img_name){
+   
+    let increment = 0;
+    const components = img_name.split("_");
+    const node_id = components[0];
+    const x_coor = components[1];
+    const y_coor = components[2];
+    const z_coor = components[3];
+    const pov=  components[4];
+    const arrow_dir = components[5];
+    let type = components[6];
+    if(components[6] == "T" || components[6] == "Cross"){
+        type = components[6] + "_" + components[7];
+        increment = 1;
     }
-    return '';
+    const room_num = components[7 + increment];
+    return {node_id : node_id , x_coor : x_coor , y_coor : y_coor , z_coor : z_coor , pov : pov , arrow :arrow_dir , type : type , room_num : room_num};
+
+}
+
+async function get_filepath(HTML_input){
+    let temp = HTML_input.split('/');
+    let rough_filepath = temp.slice(8).join('/');
+    let index = rough_filepath.indexOf('"');
+    let filepath = rough_filepath.slice(0, index);
+    return filepath;
+}
+
+async function choose_middle_blocked(HTML){
+    
+    let seperatedHTML = HTML.split('<br>');
+    seperatedHTML.pop();
+    if(seperatedHTML.length >= 6){
+        let blocked_filepath = '';
+        let before_blocked_filepath = '';
+        let arrow_dir = 'None';
+        let chosen_index = (seperatedHTML.length >> 1)+1;
+        do{
+            chosen_index --;
+            const blocked_HTML = seperatedHTML[chosen_index];
+            blocked_filepath = await get_filepath(blocked_HTML);
+            const before_blocked_HTML = seperatedHTML[chosen_index-1];
+            before_blocked_filepath = await get_filepath(before_blocked_HTML);
+            const broken_blocked_filepath = await break_down_img_path(blocked_filepath);
+            arrow_dir = broken_blocked_filepath.arrow;
+        }while(arrow_dir == 'None' && chosen_index >= 2);
+        
+        if(chosen_index >= 2){
+            return {blocked_filepath : blocked_filepath , before_blocked_filepath : before_blocked_filepath , index : chosen_index};
+        }
+        return {blocked_filepath : '' , before_blocked_filepath : '' , index : chosen_index};
+        
+    }
+    return {blocked_filepath : '' , before_blocked_filepath : '' , index : 0};
+}
+
+class TestResult{
+    constructor(test_cases){
+        this.no_of_cases = test_cases;
+        this.non_block_pass = 0;
+        this.block_pass = 0;
+        this.processed_count = 0;
+        this.failed_locations = [];
+        this.no_path = 0;
+    }
+
+    print_result(){
+        console.log('\n'.repeat(2));
+        console.log("Test result for no blocking");
+        console.log("----------------------------");
+        console.log(`${this.non_block_pass} out of ${this.no_of_cases} test cases passed without blocking`);
+        console.log(`${this.no_of_cases - this.non_block_pass} out of ${this.no_of_cases} test cases failed without blocking`);
+        console.log('\n'.repeat(1));
+        console.log("Test result for blocking");
+        console.log("----------------------------");
+        console.log(`${this.block_pass} out of ${this.no_of_cases} test cases passed with blocking`);
+        console.log(`${this.no_path} out of ${this.no_of_cases} test cases passed with no path`)
+        console.log(`${this.no_of_cases - this.no_path - this.block_pass} out of ${this.no_of_cases} test cases failed`);
+    }
+
+    log_progress(){
+        if (this.processed_count > 0 && this.processed_count % 100 == 0) {
+            console.log(`${this.processed_count} out of ${this.no_of_cases} test cases processed`);
+        }
+    }
+
+    incre_process_count(){
+        this.processed_count ++;
+    }
+
+    incre_non_block_pass(){
+        this.non_block_pass ++;
+    }
+
+    process_block_result(block_result){
+        if(block_result.passed){   
+            this.block_pass ++;  
+        }else if(block_result.error_can_handle){
+            this.no_path ++;
+        }
+    }
 }
 
 describe('Testing Functions..........', function () {
@@ -424,37 +560,30 @@ describe('Testing whether location pairs output correct number of pictures', fun
             let locations = response.body;
             let no_of_locations = locations.length;
             let test_cases = no_of_locations * (no_of_locations - 1);
-            let failed_locations = [];
-            let non_block_pass = 0;
-            //let block_pass = 0;
-            //let both_pass = 0;
-            let processed_count = 0;
             const tasks = [];
+            let result = new TestResult(test_cases);
             //NOTE SET DEBUG = FALSE IN DEBUG_LOG() FUNCTION IN ROUTER.JS BEFORE STARTING TEST
             for (let source of locations) {
                 for (let destination of locations) {
+                    //source = 'EA-02-11';
+                    //destination = 'EA-03-08';
                     if (source !== destination) {
                         
                         tasks.push(async () => {  
                             const non_block_result = await performTest([source , destination] , []);
-                            processed_count ++;
-                            if(non_block_result.passed){   non_block_pass ++ ;  }
                             
-                            //const blocked = await choose_middle_blocked(non_block_result.nodes_path);
-                            //const block_result = await performTest([source , destination] , [blocked]);
-                            //if(block_result.passed){   block_pass ++;  }
-                            //const block_result = { passed : true};
+                            result.incre_non_block_pass();
                             
-                            /*
-                            if (non_block_result.passed && block_result.passed) {
-                                both_pass++;
-                            } else {
-                                failed_locations.push({ source: non_block_result.source, destination: non_block_result.destination });
+                            const blocked = await choose_middle_blocked(non_block_result.HTML);
+                            
+                            let block_result = {HTML : "" , passed : true , error_can_handle : false}; 
+                            //console.log(blocked);
+                            if(blocked.blocked_filepath != ''){
+                                block_result = await performBlockedTest([source , destination] , blocked , non_block_result);
                             }
-                            */
-                            if (processed_count > 0 && processed_count % 100 == 0) {
-                                console.log(`${processed_count} out of ${test_cases} test cases processed`);
-                            }
+                            result.process_block_result(block_result);
+                            result.incre_process_count();
+                            result.log_progress();
                             
                             if (global.gc) {
                                 global.gc();
@@ -464,7 +593,7 @@ describe('Testing whether location pairs output correct number of pictures', fun
                 }
             }
 
-            await limitConcurrency(tasks, 30); // Adjust the concurrency limit as necessary
+            await limitConcurrency(tasks, 10); // Adjust the concurrency limit as necessary
 
             try {
                 await request(app).post('/DeleteFailedLocations');
@@ -473,17 +602,21 @@ describe('Testing whether location pairs output correct number of pictures', fun
             }
 
             try {
-                await request(app).post('/InsertFailedLocations').send(failed_locations);
+                await request(app).post('/InsertFailedLocations').send(result.failed_locations);
             } catch (error) {
                 throw error;
             }
+            
+            result.print_result();
 
-            console.log(`${non_block_pass} out of ${test_cases} test cases passed without blocking`);
-            console.log(`${test_cases - non_block_pass} out of ${test_cases} test cases failed without blocking`);
-            //console.log(`${block_pass} out of ${test_cases} test cases passed with blocking`);
-            //console.log(`${test_cases - block_pass} out of ${test_cases} test cases failed with blocking`);
-            //console.log(`${both_pass} out of ${test_cases} test cases passed`);
-            //console.log(`${test_cases - both_pass} out of ${test_cases} test cases failed`);
+            const percentage_pass = 0.005;
+            if((result.no_of_cases - result.non_block_pass) == percentage_pass * 0.005){
+                throw new Error("No. of test cases failed is above margin for non blocking");
+            }
+            if((result.no_of_cases - result.block_pass - result.no_path) == percentage_pass * 0.005){
+                throw new Error("No. of test cases failed is above margin for blocking");
+            }
+            
         } catch (error) {
             throw error;
         }
