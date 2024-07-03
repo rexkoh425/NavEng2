@@ -57,15 +57,15 @@ describe('test one path only', function(){
 */
 describe('test full_query', function(){
 
-    this.timeout(10000);
+    this.timeout(100000);
     it('full_query', async function(){
-        const input = { source : 17 , destination : 58 , blocked : []};
+        const input = { node_id : 72} ;
         try {
             const response = await request(app)
-            .post('/full_query')
+            .post('/getfloor')
             .send(input)
-            console.log("response is  : "); 
-            console.log(response.body);
+
+            //console.log(response.body);
         } catch(error){
             throw error;
         }

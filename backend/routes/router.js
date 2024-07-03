@@ -319,6 +319,25 @@ async function dir_string_to_ENUM(input){
     }
 }
 
+async function angle_to_string_dir(input){
+    switch(input){
+        case '0' : 
+            return "North";
+        case '90' : 
+            return "East";
+        case '180' : 
+            return "South";
+        case '-90' : 
+            return "West";
+        case '45' : 
+            return "Up";
+        case '-45' : 
+            return "Down";
+        default :
+            return "cannot convert"
+    }
+}
+
 async function break_down_img_path(img_name){
    
     let increment = 0;
@@ -960,6 +979,100 @@ router.post('/insertBlocked' , async (req ,res ) => {
         console.error('Error appending data to database:', err);
         res.status(500).send( { message : 'Failed to append data to database.'  , node : node_id}); 
     }
+});
+
+router.post('/getfloor' , async (req , res) => {
+    const inputData = req.body.node_id; //assume its node id
+    let targeted_z = 0;
+    let nodes_with_same_z = new Set();
+    let node_label_map = {};
+    try {
+        const { data, error } = await supabase
+            .from('pictures')
+            .select('z_coordinate')
+            .eq('node_id', inputData)
+
+            targeted_z = data[0]['z_coordinate'];
+            
+        if (error) {
+            throw error;
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+    
+    try {
+        const { data, error } = await supabase
+            .from('pictures')
+            .select('node_id , self_type')
+            .eq('z_coordinate', targeted_z);
+
+            data.forEach(result => {
+                const prev_size = nodes_with_same_z.size;
+                nodes_with_same_z.add(result.node_id);
+                const aft_size = nodes_with_same_z.size;
+                if(aft_size > prev_size){
+                    node_label_map[`${result.node_id}`] = result.self_type;
+                }
+            });
+        if (error) {
+            throw error;
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+    
+    let inputObj = { nodes : [...nodes_with_same_z] };
+    const serializedData = JSON.stringify(inputObj);
+    const cppProcess = spawn(__dirname + '/../Dijkstra/TopDownMap' , []);
+    cppProcess.stdin.write(serializedData);
+    cppProcess.stdin.end();
+    
+    cppProcess.stdout.on('data', async (cpp_data) => {
+        //console.log(cpp_data.toString());
+        try{
+            let outputData = cpp_data.toString().split("|");
+            outputData.pop();
+            //console.log(outputData);
+            let FullMapObj = [];
+            await outputData.forEach(async node_data => {
+                let MapObj = {
+                    id : 0 ,
+                    connnections : [] ,
+                    label : ''
+                }
+
+                node_data = node_data.split("_");
+                MapObj.id = parseInt(node_data[0]) + 1;
+                MapObj.label = node_label_map[`${parseInt(node_data[0]) + 1}`];
+                let edges = node_data[1].split("/");
+                edges.pop();
+                await edges.forEach(async edge_data =>{
+                    edge_data = edge_data.split(",");
+                    const direction = await angle_to_string_dir(edge_data[2])
+                    let EdgeObj = {
+                        id : parseInt(edge_data[0]) + 1,
+                        distance : parseInt(edge_data[1]),
+                        direction : direction
+                    }
+                    MapObj.connnections.push(EdgeObj);
+                })
+                FullMapObj.push(MapObj);
+            })
+            res.send(FullMapObj);
+        }catch(error){
+            
+        }
+        
+        cppProcess.on('error', (error) => {
+            console.error('Error executing C++ process:', error);
+        });
+
+        cppProcess.on('exit', (code) => {
+            debug_log(`C++ process exited with code: ${code}`);
+        });
+    });
+
 });
 
 const storage = multer.diskStorage({
