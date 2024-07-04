@@ -3,7 +3,7 @@ import DestinationNotification from './DestinationNotification'
 
 describe('<DestinationNotification />', () => {
   it('does not display any message if the array position < stopsIndex', () => {
-    cy.mount(<DestinationNotification stopsIndex={[5]} MultiStopArray={["L1","L2"]} arrayposition={4}/>)
+    cy.mount(<DestinationNotification stopsIndex={[5]} MultiStopArray={["L1","L2"]} arrayposition={4} blockedIndicator={false} pathInstructions={""}/>)
     cy.get('.destinationNotification').should('not.exist');
   })
 

@@ -17,6 +17,9 @@ const DestinationNotification = ({ stopsIndex, arrayposition, MultiStopArray, pa
             <p className="destinationNotification">You have arrived at {MultiStopArray[index+1]}</p>
         )
     }
+    else if (arrayposition > stopsIndex) {
+        return
+    }
     else {
         return (
             <p className="pathInstructions">{pathInstructions[arrayposition]}</p>

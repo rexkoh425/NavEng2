@@ -14,14 +14,12 @@ function splitTextAfterSlash(text) {
 // Unit Testing
 describe('<PromptForm />', () => {
   it('renders', () => {
-    // see: https://on.cypress.io/mounting-react
     cy.mount(<PromptForm />)
   })
 })
 
 describe("Start and End Location options can be selected", () => {
   it('can be selected', () => {
-    // see: https://on.cypress.io/mounting-react
     cy.mount(<PromptForm />)
     cy.findByRole('combobox', {  name: /start location/i}).type("EA-02-11")
     cy.findByRole('option', { name: "EA-02-11" }).click()
