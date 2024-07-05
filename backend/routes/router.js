@@ -1029,7 +1029,7 @@ router.post('/getfloor' , async (req , res) => {
     cppProcess.stdin.end();
     
     cppProcess.stdout.on('data', async (cpp_data) => {
-        //console.log(cpp_data.toString());
+        
         try{
             let outputData = cpp_data.toString().split("|");
             outputData.pop();
@@ -1038,7 +1038,7 @@ router.post('/getfloor' , async (req , res) => {
             await outputData.forEach(async node_data => {
                 let MapObj = {
                     id : 0 ,
-                    connnections : [] ,
+                    connections : [] ,
                     label : ''
                 }
 
@@ -1055,11 +1055,12 @@ router.post('/getfloor' , async (req , res) => {
                         distance : parseInt(edge_data[1]),
                         direction : direction
                     }
-                    MapObj.connnections.push(EdgeObj);
+                    MapObj.connections.push(EdgeObj);
                 })
                 FullMapObj.push(MapObj);
             })
             res.send(FullMapObj);
+            console.log(FullMapObj[0].connections);
         }catch(error){
             
         }
