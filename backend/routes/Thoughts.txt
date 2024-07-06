@@ -1,5 +1,4 @@
 NOT PART OF SUBMISSION
 
 
-Path compression -> previous node will be far away 
-Unless it is called two times , one updates the array , one displays it
+

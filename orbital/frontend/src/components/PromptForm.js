@@ -257,8 +257,6 @@ function PromptForm() {
 
         try {
             const response = await axios.post(websitelink + '/formPost', postData);
-            //const response = await axios.post("http://localhost:4000/formPost", postData);
-
 
             // Update state variables with the response data
             setMessageError(response.data['HTML']);

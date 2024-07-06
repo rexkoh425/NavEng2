@@ -17,7 +17,7 @@ const database_down_url = 'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/o
 let blocked_node = "";
 
 function debug_log(input){
-    let debug = false;
+    let debug = true;
     if(debug){
         console.log(input);
     }
@@ -322,19 +322,19 @@ async function dir_string_to_ENUM(input){
 async function angle_to_string_dir(input){
     switch(input){
         case '0' : 
-            return "North";
+            return "north";
         case '90' : 
-            return "East";
+            return "east";
         case '180' : 
-            return "South";
+            return "south";
         case '-90' : 
-            return "West";
+            return "west";
         case '45' : 
-            return "Up";
+            return "up";
         case '-45' : 
-            return "Down";
+            return "down";
         default :
-            return "cannot convert"
+            return "cannot convert";
     }
 }
 
@@ -396,14 +396,14 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                 for(i = 1 ; i < directions_array_len ; i ++){
                     
                     let is_up_down = await is_moving_up_down(directions[i-1] , directions[i]);
-                    if(is_up_down){//directions[i-1] == directions[i]
+                    if((directions[i-1] == directions[i] && parseInt(dist_array[i-1]) <= 100) || is_up_down){//is_up_down
                         do{
                             nodes.splice(i,1);
                             directions.splice(i,1);
                             dist_array[i-1] = `${parseInt(dist_array[i-1]) + parseInt(dist_array.splice(i,1))}`;
                             directions_array_len --;
                             is_up_down = await is_moving_up_down(directions[i-1] , directions[i]);
-                        }while(is_up_down)
+                        }while((directions[i-1] == directions[i] && parseInt(dist_array[i-1]) <= 100) || is_up_down)
                         Instructions[i-1].levels = parseInt(dist_array[i-1])/40;
                         Instructions[i-1].distance = dist_array[i-1];
                         i--;
@@ -517,7 +517,7 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                 for(i = 1 ; i < directions_array_len ; i ++){
                     
                     let is_up_down = await is_moving_up_down(directions[i-1] , directions[i]);
-                    if(is_up_down){
+                    if((directions[i-1] == directions[i] && parseInt(dist_array[i-1]) <= 100) || is_up_down){
                         
                         do{
                             nodes.splice(i,1);
@@ -525,7 +525,7 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                             dist_array[i-1] = `${parseInt(dist_array[i-1]) + parseInt(dist_array.splice(i,1))}`;
                             directions_array_len --;
                             is_up_down = await is_moving_up_down(directions[i-1] , directions[i]);
-                        }while(is_up_down)
+                        }while((directions[i-1] == directions[i] && parseInt(dist_array[i-1]) <= 100) || is_up_down)
                         Instructions[i-1].levels = parseInt(dist_array[i-1])/40;
                         Instructions[i-1].distance = dist_array[i-1];
                         i--;
@@ -940,6 +940,7 @@ router.post('/blockRefresh' , async (req ,res) => {
                 result = await transit_query(destinations[i-1] , destinations[i] , mergedArray , no_previous);
             }
             await TotalResult.add(result);
+            
             if(i == destinations.length - 1){
                 TotalResult.append_stops(TotalResult.Expected - 1);
             }else{

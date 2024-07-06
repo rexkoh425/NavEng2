@@ -36,5 +36,10 @@ When you add nodes wrongly
 3) remove inputs from mysql_inputs.txt
 4) remove from desmos 
 
+GENERAL DEBUG NODE CONNECTIONS
+
+1) Check if the nodes are connected in the right direction
+2) Check if the pictures are named properly
+3) Check if the picture is added correctly
 
 
