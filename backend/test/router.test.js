@@ -69,7 +69,7 @@ async function performBlockedTest(destinations , blocked_input , non_block_resul
 
     const inputData = {
         blocked_array: [parseInt(blocked_input.blocked_filepath.split("_")[0])],
-        b4_blocked_img_path: blocked_input.before_blocked_filepath,
+        Node_id_array : non_block_result.nodes_path,
         blocked_img_path: blocked_input.blocked_filepath,
         sheltered: false,
         NoStairs: false,
@@ -135,26 +135,23 @@ async function choose_middle_blocked(HTML){
     seperatedHTML.pop();
     if(seperatedHTML.length >= 6){
         let blocked_filepath = '';
-        let before_blocked_filepath = '';
         let arrow_dir = 'None';
         let chosen_index = (seperatedHTML.length >> 1)+1;
         do{
             chosen_index --;
             const blocked_HTML = seperatedHTML[chosen_index];
             blocked_filepath = await get_filepath(blocked_HTML);
-            const before_blocked_HTML = seperatedHTML[chosen_index-1];
-            before_blocked_filepath = await get_filepath(before_blocked_HTML);
             const broken_blocked_filepath = await break_down_img_path(blocked_filepath);
             arrow_dir = broken_blocked_filepath.arrow;
         }while(arrow_dir == 'None' && chosen_index >= 2);
         
         if(chosen_index >= 2){
-            return {blocked_filepath : blocked_filepath , before_blocked_filepath : before_blocked_filepath , index : chosen_index};
+            return {blocked_filepath : blocked_filepath , index : chosen_index};
         }
-        return {blocked_filepath : '' , before_blocked_filepath : '' , index : chosen_index};
+        return {blocked_filepath : '' , index : chosen_index};
         
     }
-    return {blocked_filepath : '' , before_blocked_filepath : '' , index : 0};
+    return {blocked_filepath : '' , index : 0};
 }
 
 class TestResult{

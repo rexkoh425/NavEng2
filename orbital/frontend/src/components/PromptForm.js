@@ -60,6 +60,7 @@ function PromptForm() {
     const [pathInstructions, setPathInstructions] = useState([])
     const [blockedIndicator, setBlockedIndicator] = useState(false)
     const [submitTrigger, setSubmitTrigger] = useState(false)
+    const [Node_id_array , setNode_id_array] = useState([]);
 
     const Local = process.env.REACT_APP_LOCAL;
     let websitelink = ""
@@ -264,8 +265,9 @@ function PromptForm() {
             const distArray = response.data['Dist_array'];
             setPathInstructions(response.data['Instructions'])
             setStopsIndex(response.data['Stops_index']);
+            setNode_id_array(response.data['nodes_path']);
             handleConvertToMetres(distArray);
-            setBlockedIndicator(false)
+            setBlockedIndicator(false);
 
             // Perform split operation inside the then block
             const arrayFromString = response.data['HTML'].split('<img src');
@@ -280,7 +282,7 @@ function PromptForm() {
 
         const postData = {
             blocked_array: blockedArray,
-            b4_blocked_img_path: beforebeforeQuote,
+            Node_id_array : Node_id_array,
             blocked_img_path: blockedIMGName,
             sheltered: sheltered,
             NoStairs: NoStairs,
@@ -299,6 +301,7 @@ function PromptForm() {
             handleConvertToMetres(distArray);
             setStopsIndex(response.data['Stops_index']);
             setMultiStopArray(response.data['Destinations']);
+            setNode_id_array(response.data['nodes_path']);
             const arrayFromString = response.data['HTML'].split('<img src');
             setBlocked(arrayFromString[1]);
             setPathInstructions(response.data['Instructions'])

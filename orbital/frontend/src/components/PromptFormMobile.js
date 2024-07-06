@@ -59,6 +59,7 @@ function PromptFormMobile() {
     const [showBlockConfirmation, setShowBlockConfirmation] = useState(false);
     const [hideTimeTaken, setHideTimeTaken] = useState(false)
     const [pathInstructions, setPathInstructions] = useState([])
+    const [Node_id_array , setNode_id_array] = useState([]);
 
     const Local = process.env.REACT_APP_LOCAL;
     let websitelink = ""
@@ -284,7 +285,7 @@ function PromptFormMobile() {
             setPathInstructions(response.data['Instructions'])
             setStopsIndex(response.data['Stops_index']);
             handleConvertToMetres(distArray);
-
+            setNode_id_array(response.data['nodes_path']);
             // Perform split operation inside the then block
             const arrayFromString = response.data['HTML'].split('<img src');
             setBlocked(arrayFromString[1]);
@@ -298,7 +299,7 @@ function PromptFormMobile() {
 
         const postData = {
             blocked_array: blockedArray,
-            b4_blocked_img_path: beforebeforeQuote,
+            Node_id_array : Node_id_array,
             blocked_img_path: blockedIMGName,
             sheltered: sheltered,
             NoStairs: NoStairs,
@@ -316,6 +317,7 @@ function PromptFormMobile() {
             setTotalDistance(response.data['Distance'] / 10);
             const distArray = response.data['Dist_array'];
             handleConvertToMetres(distArray);
+            setNode_id_array(response.data['nodes_path']);
             setStopsIndex(response.data['Stops_index']);
             setMultiStopArray(response.data['Destinations']);
             const arrayFromString = response.data['HTML'].split('<img src');

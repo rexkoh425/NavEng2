@@ -59,13 +59,13 @@ describe('test full_query', function(){
 
     this.timeout(100000);
     it('full_query', async function(){
-        const input = { node_id : 72} ;
+        const input = {unique_id : 1547}  ;
         try {
             const response = await request(app)
-            .post('/getfloor')
+            .post('/convert_unique_id_filename')
             .send(input)
 
-            //console.log(response.body);
+            console.log(response.body.filepath);
         } catch(error){
             throw error;
         }

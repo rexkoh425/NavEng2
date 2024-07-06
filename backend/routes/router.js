@@ -17,7 +17,7 @@ const database_down_url = 'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/o
 let blocked_node = "";
 
 function debug_log(input){
-    let debug = true;
+    let debug = false;
     if(debug){
         console.log(input);
     }
@@ -384,7 +384,7 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                 if(previous_node.have_previous){
                     const blocked_pov = await dir_string_to_ENUM(previous_node.blocked_pov);
                     const incoming_pov = await get_opposite(blocked_pov);
-                    nodes[0] += incoming_pov;
+                    nodes[0] += incoming_pov;                    
                     const incoming_pov_angle = await convert_ENUM_to_angle(incoming_pov);
                     const arrow = await get_arrow_dir(incoming_pov_angle , directions[0]);
                     nodes[0] += arrow;
@@ -393,10 +393,11 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                 }
                 Instructions.push('');
                 let directions_array_len = directions.length;
+
                 for(i = 1 ; i < directions_array_len ; i ++){
                     
                     let is_up_down = await is_moving_up_down(directions[i-1] , directions[i]);
-                    if((directions[i-1] == directions[i] && parseInt(dist_array[i-1]) <= 100) || is_up_down){//is_up_down
+                    if((directions[i-1] == directions[i] && parseInt(dist_array[i-1]) <= 80) || is_up_down){//is_up_down
                         do{
                             nodes.splice(i,1);
                             directions.splice(i,1);
@@ -517,7 +518,7 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                 for(i = 1 ; i < directions_array_len ; i ++){
                     
                     let is_up_down = await is_moving_up_down(directions[i-1] , directions[i]);
-                    if((directions[i-1] == directions[i] && parseInt(dist_array[i-1]) <= 100) || is_up_down){
+                    if((directions[i-1] == directions[i] && parseInt(dist_array[i-1]) <= 80) || is_up_down){
                         
                         do{
                             nodes.splice(i,1);
@@ -634,6 +635,21 @@ async function is_failed_location(source , destination){
     */
 }
 
+async function get_filepath_from_link(link_input){
+    let temp = link_input.split('/');
+    let filepath = temp.slice(8).join('/');
+    return filepath;
+}
+
+async function get_b4_blocked_unique_id_from_array(unique_id , array){
+    for(let i = 0 ; i < array.length ; i++){
+        if(array[i] == unique_id){
+            return array[i-1];
+        }
+    }
+    return "";
+}
+
 class Result{
     constructor(){
         this.Expected = 0;
@@ -643,7 +659,7 @@ class Result{
         this.Dist_array = [] ;
         this.nodes_path = [] ;
         this.Stops_index = [] ;
-        this.Instructions = [] ; 
+        this.Instructions = [] ;
         this.passed = true ;
     }
 
@@ -670,7 +686,7 @@ class Result{
             Dist_array : this.Dist_array ,
             nodes_path : this.nodes_path , 
             Stops_index : this.Stops_index , 
-            Instructions : this.Instructions , 
+            Instructions : this.Instructions ,
             passed : this.passed
         }
     }
@@ -881,6 +897,7 @@ router.post('/formPost' , async (req ,res) => {
 router.post('/blockRefresh' , async (req ,res) => { 
     
     const inputData = req.body;
+    debug_log(inputData.unique_id_array)
     let destinations = inputData.MultiStopArray;
     if(inputData.MultiStopArray.length < 2){
         //debug_log("data incorrectly labelled or source and destination not filled"); 
@@ -900,10 +917,11 @@ router.post('/blockRefresh' , async (req ,res) => {
             inputData.Stops_index.splice(0,1);
         }
         destinations.splice(0,1);
-        //console.log(inputData.b4_blocked_img_path);
-        const previous_node_component = await break_down_img_path(inputData.b4_blocked_img_path);
-        destinations.unshift(parseInt(previous_node_component.node_id));
+
         blocked_node_component = await break_down_img_path(inputData.blocked_img_path);
+        const b4_blocked_node_id = await get_b4_blocked_unique_id_from_array(blocked_node_component.node_id , inputData.Node_id_array);
+        destinations.unshift(parseInt(b4_blocked_node_id));
+        
         debug_log("destinations are : " , destinations);
         let blocked_array = await get_blocked();
         for(let i = 0 ; i < inputData.blocked_array.length ; i++){
@@ -940,7 +958,7 @@ router.post('/blockRefresh' , async (req ,res) => {
                 result = await transit_query(destinations[i-1] , destinations[i] , mergedArray , no_previous);
             }
             await TotalResult.add(result);
-            
+
             if(i == destinations.length - 1){
                 TotalResult.append_stops(TotalResult.Expected - 1);
             }else{
@@ -1075,6 +1093,26 @@ router.post('/getfloor' , async (req , res) => {
         });
     });
 
+});
+
+router.post('/convert_unique_id_filename' , async(req , res) => {
+    const inputData = req.body;
+    
+    try {
+        let filepath = "";
+        const { data, error } = await supabase
+            .from('pictures')
+            .select('filepath')
+            .eq('unique_id', inputData.unique_id);
+
+            filepath = await get_filepath_from_link(data[0].filepath);
+        if (error) {
+            throw error;
+        }
+        res.send({filepath : filepath});
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
 const storage = multer.diskStorage({
@@ -1398,6 +1436,8 @@ router.post('/full_query' , async (req , res) => {
         console.error('Error occurred:', error);
     }
 });
+
+
 
 
 module.exports = router;
