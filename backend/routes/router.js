@@ -650,6 +650,11 @@ async function get_b4_blocked_unique_id_from_array(unique_id , array){
     return "";
 }
 
+async function remove_weburl(filepath){
+    const components = filepath.split("/");
+    return components[components.length - 1];
+}
+
 class Result{
     constructor(){
         this.Expected = 0;
@@ -1114,6 +1119,29 @@ router.post('/convert_unique_id_filename' , async(req , res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
+router.post('/get_image_links' , async(req, res) => {
+    const link_array = [];
+  
+    try {
+      const { data, error } = await supabase
+        .from('image_links')
+        .select('*')
+        
+        for(let result of data){
+            img_name = await remove_weburl(result.filepath);
+            link_array.push(`${img_name}`);
+        };
+
+        if (error) {
+            throw error;
+        }
+
+        res.send({link_array : link_array});
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+})
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
