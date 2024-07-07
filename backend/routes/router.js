@@ -4,7 +4,7 @@ const { spawn } = require('child_process');
 require('dotenv/config')
 const multer = require('multer');
 const path = require('path');
-
+const { decode } = require('base64-arraybuffer')
 const { createClient } = require('@supabase/supabase-js');
 const { fail } = require('assert');
 const { totalmem } = require('os');
@@ -1143,31 +1143,54 @@ router.post('/get_image_links' , async(req, res) => {
     }
 })
 
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-      cb(null, 'uploads/'); // Directory where uploaded files will be stored
-    },
-    filename: function (req, file, cb) {
-        const ext = path.extname(file.originalname);
-        cb(null, blocked_node + ext);
-    }
-});
-  
+const storage = multer.memoryStorage();
+
 const upload = multer({ storage: storage });
 
-//////////////////////////////////////////////////////////////////////////////
-///////////////////////function testing region////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////
-router.post('/blocked_img', upload.single('photo'), (req, res) => {
+router.post('/blocked_img', upload.single('photo'), async(req, res) => {
     try {
-      // File is uploaded successfully, you can process further if needed
-      debug_log('image uploaded:', req.file);
-      res.status(200).send('Image uploaded successfully, thank you for helping make NavEng up to date for users');
+
+        const file = req.file;
+        const fileBase64 = decode(file.buffer.toString("base64"));
+        
+        const { data, error } = await supabase
+            .storage
+            .from('Pictures')
+            .upload(`Block_uploads/${file.originalname}`, fileBase64, {
+                contentType: file.mimetype,
+            });
+
+        if(error){
+            throw error;
+        }
+
+        const { data: image } = supabase.storage
+            .from("Pictures")
+            .getPublicUrl(data.path);
+
+
+        try{
+            const components = await break_down_img_path(file.originalname);
+
+            const { error } = await supabase
+                .from('blocked_image')
+                .insert([{ node_id : components.node_id , filepath : image.publicUrl }]);
+            if (error) {
+                throw error;
+            }
+        }catch(error){
+
+        }
+
+        res.status(200).send('Image uploaded successfully, thank you for helping make NavEng up to date for users');
     } catch (err) {
-      console.error('Error uploading image:', err);
       res.status(500).send('Error uploading image');
     }
 });
+//////////////////////////////////////////////////////////////////////////////
+///////////////////////function testing region////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+
 
 router.post('/template_img' , async (req , res) => {
     const inputs = req.body.Input;
