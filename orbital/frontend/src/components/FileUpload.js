@@ -3,9 +3,19 @@ import React, { useState } from 'react';
 import axios from "axios"
 import { Button, Grid, Typography } from '@mui/material';
 
+
 const FileUpload = () => {
+
   const [selectedFile, setSelectedFile] = useState(null);
   const [message, setMessage] = useState('');
+
+  const Local = process.env.REACT_APP_LOCAL;
+  let websitelink = ""
+  if (Local == "true") {
+    websitelink = "http://localhost:4000"
+  } else {
+    websitelink = "https://naveng-backend-vercel.vercel.app"
+  }
 
   const handleFileChange = (event) => {
     setSelectedFile(event.target.files[0]);
@@ -20,7 +30,7 @@ const FileUpload = () => {
   
     try {
       // Make the POST request using axios
-      const response = await axios.post("http://localhost:4000/blocked_img", formData);
+      const response = await axios.post(websitelink + '/blocked_img', formData);
   
       // Handle the response data
       setMessage(response.data);
