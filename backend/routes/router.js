@@ -398,7 +398,7 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                 for(i = 1 ; i < directions_array_len ; i ++){
                     
                     let is_up_down = await is_moving_up_down(directions[i-1] , directions[i]);    
-                    if((directions[i-1] == directions[i] && parseInt(dist_array[i-1]) <= 80) || is_up_down){//is_up_down
+                    if((directions[i-1] == directions[i] && (parseInt(dist_array[i-1]) + parseInt(dist_array[i])) <= 80) || is_up_down){//is_up_down
                         do{
                             nodes.splice(i,1);
                             
@@ -412,7 +412,7 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                             dist_array[i-1] = `${parseInt(dist_array[i-1]) + parseInt(dist_array.splice(i,1))}`;
                             directions_array_len --;
                             is_up_down = await is_moving_up_down(directions[i-1] , directions[i]);
-                        }while((directions[i-1] == directions[i] && parseInt(dist_array[i-1]) <= 80) || is_up_down)
+                        }while((directions[i-1] == directions[i] && (parseInt(dist_array[i-1]) + parseInt(dist_array[i])) <= 80) || is_up_down)
                         Instructions[i-1].levels = parseInt(dist_array[i-1])/40;
                         Instructions[i-1].distance = dist_array[i-1];
                         i--;
@@ -530,7 +530,7 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                 for(i = 1 ; i < directions_array_len ; i ++){
                     
                     let is_up_down = await is_moving_up_down(directions[i-1] , directions[i]);
-                    if((directions[i-1] == directions[i] && parseInt(dist_array[i-1]) <= 80) || is_up_down){
+                    if((directions[i-1] == directions[i] && (parseInt(dist_array[i-1]) + parseInt(dist_array[i])) <= 80) || is_up_down){
                         
                         do{
                             nodes.splice(i,1);
@@ -545,7 +545,7 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                             dist_array[i-1] = `${parseInt(dist_array[i-1]) + parseInt(dist_array.splice(i,1))}`;
                             directions_array_len --;
                             is_up_down = await is_moving_up_down(directions[i-1] , directions[i]);
-                        }while((directions[i-1] == directions[i] && parseInt(dist_array[i-1]) <= 80) || is_up_down)
+                        }while((directions[i-1] == directions[i] && (parseInt(dist_array[i-1]) + parseInt(dist_array[i])) <= 80) || is_up_down)
                         Instructions[i-1].levels = parseInt(dist_array[i-1])/40;
                         Instructions[i-1].distance = dist_array[i-1];
                         i--;
