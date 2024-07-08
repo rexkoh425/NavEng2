@@ -375,7 +375,7 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                 if(nodes.length == 1){
                     throw new Error("cannot find dest");
                 }
-                const nodes_path = [...nodes];
+                let nodes_path = [...nodes];
                 const directions = outputData[1].split(",");
                 let distance = outputData[2];
                 let dist_array = outputData[3].split(",");
@@ -393,18 +393,26 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                 }
                 Instructions.push('');
                 let directions_array_len = directions.length;
+                let splice_count = 0;
 
                 for(i = 1 ; i < directions_array_len ; i ++){
                     
-                    let is_up_down = await is_moving_up_down(directions[i-1] , directions[i]);
+                    let is_up_down = await is_moving_up_down(directions[i-1] , directions[i]);    
                     if((directions[i-1] == directions[i] && parseInt(dist_array[i-1]) <= 80) || is_up_down){//is_up_down
                         do{
                             nodes.splice(i,1);
+                            
+                            if(is_up_down){
+                                nodes_path.splice(i + splice_count,1);
+                            }else{
+                                splice_count ++;
+                            }
+                            
                             directions.splice(i,1);
                             dist_array[i-1] = `${parseInt(dist_array[i-1]) + parseInt(dist_array.splice(i,1))}`;
                             directions_array_len --;
                             is_up_down = await is_moving_up_down(directions[i-1] , directions[i]);
-                        }while((directions[i-1] == directions[i] && parseInt(dist_array[i-1]) <= 100) || is_up_down)
+                        }while((directions[i-1] == directions[i] && parseInt(dist_array[i-1]) <= 80) || is_up_down)
                         Instructions[i-1].levels = parseInt(dist_array[i-1])/40;
                         Instructions[i-1].distance = dist_array[i-1];
                         i--;
@@ -423,6 +431,9 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                 }
                 nodes[directions.length] += "67";
                 Instructions.push('');
+                debug_log("nodes_path");
+                debug_log(nodes_path);
+                debug_log("nodes : ");
                 debug_log(nodes);
                 debug_log(directions);
                 
@@ -515,6 +526,7 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                 }
                 Instructions.push('');
                 let directions_array_len = directions.length;
+                let splice_count = 0;
                 for(i = 1 ; i < directions_array_len ; i ++){
                     
                     let is_up_down = await is_moving_up_down(directions[i-1] , directions[i]);
@@ -522,11 +534,18 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                         
                         do{
                             nodes.splice(i,1);
+                            
+                            if(is_up_down){
+                                nodes_path.splice(i + splice_count,1);
+                            }else{
+                                splice_count ++;
+                            }
+
                             directions.splice(i,1);
                             dist_array[i-1] = `${parseInt(dist_array[i-1]) + parseInt(dist_array.splice(i,1))}`;
                             directions_array_len --;
                             is_up_down = await is_moving_up_down(directions[i-1] , directions[i]);
-                        }while((directions[i-1] == directions[i] && parseInt(dist_array[i-1]) <= 100) || is_up_down)
+                        }while((directions[i-1] == directions[i] && parseInt(dist_array[i-1]) <= 80) || is_up_down)
                         Instructions[i-1].levels = parseInt(dist_array[i-1])/40;
                         Instructions[i-1].distance = dist_array[i-1];
                         i--;

@@ -557,6 +557,7 @@ describe('Testing whether location pairs output correct number of pictures', fun
             let locations = response.body;
             let no_of_locations = locations.length;
             let test_cases = no_of_locations * (no_of_locations - 1);
+            
             const tasks = [];
             let result = new TestResult(test_cases);
             //NOTE SET DEBUG = FALSE IN DEBUG_LOG() FUNCTION IN ROUTER.JS BEFORE STARTING TEST
