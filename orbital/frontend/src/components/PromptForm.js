@@ -204,7 +204,6 @@ function PromptForm() {
             console.log("increment Visited: " + visited) */
           const newVisited = nodesPath.slice(0, arrayposition + 2)
           setVisited(newVisited)
-          console.log("visited: " + visited)
         }
         if (arrayposition === (arrayFromString.length - 3)) {
             setDisableRightButton(true)

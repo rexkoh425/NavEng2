@@ -548,7 +548,7 @@ function PromptFormMobile() {
                     <Button variant="contained" type="submit" onClick={handleSubmit} sx={{ bgcolor: "#cdd8e6", "&:hover": { bgcolor: "#F05C2C" }, }}>Submit</Button>
                     <br></br>
                     <br></br>
-                    <Instructions></Instructions>
+                    <Instructions formSubmitted={formSubmitted}></Instructions>
                 </center>
             </form>
             <br></br>

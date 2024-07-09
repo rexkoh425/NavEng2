@@ -20,7 +20,6 @@ const TopDownMap = ({ nodes, visited, originNodeId, nodesPath, stopsIndex, submi
   const nodesForStopsString = stopsIndex.map(index => nodesPath[index]);
   const nodesForStops = nodesForStopsString.map(num => parseInt(num, 10));
   const visitedNum = visited.map(num => parseInt(num, 10));
-  console.log("nodes for stops: " + nodesForStops)
   const path = nodesPath.map(num => parseInt(num, 10));
   const calculateNodePositions = (originNodeId) => {
     const calculatedPositions = new Map();
@@ -77,9 +76,10 @@ const TopDownMap = ({ nodes, visited, originNodeId, nodesPath, stopsIndex, submi
 
   //const [nodePositions, setNodePositions] = useState(new Map());
   const nodePositions = calculateNodePositions(originNodeId);
-
+/*
   console.log('nodePositions:', nodePositions); // Log nodePositions for debugging
   console.log('visited: ' + visitedNum)
+  */
 
   return (
     <>

@@ -1063,7 +1063,6 @@ router.post('/getfloor' , async (req , res) => {
                 FullMapObj.push(MapObj);   
             })
             res.send(FullMapObj);
-            console.log(FullMapObj)
 
         }catch(error){
             
