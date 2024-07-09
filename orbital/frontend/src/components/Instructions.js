@@ -4,8 +4,8 @@ import IconButton from '@mui/material/IconButton';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Hidden } from '@mui/material';
 
-const Instructions = () => {
-    const [expanded, setExpanded] = useState(false);
+const Instructions = ({formSubmitted}) => {
+    const [expanded, setExpanded] = useState(true);
     const [arrowRotation, setArrowRotation] = useState(0);
    const [isMobile, setIsMobile] = useState(false);
 
@@ -23,7 +23,8 @@ const Instructions = () => {
     };
   }, []);
 
-  useEffect(() => {
+  //No longer used, as auto closure is enabled
+  /*useEffect(() => {
     if (isMobile) {
       console.log("Mobile")
       setArrowRotation(180)
@@ -32,8 +33,15 @@ const Instructions = () => {
       console.log("Desktop")
       setArrowRotation(0)
       setExpanded(true)
-     }
-  }, [isMobile])
+     } 
+  }, [isMobile]) */
+
+  useEffect(() => {
+    if (formSubmitted) {
+      setArrowRotation(180)
+      setExpanded(false)
+    }
+  })
 
     const toggleExpanded = () => {
         setExpanded(!expanded);
