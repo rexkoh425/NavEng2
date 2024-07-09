@@ -322,17 +322,17 @@ async function dir_string_to_ENUM(input){
 async function angle_to_string_dir(input){
     switch(input){
         case '0' : 
-            return "North";
+            return "north";
         case '90' : 
-            return "East";
+            return "east";
         case '180' : 
-            return "South";
+            return "south";
         case '-90' : 
-            return "West";
+            return "west";
         case '45' : 
-            return "Up";
+            return "up";
         case '-45' : 
-            return "Down";
+            return "down";
         default :
             return "cannot convert"
     }
@@ -399,6 +399,7 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                     if(is_up_down){//directions[i-1] == directions[i]
                         do{
                             nodes.splice(i,1);
+                            nodes_path.splice(i,1);
                             directions.splice(i,1);
                             dist_array[i-1] = `${parseInt(dist_array[i-1]) + parseInt(dist_array.splice(i,1))}`;
                             directions_array_len --;
@@ -521,6 +522,7 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                         
                         do{
                             nodes.splice(i,1);
+                            nodes_path.splice(i,1);
                             directions.splice(i,1);
                             dist_array[i-1] = `${parseInt(dist_array[i-1]) + parseInt(dist_array.splice(i,1))}`;
                             directions_array_len --;
@@ -983,6 +985,7 @@ router.post('/insertBlocked' , async (req ,res ) => {
 
 router.post('/getfloor' , async (req , res) => {
     const inputData = req.body.node_id; //assume its node id
+    console.log(inputData)
     let targeted_z = 0;
     let nodes_with_same_z = new Set();
     let node_label_map = {};
@@ -1038,7 +1041,7 @@ router.post('/getfloor' , async (req , res) => {
             await outputData.forEach(async node_data => {
                 let MapObj = {
                     id : 0 ,
-                    connnections : [] ,
+                    connections : [] ,
                     label : ''
                 }
 
@@ -1055,11 +1058,13 @@ router.post('/getfloor' , async (req , res) => {
                         distance : parseInt(edge_data[1]),
                         direction : direction
                     }
-                    MapObj.connnections.push(EdgeObj);
+                    MapObj.connections.push(EdgeObj);
                 })
-                FullMapObj.push(MapObj);
+                FullMapObj.push(MapObj);   
             })
             res.send(FullMapObj);
+            console.log(FullMapObj)
+
         }catch(error){
             
         }
