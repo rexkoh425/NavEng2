@@ -25,6 +25,7 @@ for file_name in os.listdir(folder_path):
         node_id = parts[0]
         pov_value = parts[4]
         query = table.select("direction").filter("pov", "eq", pov_value).filter("node_id", "eq", node_id)
+        have_data = False
         try:
         # Execute the query
             response = query.execute()
@@ -32,7 +33,7 @@ for file_name in os.listdir(folder_path):
 
             if data:
                 arrow_directions = [row['direction'] for row in data]
-                print("Retrieved arrow directions:", arrow_directions)
+                #print("Retrieved arrow directions:", arrow_directions)
             else:
                 print("No Data Returned")
         except Exception as e:
@@ -41,6 +42,7 @@ for file_name in os.listdir(folder_path):
 
         for i in arrow_directions:
             if i != "None":
+                have_data = True
                 background = Image.open(img_file_path)
                 arrow_path = i + arrow_directory
                 foreground = Image.open(arrow_path)
@@ -73,6 +75,9 @@ for file_name in os.listdir(folder_path):
                     output_path = os.path.join("./processedImages", modified_file_name)
                     background.save(output_path)
                     print(node_id)
-                    print(pov_value)
-
+                    #print(pov_value)
+        
+        if(have_data):
+            if os.path.exists(img_file_path):
+                os.remove(img_file_path)
         

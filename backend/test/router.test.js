@@ -15,6 +15,7 @@ async function CheckLocation(receivedData) {
             .timeout({ deadline: 3000 });
 
         let data = res.body;
+
         data['source'] = receivedData.MultiStopArray[0];
         data['destination'] = receivedData.MultiStopArray[1];
         if (data['passed'] && data['Expected'] !== data['Queried']){
@@ -44,7 +45,7 @@ async function CheckBlockedLocation(receivedData) {
         if (data['passed'] && data['Expected'] !== data['Queried']){
             console.log(data['Expected']);
             console.log(data['Queried']);
-            console.log(`${receivedData.MultiStopArray[0]} to ${receivedData.MultiStopArray[1]} : failed`);
+            console.log(`${receivedData.MultiStopArray[0]} to ${receivedData.MultiStopArray[1]} : with blocking failed`);
             data['passed'] = false;
         }
         return data;
@@ -569,13 +570,13 @@ describe('Testing whether location pairs output correct number of pictures', fun
                         
                         tasks.push(async () => {  
                             const non_block_result = await performTest([source , destination] , []);
-                            
-                            result.incre_non_block_pass();
-                            
-                            const blocked = await choose_middle_blocked(non_block_result.HTML);
-                            
+                            let blocked = {blocked_filepath : '' , index : 0}
+                            if(non_block_result.passed || non_block_result.error_can_handle){
+                                result.incre_non_block_pass();
+                                blocked = await choose_middle_blocked(non_block_result.HTML);
+                            }
                             let block_result = {HTML : "" , passed : true , error_can_handle : false}; 
-                            //console.log(blocked);
+                            
                             if(blocked.blocked_filepath != ''){
                                 block_result = await performBlockedTest([source , destination] , blocked , non_block_result);
                             }
@@ -591,7 +592,7 @@ describe('Testing whether location pairs output correct number of pictures', fun
                 }
             }
 
-            await limitConcurrency(tasks, 10); // Adjust the concurrency limit as necessary
+            await limitConcurrency(tasks, 15); // Adjust the concurrency limit as necessary
 
             try {
                 await request(app).post('/DeleteFailedLocations');

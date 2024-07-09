@@ -57,15 +57,14 @@ describe('test one path only', function(){
 */
 describe('test full_query', function(){
 
-    this.timeout(100000);
+    this.timeout(500000);
     it('full_query', async function(){
-        const input = {unique_id : 1547}  ;
+        
         try {
             const response = await request(app)
-            .post('/convert_unique_id_filename')
-            .send(input)
+            .post('/convert__to_-')
 
-            console.log(response.body.filepath);
+            //console.log(response.body);
         } catch(error){
             throw error;
         }

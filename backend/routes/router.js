@@ -431,8 +431,6 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                 }
                 nodes[directions.length] += "67";
                 Instructions.push('');
-                debug_log("nodes_path");
-                debug_log(nodes_path);
                 debug_log("nodes : ");
                 debug_log(nodes);
                 debug_log(directions);
@@ -914,7 +912,7 @@ router.post('/formPost' , async (req ,res) => {
     }
     
     await TotalResult.convert_to_instructions();
-    debug_log(TotalResult.Instructions);
+    //debug_log(TotalResult.Instructions);
     return res.send(TotalResult.get_object());
 });
 
@@ -1160,7 +1158,7 @@ router.post('/get_image_links' , async(req, res) => {
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
-})
+});
 
 const storage = multer.memoryStorage();
 
@@ -1182,7 +1180,8 @@ router.post('/blocked_img', upload.single('photo'), async(req, res) => {
         if(error){
             throw error;
         }
-
+        console.log("data.path is : ");
+        console.log(data.path);
         const { data: image } = supabase.storage
             .from("Pictures")
             .getPublicUrl(data.path);
@@ -1205,6 +1204,60 @@ router.post('/blocked_img', upload.single('photo'), async(req, res) => {
     } catch (err) {
       res.status(500).send('Error uploading image');
     }
+});
+
+router.post('/convert__to_-' , async(req, res) => {
+    try{
+        let image_links = [];
+        const folder_name = "test";
+        const { data, error } = await supabase
+            .storage
+            .from('Pictures')
+            .list(`${folder_name}`, {
+                limit: 500 ,
+                offset: 0,
+                sortBy: { column: 'name', order: 'asc' }
+            })
+            
+        if(error){ throw error } 
+        
+        for(let objs of data){
+            let img_name = objs.name;
+            image_links.push(img_name);
+        }
+        
+        let new_name = "";
+        for(let name of image_links){
+            const old_name = name;
+            name = name.split("_");
+            for(let i = 0 ; i < name.length ; i++){
+                if(name[i] == 'Room'){
+                    let last_comp = name.splice(name.length - 3 , 3);
+                    last_comp = last_comp.join("-");
+                    name.push(last_comp);
+                }
+            }
+            for(let i = 0 ; i < name.length ; i++){
+                if(name[i] == ''){
+                    name.splice(i,1);
+                    name[i] = "-" + name[i];
+                    new_name = name.join("_");
+                    break;
+                }
+            }
+            console.log(`${old_name} to ${new_name}`);
+            const { data, error } = await supabase
+            .storage
+            .from('Pictures')
+            .move(`${folder_name}/${old_name}`, `test1/${new_name}`);
+
+            if(error){ throw error } 
+            res.send("done");
+        }
+    }catch(error){
+        res.send(error);
+    }
+    
 });
 //////////////////////////////////////////////////////////////////////////////
 ///////////////////////function testing region////////////////////////////////
