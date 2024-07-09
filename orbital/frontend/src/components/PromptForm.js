@@ -22,16 +22,18 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import Instructions from "./Instructions";
 import DestinationNotification from "./DestinationNotification";
+import TopDownMap from "./TopDownMap";
+import GraphVisualization from "./GraphVisualization";
 
 
 function PromptForm() {
 
-    const [sourceLocation, setSourceLocation] = useState('')
-    const [destinationLocation, setDestinationLocation] = useState('')
+    const [sourceLocation, setSourceLocation] = useState('') //Source Location for pathfinding
+    const [destinationLocation, setDestinationLocation] = useState('') //Last Location for pathfinding
     const [disableSubmit, setDisableSubmit] = useState(true) //Boolean to disable and enable Submit Button
     const [autocompleteFields, setAutocompleteFields] = useState([]); //Multistop fields
     const [MultiStopArrayDuplicate, setMultiStopArrayDuplicate] = useState([]); //Duplicate Array to store temporary Multistop Array
-    const [MultiStopArray, setMultiStopArray] = useState([]);
+    const [MultiStopArray, setMultiStopArray] = useState([]); //Multistop Array of all the stops the user requires
     const [MultiStopArrayNotification, setMultiStopArrayNotification] = useState([]);
     const [messageError, setMessageError] = useState(``) //using messageError variable for html content as well
     const [selectLocations, setSelectLocations] = useState([])
@@ -43,6 +45,7 @@ function PromptForm() {
     const [blockedMessage, setBlockedMessage] = useState(''); //Message to display whenever user blocks a node
     const [blocked, setBlocked] = useState('');
     const [blockedIMGName, setBlockedIMGName] = useState('');
+    const [blockedNodeID, setBlockedNodeID] = useState(); //Also being used as the current node
     const [disableRightButton, setDisableRightButton] = useState(false);
     const [disableLeftButton, setDisableLeftButton] = useState(true);
     const [showUpload, setShowUpload] = useState(false);
@@ -54,12 +57,17 @@ function PromptForm() {
     //const [blockedNodeIndexArray, setBlockedNodeIndexArray] = useState("")
     const [blockedArray, setBlockedArray] = useState([]); //Array of all of the nodes which were blocked by the users (In image name format: X_X_X_X_Direction_Direction_Type.jpg)
     const [stopsIndex, setStopsIndex] = useState([]);
+    const [nodesPath, setNodesPath] = useState([]);
     const [noPath, setNoPath] = useState("");
     const [showBlockConfirmation, setShowBlockConfirmation] = useState(false);
     const [hideTimeTaken, setHideTimeTaken] = useState(false)
     const [pathInstructions, setPathInstructions] = useState([])
     const [blockedIndicator, setBlockedIndicator] = useState(false)
     const [submitTrigger, setSubmitTrigger] = useState(false)
+    const [visited, setVisited] = useState(["0"])
+    const [temp, setTemp] = useState([])
+    const [graphnodes, setGraphnodes] = useState([
+      ]) 
 
     const Local = process.env.REACT_APP_LOCAL;
     let websitelink = ""
@@ -87,7 +95,6 @@ function PromptForm() {
         const imgContainer = document.createElement('div');
         imgContainer.innerHTML = arrayFromString[nextImageIndex];
         const img = imgContainer.firstChild;
-        console.log("Next image: " + arrayFromString[nextImageIndex])
     }
 
     useEffect(() => {
@@ -115,6 +122,12 @@ function PromptForm() {
             setNoPath(false); // Ensure it's false if condition is not met
         }
     }, [arrayFromString, arrayposition]);
+
+    useEffect(() => {
+        if (nodesPath && blockedNodeID) {
+            updateMap()
+        }
+    }, [nodesPath, blockedNodeID])
 
     const disableSubmitButton = (MultiStopArray) => {
         const noEmptyStrings = MultiStopArray.every(item => item !== "");
@@ -158,23 +171,26 @@ function PromptForm() {
             const parts = blocked.split('/');
             const remainder = parts.slice(8).join('/');
             const indexOfQuote = remainder.indexOf('"');
-            setBlockedIMGName(remainder.slice(0, indexOfQuote));
+            const BlockedIMGNameVariable=remainder.slice(0, indexOfQuote)
+            setBlockedIMGName(BlockedIMGNameVariable);
 
-            const beforeparts = beforeBlocked.split('/');
-            const beforeremainder = beforeparts.slice(8).join('/');
-            const beforeindexOfQuote = beforeremainder.indexOf('"');
-            const beforebeforeQuote = beforeremainder.slice(0, beforeindexOfQuote);
-            const node_string = beforebeforeQuote.split("_")[0];
+            const node_string = BlockedIMGNameVariable.split("_")[0];
             const before_node_id = parseInt(node_string);
+            setBlockedNodeID(before_node_id)
+
         }
     }, [blocked]);
 
     let beforeparts = beforeBlocked.split('/');
     let beforeremainder = beforeparts.slice(8).join('/');
     let beforeindexOfQuote = beforeremainder.indexOf('"');
-    let beforebeforeQuote = beforeremainder.slice(0, beforeindexOfQuote);
-    const node_string = beforebeforeQuote.split("_")[0];
-    const before_node_id = parseInt(node_string);
+    const beforebeforeQuote = beforeremainder.slice(0, beforeindexOfQuote);
+    let node_string = beforebeforeQuote.split("_")[0];
+    let before_node_id = parseInt(node_string);
+
+    const updateMap = () => {
+      axiosGetFloor()
+    }
 
     const incrementCounter = (e) => { //counter for image array
         e.preventDefault();
@@ -184,6 +200,10 @@ function PromptForm() {
             setBlocked(arrayFromString[arrayposition + 1])
             setBeforeBlocked(arrayFromString[arrayposition])
             setBlockedNodeIndex(arrayposition + 1)
+           /* setVisited([...visited, blockedNodeID])
+            console.log("increment Visited: " + visited) */
+          const newVisited = nodesPath.slice(0, arrayposition + 2)
+          setVisited(newVisited)
         }
         if (arrayposition === (arrayFromString.length - 3)) {
             setDisableRightButton(true)
@@ -199,6 +219,8 @@ function PromptForm() {
             setCount(arrayposition - 1);
             setBlocked(arrayFromString[arrayposition - 1])
             setBlockedNodeIndex(arrayposition - 1)
+            const newVisited = nodesPath.slice(0, arrayposition)
+            setVisited(newVisited)
             if (arrayposition !== (1)) {
                 setBeforeBlocked(arrayFromString[arrayposition - 2])
             }
@@ -240,7 +262,6 @@ function PromptForm() {
 
     const axiosFetchLocations = async (processing) => {
         await axios.post(websitelink + '/locations')
-            //await axios.post('http://localhost:4000/locations')
             .then(res => {
                 setSelectLocations(res.data)
             })
@@ -257,7 +278,6 @@ function PromptForm() {
 
         try {
             const response = await axios.post(websitelink + '/formPost', postData);
-            //const response = await axios.post("http://localhost:4000/formPost", postData);
 
 
             // Update state variables with the response data
@@ -265,9 +285,12 @@ function PromptForm() {
             setTotalDistance(response.data['Distance'] / 10);
             const distArray = response.data['Dist_array'];
             setPathInstructions(response.data['Instructions'])
+
+            setNodesPath(response.data['nodes_path'])
             setStopsIndex(response.data['Stops_index']);
             handleConvertToMetres(distArray);
             setBlockedIndicator(false)
+            setVisited(["0"])
 
             // Perform split operation inside the then block
             const arrayFromString = response.data['HTML'].split('<img src');
@@ -303,6 +326,7 @@ function PromptForm() {
             setMultiStopArray(response.data['Destinations']);
             const arrayFromString = response.data['HTML'].split('<img src');
             setBlocked(arrayFromString[1]);
+
             setPathInstructions(response.data['Instructions'])
             setBlockedIndicator(true)
             setSubmitTrigger(!submitTrigger)
@@ -310,6 +334,21 @@ function PromptForm() {
         } catch (error) {
             console.error('Error fetching data:', error);
         }
+    };
+
+    const axiosGetFloor = async () => { 
+            try {
+                let postData = {
+                    node_id: blockedNodeID
+                };
+    
+                const response = await axios.post(websitelink + '/getfloor', postData);
+                setGraphnodes(response.data)
+
+    
+            } catch (error) {
+                console.error('Error getting floor:', error);
+            }
     };
 
 
@@ -505,8 +544,9 @@ function PromptForm() {
                         <br></br>
                         {showUpload && <div><FileUpload /></div>}
                         <br></br>
-                        <Instructions></Instructions>
-
+                        <Instructions formSubmitted = {formSubmitted}></Instructions>
+                        {formSubmitted &&
+                        <TopDownMap nodes={graphnodes} visited={visited} originNodeId={blockedNodeID} nodesPath={nodesPath} stopsIndex={stopsIndex} submitTrigger={submitTrigger}></TopDownMap>}
 
 
                     </form>

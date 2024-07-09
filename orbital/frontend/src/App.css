@@ -391,3 +391,13 @@
   margin-top: 0px;
   margin-bottom: 0px;
 }
+
+.two-columns-container {
+  display: flex; /* Use flexbox */
+  align-items: flex-end;
+}
+
+.column {
+  flex: 1; /* Grow to fill available space equally */
+  padding: 2px;
+}
