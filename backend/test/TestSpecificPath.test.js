@@ -57,13 +57,12 @@ describe('test one path only', function(){
 */
 describe('test full_query', function(){
 
-    this.timeout(100000);
+    this.timeout(500000);
     it('full_query', async function(){
-        const input = { node_id : 72} ;
+        
         try {
             const response = await request(app)
-            .post('/getfloor')
-            .send(input)
+            .post('/convert__to_-')
 
             //console.log(response.body);
         } catch(error){

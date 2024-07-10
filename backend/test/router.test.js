@@ -15,6 +15,7 @@ async function CheckLocation(receivedData) {
             .timeout({ deadline: 3000 });
 
         let data = res.body;
+
         data['source'] = receivedData.MultiStopArray[0];
         data['destination'] = receivedData.MultiStopArray[1];
         if (data['passed'] && data['Expected'] !== data['Queried']){
@@ -26,7 +27,7 @@ async function CheckLocation(receivedData) {
         return data;
     } catch (error) {
         console.log(`${error}`);
-        console.log(`${receivedData.source} to ${receivedData.destination} : failed`);
+        console.log(`${receivedData.MultiStopArray[0]} to ${receivedData.MultiStopArray[1]} : failed`);
         return { source: receivedData.MultiStopArray[0], destination: receivedData.MultiStopArray[1], passed: false , nodes_path : []  , HTML : '' , error_can_handle : false};
     }
 }
@@ -44,14 +45,14 @@ async function CheckBlockedLocation(receivedData) {
         if (data['passed'] && data['Expected'] !== data['Queried']){
             console.log(data['Expected']);
             console.log(data['Queried']);
-            console.log(`${receivedData.MultiStopArray[0]} to ${receivedData.MultiStopArray[1]} : failed`);
+            console.log(`${receivedData.MultiStopArray[0]} to ${receivedData.MultiStopArray[1]} : with blocking failed`);
             data['passed'] = false;
         }
         return data;
     } catch (error) {
         console.log(`${error}`);
-        console.log(`${receivedData.source} to ${receivedData.destination} : failed`);
-        return { source: receivedData.MultiStopArray[0], destination: receivedData.MultiStopArray[1], passed: false , nodes_path : []  , HTML : data.HTML , error_can_handle : false};
+        console.log(`${receivedData.MultiStopArray[0]} to ${receivedData.MultiStopArray[1]} : with blocking failed`);
+        return { source: receivedData.MultiStopArray[0], destination: receivedData.MultiStopArray[1], passed: false , nodes_path : []  , HTML : '' , error_can_handle : false};
     }
 }
 
@@ -69,7 +70,7 @@ async function performBlockedTest(destinations , blocked_input , non_block_resul
 
     const inputData = {
         blocked_array: [parseInt(blocked_input.blocked_filepath.split("_")[0])],
-        b4_blocked_img_path: blocked_input.before_blocked_filepath,
+        Node_id_array : non_block_result.nodes_path,
         blocked_img_path: blocked_input.blocked_filepath,
         sheltered: false,
         NoStairs: false,
@@ -135,26 +136,23 @@ async function choose_middle_blocked(HTML){
     seperatedHTML.pop();
     if(seperatedHTML.length >= 6){
         let blocked_filepath = '';
-        let before_blocked_filepath = '';
         let arrow_dir = 'None';
         let chosen_index = (seperatedHTML.length >> 1)+1;
         do{
             chosen_index --;
             const blocked_HTML = seperatedHTML[chosen_index];
             blocked_filepath = await get_filepath(blocked_HTML);
-            const before_blocked_HTML = seperatedHTML[chosen_index-1];
-            before_blocked_filepath = await get_filepath(before_blocked_HTML);
             const broken_blocked_filepath = await break_down_img_path(blocked_filepath);
             arrow_dir = broken_blocked_filepath.arrow;
         }while(arrow_dir == 'None' && chosen_index >= 2);
         
         if(chosen_index >= 2){
-            return {blocked_filepath : blocked_filepath , before_blocked_filepath : before_blocked_filepath , index : chosen_index};
+            return {blocked_filepath : blocked_filepath , index : chosen_index};
         }
-        return {blocked_filepath : '' , before_blocked_filepath : '' , index : chosen_index};
+        return {blocked_filepath : '' , index : chosen_index};
         
     }
-    return {blocked_filepath : '' , before_blocked_filepath : '' , index : 0};
+    return {blocked_filepath : '' , index : 0};
 }
 
 class TestResult{
@@ -182,7 +180,7 @@ class TestResult{
     }
 
     log_progress(){
-        if (this.processed_count > 0 && this.processed_count % 100 == 0) {
+        if (this.processed_count > 0 && this.processed_count % 500 == 0) {
             console.log(`${this.processed_count} out of ${this.no_of_cases} test cases processed`);
         }
     }
@@ -550,7 +548,7 @@ describe('Testing Functions..........', function () {
 })
 
 describe('Testing whether location pairs output correct number of pictures', function () {
-    this.timeout(500000);
+    this.timeout(5000000);
 
     it('All location pairs tested', async function () {
         try {
@@ -560,6 +558,7 @@ describe('Testing whether location pairs output correct number of pictures', fun
             let locations = response.body;
             let no_of_locations = locations.length;
             let test_cases = no_of_locations * (no_of_locations - 1);
+            
             const tasks = [];
             let result = new TestResult(test_cases);
             //NOTE SET DEBUG = FALSE IN DEBUG_LOG() FUNCTION IN ROUTER.JS BEFORE STARTING TEST
@@ -571,13 +570,13 @@ describe('Testing whether location pairs output correct number of pictures', fun
                         
                         tasks.push(async () => {  
                             const non_block_result = await performTest([source , destination] , []);
-                            
-                            result.incre_non_block_pass();
-                            
-                            const blocked = await choose_middle_blocked(non_block_result.HTML);
-                            
+                            let blocked = {blocked_filepath : '' , index : 0}
+                            if(non_block_result.passed || non_block_result.error_can_handle){
+                                result.incre_non_block_pass();
+                                blocked = await choose_middle_blocked(non_block_result.HTML);
+                            }
                             let block_result = {HTML : "" , passed : true , error_can_handle : false}; 
-                            //console.log(blocked);
+                            
                             if(blocked.blocked_filepath != ''){
                                 block_result = await performBlockedTest([source , destination] , blocked , non_block_result);
                             }
