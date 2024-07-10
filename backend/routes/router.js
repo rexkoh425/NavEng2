@@ -664,7 +664,10 @@ async function get_filepath_from_link(link_input){
 async function get_b4_blocked_unique_id_from_array(unique_id , array){
     for(let i = 0 ; i < array.length ; i++){
         if(array[i] == unique_id){
-            return array[i-1];
+            if(i-1 >= 0){
+                return array[i-1];
+            }
+            return  "";
         }
     }
     return "";
@@ -944,7 +947,15 @@ router.post('/blockRefresh' , async (req ,res) => {
         destinations.splice(0,1);
 
         blocked_node_component = await break_down_img_path(inputData.blocked_img_path);
+
+        if(blocked_node_component.type == 'Room'){
+            return res.send({HTML : template_img(no_alt_path_url) , passed : false , error_can_handle : false});
+        }
+        
         const b4_blocked_node_id = await get_b4_blocked_unique_id_from_array(blocked_node_component.node_id , inputData.Node_id_array);
+        if(b4_blocked_node_id == ""){
+            return res.send({HTML : template_img(no_alt_path_url) , passed : false , error_can_handle : false});
+        }
         destinations.unshift(parseInt(b4_blocked_node_id));
         
         debug_log("destinations are : " , destinations);
