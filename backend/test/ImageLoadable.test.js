@@ -1,81 +1,80 @@
 
-import { use, expect } from 'chai'
-import chaiHttp from 'chai-http'
-const chai = use(chaiHttp)
-
-describe('Image Check Test', function() {
-  it('should check image', function(done) {
-    chai.request('https://upload.wikimedia.org')
-      .get('/wikipedia/commons/5/51/Google.png')
-      .end(function(err, res) {
-        expect(res).to.have.status(200);
-        done(err); // Call done with err to propagate any errors
-      });
-  });
-});
+const request = require('supertest');
+const app = require('../app');
+const { filter } = require('async');
+  
+// Replace with your server URL
+const serverUrl = 'https://bdnczrzgqfqqcoxefvqa.supabase.co'; 
+const folders  = '/storage/v1/object/public/Pictures/';
 
 
 
+if (global.gc) {
+  global.gc(); // Expose garbage collection if enabled
+} else {
+  console.warn('No GC hook! Start your program with `node --expose-gc file.js`.');
+}
 
+async function limitConcurrency(tasks, limit) {
+  const results = [];
+  const executing = [];
 
+  for (const task of tasks) {
+      const p = Promise.resolve().then(() => task());
+      results.push(p);
 
+      if (limit <= tasks.length) {
+          const e = p.then(() => executing.splice(executing.indexOf(e), 1));
+          executing.push(e);
+          if (executing.length >= limit) {
+              await Promise.race(executing);
+          }
+      }
+  }
 
+  return Promise.all(results);
+}
 
+describe('Image Loadability Test', async function() {
+  this.timeout(500000);
 
+  it('should load the image correctly', async function() {
+    try {
+      const response = await request(app)
+        .post('/get_image_links');
 
+      const link_array = response.body.link_array;
+      const error_links = [];
+      let passed = 0;
+      const tasks = [];
+      
+      for(let link of link_array){
+        tasks.push(async () => {
+          try {
+            const res = await request(serverUrl)
+              .get(folders + link)
+            if(res.status == 200){
+              passed++;
+            }else{
+              //console.log(res.status);
+              throw Error("not valid");
+            }
+          } catch (err) {
+            error_links.push(serverUrl + folders + link);
+          }
 
+          if (global.gc) {
+            global.gc();
+          }
+        });
+      }
 
+      await limitConcurrency(tasks, 50); 
+      console.log(error_links);
+      console.log(`${error_links.length} out of ${link_array.length} images were not correct`);
 
-
-
-
-
-
-
-
-/*
-const { JSDOM } = require('jsdom');
-const assert = require('assert');
-
-describe('Image Load Test', function() {
-  let window;
-
-  before(function() {
-    try{
-        const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>');
-        window = dom.window;
-        global.document = window.document;
-        global.Image = window.Image; // Mock Image object in Node.js environment
-    }catch(error){
-        console.log(error);
+    } catch (error) {
+      throw error;
     }
   });
-
-  it('should load an image successfully', function(done) {
-    this.timeout(5000); // Extend the timeout if necessary
-
-    const imageUrl = 'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/100_230_140_200_North_North_Lane_NIL.jpg?t=2024-07-03T08%3A02%3A28.268Z';
-
-    const img = new Image();
-
-    img.onload = function() {
-      console.log("called");
-      assert.strictEqual(img.width > 0, true); // Example assertion
-      done(); // Call done to indicate test completion
-    };
-
-    img.onabort = function() {
-        console.error('Image load aborted');
-        done(new Error('Image load aborted'));
-    };
-
-    img.src = imageUrl;
-  });
-
-  after(function() {
-    delete global.document;
-    delete global.Image;
-    window.close();
-  });
 });
-*/

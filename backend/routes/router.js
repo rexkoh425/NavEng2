@@ -4,7 +4,7 @@ const { spawn } = require('child_process');
 require('dotenv/config')
 const multer = require('multer');
 const path = require('path');
-
+const { decode } = require('base64-arraybuffer')
 const { createClient } = require('@supabase/supabase-js');
 const { fail } = require('assert');
 const { totalmem } = require('os');
@@ -334,7 +334,7 @@ async function angle_to_string_dir(input){
         case '-45' : 
             return "down";
         default :
-            return "cannot convert"
+            return "cannot convert";
     }
 }
 
@@ -375,7 +375,7 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                 if(nodes.length == 1){
                     throw new Error("cannot find dest");
                 }
-                const nodes_path = [...nodes];
+                let nodes_path = [...nodes];
                 const directions = outputData[1].split(",");
                 let distance = outputData[2];
                 let dist_array = outputData[3].split(",");
@@ -384,7 +384,7 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                 if(previous_node.have_previous){
                     const blocked_pov = await dir_string_to_ENUM(previous_node.blocked_pov);
                     const incoming_pov = await get_opposite(blocked_pov);
-                    nodes[0] += incoming_pov;
+                    nodes[0] += incoming_pov;                    
                     const incoming_pov_angle = await convert_ENUM_to_angle(incoming_pov);
                     const arrow = await get_arrow_dir(incoming_pov_angle , directions[0]);
                     nodes[0] += arrow;
@@ -393,18 +393,26 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                 }
                 Instructions.push('');
                 let directions_array_len = directions.length;
+                let splice_count = 0;
+
                 for(i = 1 ; i < directions_array_len ; i ++){
                     
-                    let is_up_down = await is_moving_up_down(directions[i-1] , directions[i]);
-                    if(is_up_down){//directions[i-1] == directions[i]
+                    let is_up_down = await is_moving_up_down(directions[i-1] , directions[i]);    
+                    if((directions[i-1] == directions[i] && (parseInt(dist_array[i-1]) + parseInt(dist_array[i])) <= 80) || is_up_down){//is_up_down
                         do{
                             nodes.splice(i,1);
-                            nodes_path.splice(i,1);
+                            
+                            if(is_up_down){
+                                nodes_path.splice(i + splice_count,1);
+                            }else{
+                                splice_count ++;
+                            }
+                            
                             directions.splice(i,1);
                             dist_array[i-1] = `${parseInt(dist_array[i-1]) + parseInt(dist_array.splice(i,1))}`;
                             directions_array_len --;
                             is_up_down = await is_moving_up_down(directions[i-1] , directions[i]);
-                        }while(is_up_down)
+                        }while((directions[i-1] == directions[i] && (parseInt(dist_array[i-1]) + parseInt(dist_array[i])) <= 80) || is_up_down)
                         Instructions[i-1].levels = parseInt(dist_array[i-1])/40;
                         Instructions[i-1].distance = dist_array[i-1];
                         i--;
@@ -423,6 +431,7 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                 }
                 nodes[directions.length] += "67";
                 Instructions.push('');
+                debug_log("nodes : ");
                 debug_log(nodes);
                 debug_log(directions);
                 
@@ -515,19 +524,25 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                 }
                 Instructions.push('');
                 let directions_array_len = directions.length;
+                let splice_count = 0;
                 for(i = 1 ; i < directions_array_len ; i ++){
                     
                     let is_up_down = await is_moving_up_down(directions[i-1] , directions[i]);
-                    if(is_up_down){
+                    if((directions[i-1] == directions[i] && (parseInt(dist_array[i-1]) + parseInt(dist_array[i])) <= 80) || is_up_down){
                         
                         do{
                             nodes.splice(i,1);
-                            nodes_path.splice(i,1);
+                            
+                            if(is_up_down){
+                                nodes_path.splice(i + splice_count,1);
+                            }else{
+                                splice_count ++;
+                            }
                             directions.splice(i,1);
                             dist_array[i-1] = `${parseInt(dist_array[i-1]) + parseInt(dist_array.splice(i,1))}`;
                             directions_array_len --;
                             is_up_down = await is_moving_up_down(directions[i-1] , directions[i]);
-                        }while(is_up_down)
+                        }while((directions[i-1] == directions[i] && (parseInt(dist_array[i-1]) + parseInt(dist_array[i])) <= 80) || is_up_down)
                         Instructions[i-1].levels = parseInt(dist_array[i-1])/40;
                         Instructions[i-1].distance = dist_array[i-1];
                         i--;
@@ -636,6 +651,26 @@ async function is_failed_location(source , destination){
     */
 }
 
+async function get_filepath_from_link(link_input){
+    let temp = link_input.split('/');
+    let filepath = temp.slice(8).join('/');
+    return filepath;
+}
+
+async function get_b4_blocked_unique_id_from_array(unique_id , array){
+    for(let i = 0 ; i < array.length ; i++){
+        if(array[i] == unique_id){
+            return array[i-1];
+        }
+    }
+    return "";
+}
+
+async function remove_weburl(filepath){
+    const components = filepath.split("/");
+    return components[components.length - 1];
+}
+
 class Result{
     constructor(){
         this.Expected = 0;
@@ -645,7 +680,7 @@ class Result{
         this.Dist_array = [] ;
         this.nodes_path = [] ;
         this.Stops_index = [] ;
-        this.Instructions = [] ; 
+        this.Instructions = [] ;
         this.passed = true ;
     }
 
@@ -672,7 +707,7 @@ class Result{
             Dist_array : this.Dist_array ,
             nodes_path : this.nodes_path , 
             Stops_index : this.Stops_index , 
-            Instructions : this.Instructions , 
+            Instructions : this.Instructions ,
             passed : this.passed
         }
     }
@@ -876,13 +911,14 @@ router.post('/formPost' , async (req ,res) => {
     }
     
     await TotalResult.convert_to_instructions();
-    debug_log(TotalResult.Instructions);
+    //debug_log(TotalResult.Instructions);
     return res.send(TotalResult.get_object());
 });
 
 router.post('/blockRefresh' , async (req ,res) => { 
     
     const inputData = req.body;
+    debug_log(inputData.unique_id_array)
     let destinations = inputData.MultiStopArray;
     if(inputData.MultiStopArray.length < 2){
         //debug_log("data incorrectly labelled or source and destination not filled"); 
@@ -902,10 +938,11 @@ router.post('/blockRefresh' , async (req ,res) => {
             inputData.Stops_index.splice(0,1);
         }
         destinations.splice(0,1);
-        //console.log(inputData.b4_blocked_img_path);
-        const previous_node_component = await break_down_img_path(inputData.b4_blocked_img_path);
-        destinations.unshift(parseInt(previous_node_component.node_id));
+
         blocked_node_component = await break_down_img_path(inputData.blocked_img_path);
+        const b4_blocked_node_id = await get_b4_blocked_unique_id_from_array(blocked_node_component.node_id , inputData.Node_id_array);
+        destinations.unshift(parseInt(b4_blocked_node_id));
+        
         debug_log("destinations are : " , destinations);
         let blocked_array = await get_blocked();
         for(let i = 0 ; i < inputData.blocked_array.length ; i++){
@@ -942,6 +979,7 @@ router.post('/blockRefresh' , async (req ,res) => {
                 result = await transit_query(destinations[i-1] , destinations[i] , mergedArray , no_previous);
             }
             await TotalResult.add(result);
+
             if(i == destinations.length - 1){
                 TotalResult.append_stops(TotalResult.Expected - 1);
             }else{
@@ -1031,7 +1069,7 @@ router.post('/getfloor' , async (req , res) => {
     cppProcess.stdin.end();
     
     cppProcess.stdout.on('data', async (cpp_data) => {
-        //console.log(cpp_data.toString());
+        
         try{
             let outputData = cpp_data.toString().split("|");
             outputData.pop();
@@ -1062,7 +1100,6 @@ router.post('/getfloor' , async (req , res) => {
                 FullMapObj.push(MapObj);   
             })
             res.send(FullMapObj);
-
         }catch(error){
             
         }
@@ -1078,31 +1115,152 @@ router.post('/getfloor' , async (req , res) => {
 
 });
 
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-      cb(null, 'uploads/'); // Directory where uploaded files will be stored
-    },
-    filename: function (req, file, cb) {
-        const ext = path.extname(file.originalname);
-        cb(null, blocked_node + ext);
+router.post('/convert_unique_id_filename' , async(req , res) => {
+    const inputData = req.body;
+    
+    try {
+        let filepath = "";
+        const { data, error } = await supabase
+            .from('pictures')
+            .select('filepath')
+            .eq('unique_id', inputData.unique_id);
+
+            filepath = await get_filepath_from_link(data[0].filepath);
+        if (error) {
+            throw error;
+        }
+        res.send({filepath : filepath});
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 });
+
+router.post('/get_image_links' , async(req, res) => {
+    const link_array = [];
   
+    try {
+      const { data, error } = await supabase
+        .from('image_links')
+        .select('*')
+        
+        for(let result of data){
+            img_name = await remove_weburl(result.filepath);
+            link_array.push(`${img_name}`);
+        };
+
+        if (error) {
+            throw error;
+        }
+
+        res.send({link_array : link_array});
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+const storage = multer.memoryStorage();
+
 const upload = multer({ storage: storage });
 
-//////////////////////////////////////////////////////////////////////////////
-///////////////////////function testing region////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////
-router.post('/blocked_img', upload.single('photo'), (req, res) => {
+router.post('/blocked_img', upload.single('photo'), async(req, res) => {
     try {
-      // File is uploaded successfully, you can process further if needed
-      debug_log('image uploaded:', req.file);
-      res.status(200).send('Image uploaded successfully, thank you for helping make NavEng up to date for users');
+
+        const file = req.file;
+        const fileBase64 = decode(file.buffer.toString("base64"));
+        
+        const { data, error } = await supabase
+            .storage
+            .from('Pictures')
+            .upload(`Block_uploads/${file.originalname}`, fileBase64, {
+                contentType: file.mimetype,
+            });
+
+        if(error){
+            throw error;
+        }
+        console.log("data.path is : ");
+        console.log(data.path);
+        const { data: image } = supabase.storage
+            .from("Pictures")
+            .getPublicUrl(data.path);
+
+
+        try{
+            const components = await break_down_img_path(file.originalname);
+
+            const { error } = await supabase
+                .from('blocked_image')
+                .insert([{ node_id : components.node_id , filepath : image.publicUrl }]);
+            if (error) {
+                throw error;
+            }
+        }catch(error){
+
+        }
+
+        res.status(200).send('Image uploaded successfully, thank you for helping make NavEng up to date for users');
     } catch (err) {
-      console.error('Error uploading image:', err);
       res.status(500).send('Error uploading image');
     }
 });
+
+router.post('/convert__to_-' , async(req, res) => {
+    try{
+        let image_links = [];
+        const folder_name = "test";
+        const { data, error } = await supabase
+            .storage
+            .from('Pictures')
+            .list(`${folder_name}`, {
+                limit: 500 ,
+                offset: 0,
+                sortBy: { column: 'name', order: 'asc' }
+            })
+            
+        if(error){ throw error } 
+        
+        for(let objs of data){
+            let img_name = objs.name;
+            image_links.push(img_name);
+        }
+        
+        let new_name = "";
+        for(let name of image_links){
+            const old_name = name;
+            name = name.split("_");
+            for(let i = 0 ; i < name.length ; i++){
+                if(name[i] == 'Room'){
+                    let last_comp = name.splice(name.length - 3 , 3);
+                    last_comp = last_comp.join("-");
+                    name.push(last_comp);
+                }
+            }
+            for(let i = 0 ; i < name.length ; i++){
+                if(name[i] == ''){
+                    name.splice(i,1);
+                    name[i] = "-" + name[i];
+                    new_name = name.join("_");
+                    break;
+                }
+            }
+            console.log(`${old_name} to ${new_name}`);
+            const { data, error } = await supabase
+            .storage
+            .from('Pictures')
+            .move(`${folder_name}/${old_name}`, `test1/${new_name}`);
+
+            if(error){ throw error } 
+            res.send("done");
+        }
+    }catch(error){
+        res.send(error);
+    }
+    
+});
+//////////////////////////////////////////////////////////////////////////////
+///////////////////////function testing region////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+
 
 router.post('/template_img' , async (req , res) => {
     const inputs = req.body.Input;
@@ -1399,6 +1557,8 @@ router.post('/full_query' , async (req , res) => {
         console.error('Error occurred:', error);
     }
 });
+
+
 
 
 module.exports = router;

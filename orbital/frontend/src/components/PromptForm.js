@@ -64,10 +64,11 @@ function PromptForm() {
     const [pathInstructions, setPathInstructions] = useState([])
     const [blockedIndicator, setBlockedIndicator] = useState(false)
     const [submitTrigger, setSubmitTrigger] = useState(false)
+
+    const [Node_id_array , setNode_id_array] = useState([]);
     const [visited, setVisited] = useState(["0"])
     const [temp, setTemp] = useState([])
-    const [graphnodes, setGraphnodes] = useState([
-      ]) 
+    const [graphnodes, setGraphnodes] = useState([]) ;
 
     const Local = process.env.REACT_APP_LOCAL;
     let websitelink = ""
@@ -279,7 +280,6 @@ function PromptForm() {
         try {
             const response = await axios.post(websitelink + '/formPost', postData);
 
-
             // Update state variables with the response data
             setMessageError(response.data['HTML']);
             const distArray = response.data['Dist_array'];
@@ -288,7 +288,9 @@ function PromptForm() {
 
             setNodesPath(response.data['nodes_path'])
             setStopsIndex(response.data['Stops_index']);
+            setNode_id_array(response.data['nodes_path']);
             handleConvertToMetres(distArray);
+
             setBlockedIndicator(false)
             setVisited(["0"])
 
@@ -305,7 +307,7 @@ function PromptForm() {
 
         const postData = {
             blocked_array: blockedArray,
-            b4_blocked_img_path: beforebeforeQuote,
+            Node_id_array : Node_id_array,
             blocked_img_path: blockedIMGName,
             sheltered: sheltered,
             NoStairs: NoStairs,
@@ -323,6 +325,7 @@ function PromptForm() {
             handleConvertToMetres(distArray);
             setStopsIndex(response.data['Stops_index']);
             setMultiStopArray(response.data['Destinations']);
+            setNode_id_array(response.data['nodes_path']);
             const arrayFromString = response.data['HTML'].split('<img src');
             setBlocked(arrayFromString[1]);
 
