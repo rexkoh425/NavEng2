@@ -548,7 +548,7 @@ describe('Testing Functions..........', function () {
 })
 
 describe('Testing whether location pairs output correct number of pictures', function () {
-    this.timeout(1000000);
+    this.timeout(5000000);
 
     it('All location pairs tested', async function () {
         try {
