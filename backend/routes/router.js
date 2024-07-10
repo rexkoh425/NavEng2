@@ -17,7 +17,7 @@ const database_down_url = 'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/o
 let blocked_node = "";
 
 function debug_log(input){
-    let debug = false;
+    let debug = true;
     if(debug){
         console.log(input);
     }
@@ -466,6 +466,10 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                 debug_log(diff);
                 //debug_log("dist array length is " + dist_array.length + " and nodes array length is " + nodes.length);
                 const final = fixedLengthArray.join('');
+                debug_log("dist_array : ")
+                debug_log(dist_array);
+                debug_log("distance : ")
+                debug_log(distance);
                 const FinalResults = {
                     Expected : nodes.length ,
                     Queried : data_length , 
@@ -1023,7 +1027,6 @@ router.post('/insertBlocked' , async (req ,res ) => {
 
 router.post('/getfloor' , async (req , res) => {
     const inputData = req.body.node_id; //assume its node id
-    console.log(inputData)
     let targeted_z = 0;
     let nodes_with_same_z = new Set();
     let node_label_map = {};
@@ -1074,7 +1077,6 @@ router.post('/getfloor' , async (req , res) => {
         try{
             let outputData = cpp_data.toString().split("|");
             outputData.pop();
-            //console.log(outputData);
             let FullMapObj = [];
             await outputData.forEach(async node_data => {
                 let MapObj = {
