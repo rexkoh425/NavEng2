@@ -27,7 +27,7 @@ async function CheckLocation(receivedData) {
         return data;
     } catch (error) {
         console.log(`${error}`);
-        console.log(`${receivedData.source} to ${receivedData.destination} : failed`);
+        console.log(`${receivedData.MultiStopArray[0]} to ${receivedData.MultiStopArray[1]} : failed`);
         return { source: receivedData.MultiStopArray[0], destination: receivedData.MultiStopArray[1], passed: false , nodes_path : []  , HTML : '' , error_can_handle : false};
     }
 }
@@ -51,8 +51,8 @@ async function CheckBlockedLocation(receivedData) {
         return data;
     } catch (error) {
         console.log(`${error}`);
-        console.log(`${receivedData.source} to ${receivedData.destination} : failed`);
-        return { source: receivedData.MultiStopArray[0], destination: receivedData.MultiStopArray[1], passed: false , nodes_path : []  , HTML : data.HTML , error_can_handle : false};
+        console.log(`${receivedData.MultiStopArray[0]} to ${receivedData.MultiStopArray[1]} : with blocking failed`);
+        return { source: receivedData.MultiStopArray[0], destination: receivedData.MultiStopArray[1], passed: false , nodes_path : []  , HTML : '' , error_can_handle : false};
     }
 }
 
@@ -180,7 +180,7 @@ class TestResult{
     }
 
     log_progress(){
-        if (this.processed_count > 0 && this.processed_count % 100 == 0) {
+        if (this.processed_count > 0 && this.processed_count % 500 == 0) {
             console.log(`${this.processed_count} out of ${this.no_of_cases} test cases processed`);
         }
     }
@@ -592,7 +592,7 @@ describe('Testing whether location pairs output correct number of pictures', fun
                 }
             }
 
-            await limitConcurrency(tasks, 15); // Adjust the concurrency limit as necessary
+            await limitConcurrency(tasks, 10); // Adjust the concurrency limit as necessary
 
             try {
                 await request(app).post('/DeleteFailedLocations');
