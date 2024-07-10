@@ -538,7 +538,6 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                             }else{
                                 splice_count ++;
                             }
-
                             directions.splice(i,1);
                             dist_array[i-1] = `${parseInt(dist_array[i-1]) + parseInt(dist_array.splice(i,1))}`;
                             directions_array_len --;
@@ -1024,6 +1023,7 @@ router.post('/insertBlocked' , async (req ,res ) => {
 
 router.post('/getfloor' , async (req , res) => {
     const inputData = req.body.node_id; //assume its node id
+    console.log(inputData)
     let targeted_z = 0;
     let nodes_with_same_z = new Set();
     let node_label_map = {};
@@ -1098,10 +1098,9 @@ router.post('/getfloor' , async (req , res) => {
                     }
                     MapObj.connections.push(EdgeObj);
                 })
-                FullMapObj.push(MapObj);
+                FullMapObj.push(MapObj);   
             })
             res.send(FullMapObj);
-            console.log(FullMapObj[0].connections);
         }catch(error){
             
         }
