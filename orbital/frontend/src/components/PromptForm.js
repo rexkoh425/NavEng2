@@ -282,8 +282,8 @@ function PromptForm() {
 
             // Update state variables with the response data
             setMessageError(response.data['HTML']);
-            setTotalDistance(response.data['Distance'] / 10);
             const distArray = response.data['Dist_array'];
+            console.log(distArray)
             setPathInstructions(response.data['Instructions'])
 
             setNodesPath(response.data['nodes_path'])
@@ -319,7 +319,6 @@ function PromptForm() {
 
             // Update state variables with the response data
             setMessageError(response.data['HTML']);
-            setTotalDistance(response.data['Distance'] / 10);
             const distArray = response.data['Dist_array'];
             handleConvertToMetres(distArray);
             setStopsIndex(response.data['Stops_index']);
@@ -330,6 +329,9 @@ function PromptForm() {
             setPathInstructions(response.data['Instructions'])
             setBlockedIndicator(true)
             setSubmitTrigger(!submitTrigger)
+            setNodesPath(response.data['nodes_path'])
+            setVisited(["0"])
+
 
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -431,6 +433,7 @@ function PromptForm() {
     const handleConvertToMetres = (distArray) => {
         const dividedDistance = ConvertToMetres({ distanceArrayx10: distArray });
         setDistanceArray(dividedDistance);
+        setTotalDistance(dividedDistance[0])
     }
 
     const handleShelteredCheckbox = (event) => {

@@ -985,7 +985,6 @@ router.post('/insertBlocked' , async (req ,res ) => {
 
 router.post('/getfloor' , async (req , res) => {
     const inputData = req.body.node_id; //assume its node id
-    console.log(inputData)
     let targeted_z = 0;
     let nodes_with_same_z = new Set();
     let node_label_map = {};
