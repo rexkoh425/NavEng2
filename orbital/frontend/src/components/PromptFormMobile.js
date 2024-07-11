@@ -606,7 +606,7 @@ function PromptFormMobile() {
                                 {!noPath && !showBlockConfirmation && <Button className="overlay-button-mobile" onClick={blockConfirmation}><img src="block_logo.png" alt="cannot display" className="block-logo-mobile"></img></Button>}
                             </Tooltip>
                             {!noPath && showBlockConfirmation && <Button variant="contained" className="overlay-confirmation-button-mobile" sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }} onClick={axiosPostBlock}>Block this point?</Button>}
-                            {showUpload && <div className="overlay-refresh">
+                            {showUpload && <div className="overlay-refresh-mobile">
                                 <Button variant="contained" type="submit" onClick={handleSubmitRefresh} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }}>Give me an alternate path</Button>
                             </div>}
 
@@ -619,7 +619,7 @@ function PromptFormMobile() {
                     {!noPath && <Button variant="contained" type="submit" onClick={incrementCounter} disabled={disableRightButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "55vh", width: "8vw", marginBottom: "8vh", marginLeft: "1vw"}}><ArrowRightIcon></ArrowRightIcon></Button>}
                     </div>}
                     </center>
-                    {showUpload && <div><FileUpload /></div>}
+                    {showUpload && <div className="fileupload-mobile"><FileUpload /></div>}
                 </center>
             </div>
 

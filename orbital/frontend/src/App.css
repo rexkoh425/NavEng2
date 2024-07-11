@@ -310,6 +310,15 @@
   display: inline-block
 }
 
+.overlay-refresh-mobile {
+  position: absolute;
+  height: 8vh;
+  width: 20vh;
+  bottom: 59vh;
+  right: 13vh;
+  display: inline-block
+}
+
 .block-logo {
   width: 10vh;
 }
@@ -347,7 +356,7 @@
 }
 
 .fileupload-mobile {
-  margin-top: -7vh;
+  margin-top: 22vh;
 }
 
 .pathInstructions {
@@ -380,23 +389,13 @@
   display: inline-block
 }
 
-.overlay-confirmation-button-mobile {
-  position: absolute;
-  height: 7vh;
-  width: 20vh;
-  bottom: 75vh;
-  right: -22vh;
-  display: inline-block;
-  margin-top: 0px;
-  margin-bottom: 0px;
-}
 
 .overlay-confirmation-button-mobile {
   position: absolute;
   height: 7vh;
   width: 20vh;
-  bottom: 75vh;
-  right: -10vh;
+  bottom: 59vh;
+  right: -6vh;
   display: inline-block;
   margin-top: 0px;
   margin-bottom: 0px;
