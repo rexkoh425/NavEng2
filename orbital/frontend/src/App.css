@@ -206,6 +206,11 @@
   width: 42vh;
 }
 
+.htmlContent {
+  height: 75vh;
+  width: 42vh;
+}
+
 .rightArrow {
   justify-self: start;
 }
@@ -221,8 +226,9 @@
 .parametricsContent{
   text-align:center;
   display: inline;
+  font-weight: bold;
   font-family: "Lexend";
-  font-weight: 300;
+  
 }
 
 .time-taken{
@@ -394,10 +400,23 @@
 
 .two-columns-container {
   display: flex; /* Use flexbox */
-  align-items: flex-end;
+  align-items: top;
 }
 
 .column {
   flex: 1; /* Grow to fill available space equally */
   padding: 2px;
+  
+}
+
+.distanceIcon {
+  width: 4vh;
+  margin-bottom: -8px;
+  margin-right: 10px
+}
+
+.timeIcon {
+  width: 4vh;
+  margin-bottom: -11px;
+  margin-right: 2px
 }

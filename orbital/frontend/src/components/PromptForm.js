@@ -23,7 +23,6 @@ import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import Instructions from "./Instructions";
 import DestinationNotification from "./DestinationNotification";
 import TopDownMap from "./TopDownMap";
-import GraphVisualization from "./GraphVisualization";
 
 
 function PromptForm() {
@@ -69,6 +68,8 @@ function PromptForm() {
     const [visited, setVisited] = useState(["0"])
     const [temp, setTemp] = useState([])
     const [graphnodes, setGraphnodes] = useState([]) ;
+
+    const [isMobile, setIsMobile] = useState(false);
 
     const Local = process.env.REACT_APP_LOCAL;
     let websitelink = ""
@@ -274,7 +275,8 @@ function PromptForm() {
             blocked_array: blockedArray,
             sheltered: sheltered,
             NoStairs: NoStairs,
-            MultiStopArray: MultiStopArray
+            MultiStopArray: MultiStopArray,
+            isMobile: isMobile
         };
 
         try {
@@ -313,7 +315,8 @@ function PromptForm() {
             NoStairs: NoStairs,
             MultiStopArray: MultiStopArray,
             Stops_index: stopsIndex,
-            BlockedNodeIndex: blockedNodeIndex
+            BlockedNodeIndex: blockedNodeIndex,
+            isMobile: isMobile
         };
 
         try {
@@ -592,7 +595,7 @@ function PromptForm() {
                     {!noPath && formSubmitted && <DestinationNotification stopsIndex={stopsIndex} arrayposition={arrayposition} MultiStopArray={MultiStopArrayNotification} pathInstructions={pathInstructions} blockedIndicator={blockedIndicator} />}
                     <div style={{ display: 'none' }}>
                         {/* Preload the next image */}
-                        <div dangerouslySetInnerHTML={{ __html: arrayFromString[(arrayposition + 1) % arrayFromString.length] }} />
+                        <div className="htmlContent" dangerouslySetInnerHTML={{ __html: arrayFromString[(arrayposition + 1) % arrayFromString.length] }} />
                     </div>
 
 
@@ -600,7 +603,7 @@ function PromptForm() {
                     {formSubmitted && <div className="container">
                         {!noPath && <Button variant="contained" type="submit" onClick={decrementCounter} disabled={disableLeftButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "10vh", width: "3vw" }}><ArrowLeftIcon></ArrowLeftIcon></Button>}
                         <div className="imageContainer">
-                            <div className="htmlContent" dangerouslySetInnerHTML={{ __html: arrayFromString[arrayposition] }} />
+                        <div className="htmlContent" dangerouslySetInnerHTML={{ __html: arrayFromString[arrayposition] }} />
                             <br></br>
                             <Tooltip title="Block?" arrow>
                                 {!noPath && !showBlockConfirmation && <Button className="overlay-button" onClick={blockConfirmation}><img src="block_logo.png" alt="cannot display" className="block-logo"></img></Button>}

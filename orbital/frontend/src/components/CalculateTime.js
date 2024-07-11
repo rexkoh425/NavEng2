@@ -13,7 +13,7 @@ const CalculateTime = ({ distance }) => {
         </p>
       )}
       else { return (
-        <p className='time-taken'>Less than one minute</p>
+        <p className='time-taken'> &lt; 1 minute</p>
       )}
   
 };

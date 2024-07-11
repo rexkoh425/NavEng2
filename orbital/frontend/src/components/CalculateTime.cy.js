@@ -12,14 +12,14 @@ describe('Checking whether calculate time has the desired output', () => {
   it('displays the correct output when distance is 0', () => {
     cy.mount(<CalculateTime distance={0} />); 
 
-    cy.get('.time-taken').should('contain.text', 'Less than one minute');
+    cy.get('.time-taken').should('contain.text', '< 1 minute');
   });
 
-  it('displays the correct output when distance results in "Less than one minute"', () => {
+  it('displays the correct output when distance results in "< 1 minute"', () => {
 
     cy.mount(<CalculateTime distance={34} />); 
    
-    cy.get('.time-taken').should('contain.text', 'Less than one minute');
+    cy.get('.time-taken').should('contain.text', '< 1 minute');
   });
 
   it('displays the correct output when distance results in exactly 0.5 minutes', () => {

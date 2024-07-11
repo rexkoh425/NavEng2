@@ -69,6 +69,8 @@ function PromptFormMobile() {
     const [temp, setTemp] = useState([])
     const [graphnodes, setGraphnodes] = useState([]) 
 
+    const [isMobile, setIsMobile] = useState(true);
+
     const Local = process.env.REACT_APP_LOCAL;
     let websitelink = ""
     if (Local == "true") {
@@ -567,25 +569,19 @@ function PromptFormMobile() {
                         }}>Please select the starting and ending <br></br> locations to view the pictures</Box></div>}
 
                 <center>
+                <TopDownMapMobile nodes={graphnodes} visited={visited} originNodeId={blockedNodeID} nodesPath={nodesPath} stopsIndex={stopsIndex} submitTrigger={submitTrigger}></TopDownMapMobile>
                     <div className="two-columns-container">
                     <div className="column">
-                    <TopDownMapMobile nodes={graphnodes} visited={visited} originNodeId={blockedNodeID} nodesPath={nodesPath} stopsIndex={stopsIndex} submitTrigger={submitTrigger}></TopDownMapMobile>
+                    {!noPath && formSubmitted && <img src="Distance_Icon.png" className="distanceIcon"></img>}
+                    {!noPath && formSubmitted && !hideTimeTaken && <p className="parametricsContent">{distanceArray[arrayposition]}m</p>}
                     </div>
                     <div className="column">
-                    {!noPath && formSubmitted && <p className="parametricsDescription">Total Distance: </p>}
-                    {!noPath && formSubmitted && <p className="parametricsContent">{totalDistance}m</p>}
-                   
 
                     <div></div>
-                    {!noPath && formSubmitted && <p className="parametricsDescription">Total Estimated Time Taken: </p>}
-                    {!noPath && formSubmitted && <div className="parametricsContent"><CalculateTime distance={totalDistance} /></div>}
-                    <br></br>
-                    <br></br>
-                    {!noPath && formSubmitted && !hideTimeTaken && <p className="parametricsDescription">Distance Remaining: </p>}
-                    {!noPath && formSubmitted && !hideTimeTaken && <p className="parametricsContent">{distanceArray[arrayposition]}m</p>}
+
 
                     <div></div>
-                    {!noPath && formSubmitted && !hideTimeTaken && <p className="parametricsDescription">Time to Destination: </p>}
+                    {!noPath && formSubmitted && !hideTimeTaken && <img src="Time_Icon.png" className="timeIcon"></img>}
                     {!noPath && formSubmitted && !hideTimeTaken && <div className="parametricsContent"><CalculateTime distance={distanceArray[arrayposition]} /></div>}
 
 
@@ -598,6 +594,8 @@ function PromptFormMobile() {
                         <div dangerouslySetInnerHTML={{ __html: arrayFromString[(arrayposition + 1) % arrayFromString.length] }} />
                     </div>
                     <center>
+                    {formSubmitted && <div className="container">
+                        {!noPath && <Button variant="contained" type="submit" onClick={decrementCounter} disabled={disableLeftButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "10vh", width: "3vw" }}><ArrowLeftIcon></ArrowLeftIcon></Button>}
                     {formSubmitted && <div className="NoMargins">
                         <div className="imageContainer">
                             <div {...handlers} className="NoMargins" style={{ overflow: 'hidden' }}>
@@ -612,25 +610,13 @@ function PromptFormMobile() {
                             </div>}
 
                         </div>
+                        {!noPath && <Button variant="contained" type="submit" onClick={incrementCounter} disabled={disableRightButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "10vh", width: "3vw" }}><ArrowRightIcon></ArrowRightIcon></Button>}
 
 
 
                     </div>}
+                    </div>}
                     </center>
-                    <div className="fileupload-mobile">
-                    {!noPath && formSubmitted &&
-                    <Button variant="contained" type="submit" onClick={decrementCounter}
-                            sx={{
-                                bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset',
-                                textAlign: 'center !important', px: '0px', py: '0px', height: "6vh", width: "40vw"
-                            }}><ArrowLeftIcon></ArrowLeftIcon></Button>}
-                        {!noPath && formSubmitted &&<Button variant="contained" type="submit" onClick={incrementCounter}
-                            sx={{
-                                bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset',
-                                textAlign: 'center !important', px: '0px', py: '0px', height: "6vh", width: "40vw"
-                            }}><ArrowRightIcon></ArrowRightIcon></Button>}
-                    </div>
-                    <br></br>
                     {showUpload && <div><FileUpload /></div>}
                 </center>
             </div>
