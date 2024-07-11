@@ -23,6 +23,7 @@ import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import Instructions from "./Instructions";
 import DestinationNotification from "./DestinationNotification";
 import TopDownMap from "./TopDownMap";
+import ImageOutput from "./ImageOutput";
 
 
 function PromptForm() {
@@ -48,7 +49,7 @@ function PromptForm() {
     const [disableRightButton, setDisableRightButton] = useState(false);
     const [disableLeftButton, setDisableLeftButton] = useState(true);
     const [showUpload, setShowUpload] = useState(false);
-    let arrayFromString = messageError.split('<br>'); //To split HTML code into array
+    let arrayFromString = messageError.split(' '); //To split HTML code into array
     const [sheltered, setSheltered] = useState(false);
     const [NoStairs, setNoStairs] = useState(false);
     const [beforeBlocked, setBeforeBlocked] = useState('');
@@ -69,7 +70,6 @@ function PromptForm() {
     const [temp, setTemp] = useState([])
     const [graphnodes, setGraphnodes] = useState([]) ;
 
-    const [isMobile, setIsMobile] = useState(false);
 
     const Local = process.env.REACT_APP_LOCAL;
     let websitelink = ""
@@ -197,7 +197,7 @@ function PromptForm() {
     const incrementCounter = (e) => { //counter for image array
         e.preventDefault();
         preloadNextImage()
-        if (arrayposition !== (arrayFromString.length - 2)) { //Using -2 due to nature of splitting string
+        if (arrayposition !== (arrayFromString.length - 1)) { //Using -2 due to nature of splitting string
             setCount(arrayposition + 1);
             setBlocked(arrayFromString[arrayposition + 1])
             setBeforeBlocked(arrayFromString[arrayposition])
@@ -207,7 +207,7 @@ function PromptForm() {
           const newVisited = nodesPath.slice(0, arrayposition + 2)
           setVisited(newVisited)
         }
-        if (arrayposition === (arrayFromString.length - 3)) {
+        if (arrayposition === (arrayFromString.length - 2)) {
             setDisableRightButton(true)
             setHideTimeTaken(true)
         }
@@ -253,7 +253,6 @@ function PromptForm() {
 
     const axiosFetchData = async (processing) => {
         await axios.get(websitelink + '/test')
-            //await axios.get('http://localhost:4000/test')
 
             .then(res => {
                 if (processing) {
@@ -275,8 +274,7 @@ function PromptForm() {
             blocked_array: blockedArray,
             sheltered: sheltered,
             NoStairs: NoStairs,
-            MultiStopArray: MultiStopArray,
-            isMobile: isMobile
+            MultiStopArray: MultiStopArray
         };
 
         try {
@@ -284,6 +282,7 @@ function PromptForm() {
 
             // Update state variables with the response data
             setMessageError(response.data['HTML']);
+            console.log("The HTML CONTENT: " + messageError)
             const distArray = response.data['Dist_array'];
             console.log(distArray)
             setPathInstructions(response.data['Instructions'])
@@ -298,7 +297,7 @@ function PromptForm() {
 
             // Perform split operation inside the then block
             const arrayFromString = response.data['HTML'].split('<img src');
-            setBlocked(arrayFromString[1]);
+            setBlocked(arrayFromString[0]);
             setStopsIndex(response.data['Stops_index']);
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -316,7 +315,6 @@ function PromptForm() {
             MultiStopArray: MultiStopArray,
             Stops_index: stopsIndex,
             BlockedNodeIndex: blockedNodeIndex,
-            isMobile: isMobile
         };
 
         try {
@@ -330,7 +328,7 @@ function PromptForm() {
             setMultiStopArray(response.data['Destinations']);
             setNode_id_array(response.data['nodes_path']);
             const arrayFromString = response.data['HTML'].split('<img src');
-            setBlocked(arrayFromString[1]);
+            setBlocked(arrayFromString[0]);
 
             setPathInstructions(response.data['Instructions'])
             setBlockedIndicator(true)
@@ -554,7 +552,7 @@ function PromptForm() {
                         {showUpload && <div><FileUpload /></div>}
                         <br></br>
                         <Instructions formSubmitted = {formSubmitted}></Instructions>
-                        {formSubmitted &&
+                        {formSubmitted  && stopsIndex &&
                         <TopDownMap nodes={graphnodes} visited={visited} originNodeId={blockedNodeID} nodesPath={nodesPath} stopsIndex={stopsIndex} submitTrigger={submitTrigger}></TopDownMap>}
 
 
@@ -591,11 +589,11 @@ function PromptForm() {
 
 
                     </center>
-                    {!noPath && formSubmitted && <p className="imageCount">{arrayposition + 1}/{arrayFromString.length - 1}</p>}
+                    {!noPath && formSubmitted && <p className="imageCount">{arrayposition + 1}/{arrayFromString.length}</p>}
                     {!noPath && formSubmitted && <DestinationNotification stopsIndex={stopsIndex} arrayposition={arrayposition} MultiStopArray={MultiStopArrayNotification} pathInstructions={pathInstructions} blockedIndicator={blockedIndicator} />}
-                    <div style={{ display: 'none' }}>
+                    <div  style={{ display: 'none' }}>
                         {/* Preload the next image */}
-                        <div className="htmlContent" dangerouslySetInnerHTML={{ __html: arrayFromString[(arrayposition + 1) % arrayFromString.length] }} />
+                        <ImageOutput imgPath = {arrayFromString[(arrayposition + 1) % arrayFromString.length]}/>
                     </div>
 
 
@@ -603,7 +601,7 @@ function PromptForm() {
                     {formSubmitted && <div className="container">
                         {!noPath && <Button variant="contained" type="submit" onClick={decrementCounter} disabled={disableLeftButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "10vh", width: "3vw" }}><ArrowLeftIcon></ArrowLeftIcon></Button>}
                         <div className="imageContainer">
-                        <div className="htmlContent" dangerouslySetInnerHTML={{ __html: arrayFromString[arrayposition] }} />
+                        <ImageOutput imgPath = {arrayFromString[arrayposition]}/>
                             <br></br>
                             <Tooltip title="Block?" arrow>
                                 {!noPath && !showBlockConfirmation && <Button className="overlay-button" onClick={blockConfirmation}><img src="block_logo.png" alt="cannot display" className="block-logo"></img></Button>}

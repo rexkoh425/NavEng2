@@ -155,6 +155,9 @@
   vertical-align: middle;
   justify-content: center;
   margin-bottom: 0px;
+  height: 60vh;
+  width: 34vh;
+  
 }
 
 .pictureparent 
@@ -226,7 +229,7 @@
 .parametricsContent{
   text-align:center;
   display: inline;
-  font-weight: bold;
+  font-weight: 400;
   font-family: "Lexend";
   
 }
@@ -290,8 +293,8 @@
   position: absolute;
   height: 8vh;
   width: 8vh;
-  bottom: 76vh;
-  right: -16vh;
+  bottom: 61vh;
+  right: -13.5vh;
   display: inline-block;
   margin-top: 0px;
   margin-bottom: 0px;
@@ -309,6 +312,10 @@
 
 .block-logo {
   width: 10vh;
+}
+
+.block-logo-mobile {
+  width: 8vh;
 
 }
 
@@ -352,6 +359,8 @@
   text-align:center;
   font-family: "Lexend";
   color: #187D36;
+
+
 }
 
 .destinationNotification {
