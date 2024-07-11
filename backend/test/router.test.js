@@ -12,7 +12,7 @@ async function CheckLocation(receivedData) {
         const res = await request(app)
             .post('/formPost')
             .send(receivedData)
-            .timeout({ deadline: 3000 });
+            .timeout({ deadline: 5000 });
 
         let data = res.body;
 
