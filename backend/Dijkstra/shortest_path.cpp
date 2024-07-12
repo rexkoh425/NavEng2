@@ -22,17 +22,20 @@ Path shortestPath(const Graph& g, int source, int dest) {
   bool *visit_table = new bool[num_of_nodes];
   int *parent = new int[num_of_nodes];
   int *parent_direction = new int[num_of_nodes];
-  int *parent_dist = new int[num_of_nodes];//
+  int *parent_dist = new int[num_of_nodes];
   bool reached_dest = false;
   
   for(int i = 0 ; i < num_of_nodes; i++){
     if(i != source){
       table.insert(GraphEdge(i , INFINITY_SELF , 0));
+      visit_table[i] = false;
     }else{
       table.insert(GraphEdge(source ,0 , 0));
+      visit_table[source] = true;
     }
     parent[i] = i;
     parent_direction[i] = 0;
+    parent_dist[i] = 0;
   }
   int count = 0 ;
   while(!table.empty()){

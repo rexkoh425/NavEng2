@@ -64,10 +64,6 @@ async function ENUM_to_left_right(input){
     }
 }
 
-function template_img(img_path){
-  return `<img src = "${img_path}" alt = "cannot be displayed" class="htmlData"><br>`;
-}
-
 async function NESW_ENUM(input){
     const NORTH =  "0";
     const EAST  = "90";
@@ -376,6 +372,7 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                     throw new Error("cannot find dest");
                 }
                 let nodes_path = [...nodes];
+                let compressed_path  = [...nodes];
                 const directions = outputData[1].split(",");
                 let distance = outputData[2];
                 let dist_array = outputData[3].split(",");
@@ -401,7 +398,7 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                     if((directions[i-1] == directions[i] && (parseInt(dist_array[i-1]) + parseInt(dist_array[i])) <= 80) || is_up_down){//is_up_down
                         do{
                             nodes.splice(i,1);
-                            
+                            compressed_path.splice(i,1);
                             if(is_up_down){
                                 nodes_path.splice(i + splice_count,1);
                             }else{
@@ -466,6 +463,11 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                 debug_log(diff);
                 //debug_log("dist array length is " + dist_array.length + " and nodes array length is " + nodes.length);
                 const final = fixedLengthArray.join(' ');
+                debug_log("dist_array : ")
+                debug_log(dist_array);
+                debug_log("distance : ")
+                debug_log(distance);
+
                 const FinalResults = {
                     Expected : nodes.length ,
                     Queried : data_length , 
@@ -473,7 +475,8 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                     Distance : distance ,
                     Dist_array : dist_array , 
                     nodes_path : nodes_path , 
-                    Instructions : Instructions
+                    Instructions : Instructions ,
+                    compressed_path : compressed_path
                 }
                 resolve(FinalResults);
             } catch (error) {
@@ -508,6 +511,7 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                     throw new Error("cannot find dest");
                 }
                 let nodes_path = [...nodes];
+                let compressed_path  = [...nodes];
                 const directions = outputData[1].split(",");
                 let distance = outputData[2];
                 let dist_array = outputData[3].split(",");
@@ -532,7 +536,7 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                         
                         do{
                             nodes.splice(i,1);
-                            
+                            compressed_path.splice(i,1);
                             if(is_up_down){
                                 nodes_path.splice(i + splice_count,1);
                             }else{
@@ -601,7 +605,8 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                     Distance : distance ,
                     Dist_array : dist_array , 
                     nodes_path : nodes_path , 
-                    Instructions : Instructions
+                    Instructions : Instructions ,
+                    compressed_path : compressed_path
                 }
                 resolve(FinalResults);
             } catch (error) {
@@ -660,7 +665,10 @@ async function get_filepath_from_link(link_input){
 async function get_b4_blocked_unique_id_from_array(unique_id , array){
     for(let i = 0 ; i < array.length ; i++){
         if(array[i] == unique_id){
-            return array[i-1];
+            if(i-1 >= 0){
+                return array[i-1];
+            }
+            return  "";
         }
     }
     return "";
@@ -679,6 +687,7 @@ class Result{
         this.Distance = 0 ;
         this.Dist_array = [] ;
         this.nodes_path = [] ;
+        this.compressed_nodes_path = [];
         this.Stops_index = [] ;
         this.Instructions = [] ;
         this.passed = true ;
@@ -691,6 +700,7 @@ class Result{
         this.Distance = `${parseInt(this.Distance) + parseInt(other.Distance)}` ;
         this.Dist_array = this.Dist_array.concat(other.Dist_array);
         this.nodes_path = this.nodes_path.concat(other.nodes_path);
+        this.compressed_nodes_path = this.compressed_nodes_path.concat(other.compressed_path);
         this.Instructions = this.Instructions.concat(other.Instructions); 
     }
 
@@ -706,6 +716,7 @@ class Result{
             Distance : this.Distance , 
             Dist_array : this.Dist_array ,
             nodes_path : this.nodes_path , 
+            compressed_nodes_path : this.compressed_nodes_path ,
             Stops_index : this.Stops_index , 
             Instructions : this.Instructions ,
             passed : this.passed
@@ -911,7 +922,6 @@ router.post('/formPost' , async (req ,res) => {
     }
     
     await TotalResult.convert_to_instructions();
-    //debug_log(TotalResult.Instructions);
     return res.send(TotalResult.get_object());
 });
 
@@ -940,7 +950,15 @@ router.post('/blockRefresh' , async (req ,res) => {
         destinations.splice(0,1);
 
         blocked_node_component = await break_down_img_path(inputData.blocked_img_path);
+
+        if(blocked_node_component.type == 'Room'){
+            return res.send({ HTML : no_alt_path_url , passed : false , error_can_handle : false});
+        }
+        
         const b4_blocked_node_id = await get_b4_blocked_unique_id_from_array(blocked_node_component.node_id , inputData.Node_id_array);
+        if(b4_blocked_node_id == ""){
+            return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : false});
+        }
         destinations.unshift(parseInt(b4_blocked_node_id));
         
         debug_log("destinations are : " , destinations);
@@ -990,11 +1008,12 @@ router.post('/blockRefresh' , async (req ,res) => {
             if(error.message == "cannot find dest"){
                 return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : true});
             }
-            return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : false});
+          
+            return res.send({ HTML : no_alt_path_url , passed : false , error_can_handle : false});
+
         }
     }
     await TotalResult.convert_to_instructions();
-    debug_log(TotalResult.Instructions);
     let TotalResultObj = TotalResult.get_object();
     TotalResultObj['Destinations'] = destinations;
     return res.send(TotalResultObj);
@@ -1073,7 +1092,6 @@ router.post('/getfloor' , async (req , res) => {
         try{
             let outputData = cpp_data.toString().split("|");
             outputData.pop();
-            //console.log(outputData);
             let FullMapObj = [];
             await outputData.forEach(async node_data => {
                 let MapObj = {
@@ -1261,17 +1279,6 @@ router.post('/convert__to_-' , async(req, res) => {
 ///////////////////////function testing region////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-
-router.post('/template_img' , async (req , res) => {
-    const inputs = req.body.Input;
-    const expected = req.body.Expected;
-    const response = template_img(inputs);
-    if(response == expected) { 
-        res.send({ passed : true }) 
-    }else{
-        res.send({ passed : false });
-    }
-});
 
 router.post('/NESW_ENUM' , async (req , res) => {
     const inputs = req.body.Input;
