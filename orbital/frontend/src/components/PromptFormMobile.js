@@ -24,6 +24,7 @@ import Instructions from "./Instructions";
 import DestinationNotification from "./DestinationNotification";
 import { useSwipeable } from 'react-swipeable';
 import TopDownMapMobile from "./TopDownMapMobile";
+import ImageOutputMobile from "./ImageOutputMobile";
 
 
 function PromptFormMobile() {
@@ -49,7 +50,7 @@ function PromptFormMobile() {
     const [disableRightButton, setDisableRightButton] = useState(false);
     const [disableLeftButton, setDisableLeftButton] = useState(true);
     const [showUpload, setShowUpload] = useState(false);
-    let arrayFromString = messageError.split('<br>'); //To split HTML code into array
+    let arrayFromString = messageError.split(' '); //To split HTML code into array
     const [sheltered, setSheltered] = useState(false);
     const [NoStairs, setNoStairs] = useState(false);
     const [beforeBlocked, setBeforeBlocked] = useState('');
@@ -68,6 +69,7 @@ function PromptFormMobile() {
     const [visited, setVisited] = useState(["0"])
     const [temp, setTemp] = useState([])
     const [graphnodes, setGraphnodes] = useState([]) 
+
 
     const Local = process.env.REACT_APP_LOCAL;
     let websitelink = ""
@@ -207,7 +209,7 @@ function PromptFormMobile() {
 
     const incrementCounter = (e) => { //counter for image array
         preloadNextImage()
-        if (arrayposition !== (arrayFromString.length - 2)) { //Using -2 due to nature of splitting string
+        if (arrayposition !== (arrayFromString.length - 1)) { //Using -2 due to nature of splitting string
             setCount(arrayposition + 1);
             setBlocked(arrayFromString[arrayposition + 1])
             setBeforeBlocked(arrayFromString[arrayposition])
@@ -215,9 +217,8 @@ function PromptFormMobile() {
 
             const newVisited = nodesPath.slice(0, arrayposition + 2)
             setVisited(newVisited)
-            console.log("visited: " + visited)
         }
-        if (arrayposition === (arrayFromString.length - 3)) {
+        if (arrayposition === (arrayFromString.length - 2)) {
             setDisableRightButton(true)
             setHideTimeTaken(true)
         }
@@ -262,7 +263,6 @@ function PromptFormMobile() {
 
     const axiosFetchData = async (processing) => {
         await axios.get(websitelink + '/test')
-            //await axios.get('http://localhost:4000/test')
 
             .then(res => {
                 if (processing) {
@@ -306,7 +306,7 @@ function PromptFormMobile() {
 
             // Perform split operation inside the then block
             const arrayFromString = response.data['HTML'].split('<img src');
-            setBlocked(arrayFromString[1]);
+            setBlocked(arrayFromString[0]);
             setStopsIndex(response.data['Stops_index']);
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -338,7 +338,7 @@ function PromptFormMobile() {
             setStopsIndex(response.data['Stops_index']);
             setMultiStopArray(response.data['Destinations']);
             const arrayFromString = response.data['HTML'].split('<img src');
-            setBlocked(arrayFromString[1]);
+            setBlocked(arrayFromString[0]);
 
             setPathInstructions(response.data['Instructions'])
             setBlockedIndicator(true)
@@ -567,71 +567,59 @@ function PromptFormMobile() {
                         }}>Please select the starting and ending <br></br> locations to view the pictures</Box></div>}
 
                 <center>
+                { stopsIndex && <TopDownMapMobile nodes={graphnodes} visited={visited} originNodeId={blockedNodeID} nodesPath={nodesPath} stopsIndex={stopsIndex} submitTrigger={submitTrigger}></TopDownMapMobile>}
                     <div className="two-columns-container">
                     <div className="column">
-                    <TopDownMapMobile nodes={graphnodes} visited={visited} originNodeId={blockedNodeID} nodesPath={nodesPath} stopsIndex={stopsIndex} submitTrigger={submitTrigger}></TopDownMapMobile>
+                    {!noPath && formSubmitted && !hideTimeTaken && <img src="Distance_Icon.png" className="distanceIcon"></img>}
+                    {!noPath && formSubmitted && !hideTimeTaken && <p className="parametricsContent">{distanceArray[arrayposition]}m</p>}
                     </div>
                     <div className="column">
-                    {!noPath && formSubmitted && <p className="parametricsDescription">Total Distance: </p>}
-                    {!noPath && formSubmitted && <p className="parametricsContent">{totalDistance}m</p>}
-                   
 
                     <div></div>
-                    {!noPath && formSubmitted && <p className="parametricsDescription">Total Estimated Time Taken: </p>}
-                    {!noPath && formSubmitted && <div className="parametricsContent"><CalculateTime distance={totalDistance} /></div>}
-                    <br></br>
-                    <br></br>
-                    {!noPath && formSubmitted && !hideTimeTaken && <p className="parametricsDescription">Distance Remaining: </p>}
-                    {!noPath && formSubmitted && !hideTimeTaken && <p className="parametricsContent">{distanceArray[arrayposition]}m</p>}
+
 
                     <div></div>
-                    {!noPath && formSubmitted && !hideTimeTaken && <p className="parametricsDescription">Time to Destination: </p>}
+                    {!noPath && formSubmitted && !hideTimeTaken && <img src="Time_Icon.png" className="timeIcon"></img>}
                     {!noPath && formSubmitted && !hideTimeTaken && <div className="parametricsContent"><CalculateTime distance={distanceArray[arrayposition]} /></div>}
 
 
                     </div>
                     </div>
-                    {!noPath && formSubmitted && <p className="imageCount">{arrayposition + 1}/{arrayFromString.length - 1}</p>}
+                    {!noPath && formSubmitted && <p className="imageCount">{arrayposition + 1}/{arrayFromString.length}</p>}
                     {!noPath && formSubmitted && <DestinationNotification stopsIndex={stopsIndex} arrayposition={arrayposition} MultiStopArray={MultiStopArrayNotification} pathInstructions={pathInstructions} blockedIndicator={blockedIndicator} />}
                     <div style={{ display: 'none' }}>
                         {/* Preload the next image */}
                         <div dangerouslySetInnerHTML={{ __html: arrayFromString[(arrayposition + 1) % arrayFromString.length] }} />
                     </div>
+
+
+
                     <center>
+                    {formSubmitted && <div className="container">
+                        {!noPath && <Button variant="contained" type="submit" onClick={decrementCounter} disabled={disableLeftButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "55vh", width: "8vw", marginBottom: "8vh",  marginRight: "1vw"}}><ArrowLeftIcon></ArrowLeftIcon></Button>}
                     {formSubmitted && <div className="NoMargins">
                         <div className="imageContainer">
                             <div {...handlers} className="NoMargins" style={{ overflow: 'hidden' }}>
-                                <div className="htmlContentMobile" dangerouslySetInnerHTML={{ __html: arrayFromString[arrayposition] }} />
+                            <ImageOutputMobile imgPath = {arrayFromString[arrayposition]}/>
                             </div>
                             <Tooltip title="Block?" arrow>
-                                {!noPath && !showBlockConfirmation && <Button className="overlay-button-mobile" onClick={blockConfirmation}><img src="block_logo.png" alt="cannot display" className="block-logo"></img></Button>}
+                                {!noPath && !showBlockConfirmation && <Button className="overlay-button-mobile" onClick={blockConfirmation}><img src="block_logo.png" alt="cannot display" className="block-logo-mobile"></img></Button>}
                             </Tooltip>
                             {!noPath && showBlockConfirmation && <Button variant="contained" className="overlay-confirmation-button-mobile" sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }} onClick={axiosPostBlock}>Block this point?</Button>}
-                            {showUpload && <div className="overlay-refresh">
+                            {showUpload && <div className="overlay-refresh-mobile">
                                 <Button variant="contained" type="submit" onClick={handleSubmitRefresh} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }}>Give me an alternate path</Button>
                             </div>}
 
                         </div>
+                      
 
 
 
                     </div>}
+                    {!noPath && <Button variant="contained" type="submit" onClick={incrementCounter} disabled={disableRightButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "55vh", width: "8vw", marginBottom: "8vh", marginLeft: "1vw"}}><ArrowRightIcon></ArrowRightIcon></Button>}
+                    </div>}
                     </center>
-                    <div className="fileupload-mobile">
-                    {!noPath && formSubmitted &&
-                    <Button variant="contained" type="submit" onClick={decrementCounter}
-                            sx={{
-                                bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset',
-                                textAlign: 'center !important', px: '0px', py: '0px', height: "6vh", width: "40vw"
-                            }}><ArrowLeftIcon></ArrowLeftIcon></Button>}
-                        {!noPath && formSubmitted &&<Button variant="contained" type="submit" onClick={incrementCounter}
-                            sx={{
-                                bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset',
-                                textAlign: 'center !important', px: '0px', py: '0px', height: "6vh", width: "40vw"
-                            }}><ArrowRightIcon></ArrowRightIcon></Button>}
-                    </div>
-                    <br></br>
-                    {showUpload && <div><FileUpload /></div>}
+                    {showUpload && <div className="fileupload-mobile"><FileUpload /></div>}
                 </center>
             </div>
 

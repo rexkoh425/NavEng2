@@ -8,7 +8,12 @@ import SvgIcon from '@mui/material';
 const svgwidth = 800;
 const svgheight = 500
 
+
 const TopDownMap = ({ nodes, visited, originNodeId, nodesPath, stopsIndex, submitTrigger }) => {
+  console.log("nodes" + nodes);
+  console.log("visited" + visited);
+  console.log("originNodeID" + nodesPath);
+  console.log("nodesPath" + stopsIndex);
 
   <svg width="0" height="0" style="position:absolute; overflow: hidden;">
     <symbol id="arrow-icon" viewBox="0 0 24 24">
@@ -80,7 +85,6 @@ const TopDownMap = ({ nodes, visited, originNodeId, nodesPath, stopsIndex, submi
   console.log('nodePositions:', nodePositions); // Log nodePositions for debugging
   console.log('visited: ' + visitedNum)
   */
-
   return (
     <>
         <svg width={"100%"} height={"20%"} viewBox="0 0 800 500" style={{ border: '1px solid gray' }}>
