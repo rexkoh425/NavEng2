@@ -376,6 +376,7 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                     throw new Error("cannot find dest");
                 }
                 let nodes_path = [...nodes];
+                let compressed_path  = [...nodes];
                 const directions = outputData[1].split(",");
                 let distance = outputData[2];
                 let dist_array = outputData[3].split(",");
@@ -401,7 +402,7 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                     if((directions[i-1] == directions[i] && (parseInt(dist_array[i-1]) + parseInt(dist_array[i])) <= 80) || is_up_down){//is_up_down
                         do{
                             nodes.splice(i,1);
-                            
+                            compressed_path.splice(i,1);
                             if(is_up_down){
                                 nodes_path.splice(i + splice_count,1);
                             }else{
@@ -477,7 +478,8 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                     Distance : distance ,
                     Dist_array : dist_array , 
                     nodes_path : nodes_path , 
-                    Instructions : Instructions
+                    Instructions : Instructions ,
+                    compressed_path : compressed_path
                 }
                 resolve(FinalResults);
             } catch (error) {
@@ -512,6 +514,7 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                     throw new Error("cannot find dest");
                 }
                 let nodes_path = [...nodes];
+                let compressed_path  = [...nodes];
                 const directions = outputData[1].split(",");
                 let distance = outputData[2];
                 let dist_array = outputData[3].split(",");
@@ -536,7 +539,7 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                         
                         do{
                             nodes.splice(i,1);
-                            
+                            compressed_path.splice(i,1);
                             if(is_up_down){
                                 nodes_path.splice(i + splice_count,1);
                             }else{
@@ -605,7 +608,8 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                     Distance : distance ,
                     Dist_array : dist_array , 
                     nodes_path : nodes_path , 
-                    Instructions : Instructions
+                    Instructions : Instructions ,
+                    compressed_path : compressed_path
                 }
                 resolve(FinalResults);
             } catch (error) {
@@ -686,6 +690,7 @@ class Result{
         this.Distance = 0 ;
         this.Dist_array = [] ;
         this.nodes_path = [] ;
+        this.compressed_nodes_path = [];
         this.Stops_index = [] ;
         this.Instructions = [] ;
         this.passed = true ;
@@ -698,6 +703,7 @@ class Result{
         this.Distance = `${parseInt(this.Distance) + parseInt(other.Distance)}` ;
         this.Dist_array = this.Dist_array.concat(other.Dist_array);
         this.nodes_path = this.nodes_path.concat(other.nodes_path);
+        this.compressed_nodes_path = this.compressed_nodes_path.concat(other.compressed_path);
         this.Instructions = this.Instructions.concat(other.Instructions); 
     }
 
@@ -713,6 +719,7 @@ class Result{
             Distance : this.Distance , 
             Dist_array : this.Dist_array ,
             nodes_path : this.nodes_path , 
+            compressed_nodes_path : this.compressed_nodes_path ,
             Stops_index : this.Stops_index , 
             Instructions : this.Instructions ,
             passed : this.passed
@@ -918,7 +925,6 @@ router.post('/formPost' , async (req ,res) => {
     }
     
     await TotalResult.convert_to_instructions();
-    //debug_log(TotalResult.Instructions);
     return res.send(TotalResult.get_object());
 });
 
@@ -1009,7 +1015,6 @@ router.post('/blockRefresh' , async (req ,res) => {
         }
     }
     await TotalResult.convert_to_instructions();
-    debug_log(TotalResult.Instructions);
     let TotalResultObj = TotalResult.get_object();
     TotalResultObj['Destinations'] = destinations;
     return res.send(TotalResultObj);

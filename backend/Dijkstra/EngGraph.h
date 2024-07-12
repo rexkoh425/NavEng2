@@ -1,7 +1,7 @@
 #include "graph.h"
 
 Graph createEngGraph(vector<int> blocked_nodes){
-    Graph g(355  , blocked_nodes);
+    Graph g(354  , blocked_nodes);
     g.addEdge(0, 1, 50 , EAST);
     g.addEdge(1, 153, 70 , SOUTH);
     g.addEdge(153, 2, 40 , SOUTH);
@@ -196,9 +196,6 @@ Graph createEngGraph(vector<int> blocked_nodes){
     g.addEdge(167, 31 , 40 , UP);//extra12
     g.addEdge(166, 27 , 40 , UP);//extra12
     g.addEdge(154, 23 , 40 , UP);//extra12
-    ///////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////
     g.addEdge(142, 176, 220 , EAST);
     g.addEdge(176, 177, 65 , EAST);
     g.addEdge(177, 178, 20 , NORTH);

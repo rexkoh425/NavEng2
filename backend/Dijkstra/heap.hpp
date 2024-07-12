@@ -20,7 +20,7 @@ class Heap {
     heap_size = 0;
 
     for(int i = 0 ; i < num_of_nodes ; i++){
-      _index_table[i] = 0;
+      _index_table[i] = -1;
     }
   }
 
@@ -34,6 +34,7 @@ class Heap {
     }
     return false;
   }
+
   void insert(const GraphEdge&);
   GraphEdge extractMin();
   GraphEdge peekMin() const;
@@ -50,11 +51,11 @@ class Heap {
   void bubble_up(int index){
     int new_index = (index-1)/2;
 
-    if(new_index < 0){
+    if(new_index < 0 || new_index >= heap_size){
       return;
     }
-    GraphEdge val = _heap[index];
-    if(val < _heap[new_index]){
+    
+    if(_heap[index] < _heap[new_index]){
       swap(new_index,index);
       bubble_up(new_index);
     }
@@ -65,9 +66,8 @@ class Heap {
     GraphEdge e2 = _heap[index2]; 
     _heap[index2] = e1;
     _heap[index1] = e2;
-    int temp = _index_table[e1.dest()];
-    _index_table[e1.dest()] = _index_table[e2.dest()];
-    _index_table[e2.dest()] = temp;
+    _index_table[e1.dest()] = index2;
+    _index_table[e2.dest()] = index1;
   }
 
   void bubble_down(int index){
@@ -116,6 +116,9 @@ GraphEdge Heap::extractMin() {
     }
     GraphEdge temp = _heap[0];
     swap(0,heap_size-1);
+    //removes edge
+    _heap[heap_size-1] = GraphEdge();
+    _index_table[temp.dest()] = -1;
     heap_size--;
     bubble_down(0);
     return temp;
@@ -136,14 +139,13 @@ void Heap::printHeapArray() const {
   cout << endl;
 }
 
-
 void Heap::changeKey(const GraphEdge& from, const GraphEdge& to) {
   // TODO: implement this
   int index = _index_table[from.dest()];
   if(index == -1){
     throw std::out_of_range("no such element");
   }
-  _index_table[from.dest()] = 0;
+  _index_table[from.dest()] = -1;
   _heap[index] = to;
   _index_table[to.dest()] = index;
 
@@ -156,13 +158,14 @@ void Heap::changeKey(const GraphEdge& from, const GraphEdge& to) {
   }
 }
 
-
 void Heap::deleteItem(const GraphEdge& x) {
   int index = _index_table[x.dest()];
   if(index == -1){
     throw std::out_of_range("no such element");
   }
   swap(index , heap_size-1);
+  _heap[heap_size-1] = GraphEdge();
+  _index_table[x.dest()] = -1;
   heap_size--;
   int new_index = (index-1)/2;
  
