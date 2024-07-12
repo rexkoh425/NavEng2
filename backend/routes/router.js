@@ -17,7 +17,7 @@ const database_down_url = 'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/o
 let blocked_node = "";
 
 function debug_log(input){
-    let debug = true;
+    let debug = false;
     if(debug){
         console.log(input);
     }
@@ -62,10 +62,6 @@ async function ENUM_to_left_right(input){
         default : 
             return "None";
     }
-}
-
-function template_img(img_path){
-  return `<img src = "${img_path}" alt = "cannot be displayed" class="htmlData"><br>`;
 }
 
 async function NESW_ENUM(input){
@@ -457,7 +453,7 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                             break;
                         }
                     }
-                    const imgHTML = template_img(result.filepath);             
+                    const imgHTML = result.filepath;             
                     fixedLengthArray[index] = imgHTML;
                     debug_array[debug_array_index] = result.unique_id;
                     debug_array_index++;
@@ -466,7 +462,7 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                 debug_log("diff is ");
                 debug_log(diff);
                 //debug_log("dist array length is " + dist_array.length + " and nodes array length is " + nodes.length);
-                const final = fixedLengthArray.join('');
+                const final = fixedLengthArray.join(' ');
                 debug_log("dist_array : ")
                 debug_log(dist_array);
                 debug_log("distance : ")
@@ -590,7 +586,7 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                             break;
                         }
                     }
-                    const imgHTML = template_img(result.filepath);             
+                    const imgHTML = result.filepath;             
                     fixedLengthArray[index] = imgHTML;
                     debug_array[debug_array_index] = result.unique_id;
                     debug_array_index++;
@@ -600,7 +596,7 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                 nodes_path.pop();
                 nodes.pop();
                 data_length -= 1;
-                const final = fixedLengthArray.join('');
+                const final = fixedLengthArray.join(' ');
                 const FinalResults = {
                     Expected : nodes.length ,
                     Queried : data_length , 
@@ -871,7 +867,7 @@ router.post('/formPost' , async (req ,res) => {
     let mergedArray = [];
     if(inputData.MultiStopArray.length < 2){
         debug_log("data incorrectly labelled or source and destination not filled"); 
-        return res.send({HTML : template_img(no_alt_path_url) , passed : false , error_can_handle : false});
+        return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : false});
     }
 
     try{
@@ -894,7 +890,7 @@ router.post('/formPost' , async (req ,res) => {
         mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered , ...stairs]));
         //debug_log(mergedArray);
     }catch(error){
-        return res.send({HTML : template_img(database_down_url) , passed : false , error_can_handle : false});
+        return res.send({HTML : database_down_url , passed : false , error_can_handle : false});
     }
     let TotalResult = new Result();
 
@@ -918,9 +914,9 @@ router.post('/formPost' , async (req ,res) => {
         } catch(error){
             //console.error('Error caught:', error.message);
             if(error.message == "cannot find dest"){
-                return res.send({HTML : template_img(no_alt_path_url) , passed : false , error_can_handle : true});
+                return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : true});
             }
-            return res.send({HTML : template_img(no_alt_path_url) , passed : false , error_can_handle : false});
+            return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : false});
         }
     }
     
@@ -935,7 +931,7 @@ router.post('/blockRefresh' , async (req ,res) => {
     let destinations = inputData.MultiStopArray;
     if(inputData.MultiStopArray.length < 2){
         //debug_log("data incorrectly labelled or source and destination not filled"); 
-        return res.send({HTML : template_img(no_alt_path_url) , passed : false , error_can_handle : false});
+        return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : false});
     }
     let blocked_node_component;
     let mergedArray;
@@ -955,12 +951,12 @@ router.post('/blockRefresh' , async (req ,res) => {
         blocked_node_component = await break_down_img_path(inputData.blocked_img_path);
 
         if(blocked_node_component.type == 'Room'){
-            return res.send({HTML : template_img(no_alt_path_url) , passed : false , error_can_handle : false});
+            return res.send({ HTML : no_alt_path_url , passed : false , error_can_handle : false});
         }
         
         const b4_blocked_node_id = await get_b4_blocked_unique_id_from_array(blocked_node_component.node_id , inputData.Node_id_array);
         if(b4_blocked_node_id == ""){
-            return res.send({HTML : template_img(no_alt_path_url) , passed : false , error_can_handle : false});
+            return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : false});
         }
         destinations.unshift(parseInt(b4_blocked_node_id));
         
@@ -979,7 +975,7 @@ router.post('/blockRefresh' , async (req ,res) => {
         }
         mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered , ...stairs]));
     }catch(error){
-        return res.send({HTML : template_img(database_down_url) , passed : false , error_can_handle : false});
+        return res.send({HTML : database_down_url , passed : false , error_can_handle : false});
     }
     let TotalResult = new Result();
     //Destinations : destinations
@@ -1009,9 +1005,9 @@ router.post('/blockRefresh' , async (req ,res) => {
         }catch(error){
             //console.error('Error caught:', error.message);
             if(error.message == "cannot find dest"){
-                return res.send({HTML : template_img(no_alt_path_url) , passed : false , error_can_handle : true});
+                return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : true});
             }
-            return res.send({HTML : template_img(no_alt_path_url) , passed : false , error_can_handle : false});
+            return res.send({ HTML : no_alt_path_url , passed : false , error_can_handle : false});
         }
     }
     await TotalResult.convert_to_instructions();
@@ -1280,17 +1276,6 @@ router.post('/convert__to_-' , async(req, res) => {
 ///////////////////////function testing region////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-
-router.post('/template_img' , async (req , res) => {
-    const inputs = req.body.Input;
-    const expected = req.body.Expected;
-    const response = template_img(inputs);
-    if(response == expected) { 
-        res.send({ passed : true }) 
-    }else{
-        res.send({ passed : false });
-    }
-});
 
 router.post('/NESW_ENUM' , async (req , res) => {
     const inputs = req.body.Input;
