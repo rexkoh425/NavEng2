@@ -5,7 +5,7 @@ import ArrowIcon from './ArrowIcon';
 import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
 import ArrowCircleDownIcon from '@mui/icons-material/ArrowCircleDown';
 import SvgIcon from '@mui/material';
-const svgwidth = 300;
+const svgwidth = 600;
 const svgheight = 400
 
 const TopDownMapMobile = ({ nodes, visited, originNodeId, nodesPath, stopsIndex, submitTrigger }) => {
@@ -80,7 +80,7 @@ const TopDownMapMobile = ({ nodes, visited, originNodeId, nodesPath, stopsIndex,
   return (
     <>
 
-        <svg width={"100%"} height={"100%"} viewBox="0 0 300 400" style={{ border: '1px solid gray' }}>
+        <svg width={"100%"} height={"100%"} viewBox="0 0 600 400" style={{ border: '1px solid gray' }}>
           {/* For Map Layout */}
           {nodes.map(node => (
             <g key={node.id}>

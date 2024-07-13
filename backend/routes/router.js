@@ -467,6 +467,7 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                 debug_log(dist_array);
                 debug_log("distance : ")
                 debug_log(distance);
+
                 const FinalResults = {
                     Expected : nodes.length ,
                     Queried : data_length , 
@@ -1008,7 +1009,9 @@ router.post('/blockRefresh' , async (req ,res) => {
             if(error.message == "cannot find dest"){
                 return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : true});
             }
+          
             return res.send({ HTML : no_alt_path_url , passed : false , error_can_handle : false});
+
         }
     }
     await TotalResult.convert_to_instructions();
