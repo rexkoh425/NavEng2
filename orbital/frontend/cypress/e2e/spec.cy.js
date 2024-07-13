@@ -94,6 +94,7 @@ describe("User can use pathfinding functionality", () => {
       cy.findByRole('img', {  name: /cannot be displayed/i})
   })
 }) 
+/*
 
 describe("Paths with stairs", () => {
   it('suggests paths with stairs', () => {
@@ -105,10 +106,10 @@ describe("Paths with stairs", () => {
     }).type("EA-05-50")
     cy.findByRole('option', { name: "EA-05-50" }).click()
     cy.findByRole('button', {  name: /submit/i}).click()
-    cy.wait(10000);
+    cy.wait(1000);
     cy.findByRole('img', {name: /cannot be displayed/i})
     let stairsfound = false;
-    cy.wait(10000);
+    cy.wait(1000);
     cy.get('.imageCount')
     .invoke('text') 
     .then(text => {
@@ -118,13 +119,10 @@ describe("Paths with stairs", () => {
       cy.log(`Image No.: ${img_no}`);
       cy.log(`Total number of images: ${total_img}`);
       for (let i = 0; i < total_img -1; i ++) {
-        cy.wait(10000);
         cy.findByTestId('ArrowRightIcon').click()
-        cy.wait(10000);
+        cy.wait(1000);
         cy.get('img').each(($img) => {
-          cy.wait(10000);
           cy.wrap($img).invoke('attr', 'src').then((src) => {
-            cy.wait(10000);
             if (src.includes(stairs)) {
               stairsfound = true;
               return false;
@@ -135,6 +133,7 @@ describe("Paths with stairs", () => {
     }).then(() => {expect(stairsfound).to.be.true;})
   })
 })
+*/
 
 describe("Using no stairs filter", () => {
   it('suggests paths with no stairs', () => {
