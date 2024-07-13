@@ -753,7 +753,8 @@ router.post('/locations' , async(req,res) => {
             .from('pictures')
             .select('room_num')
             .eq('pov', 'None')
-            .eq('direction', 'None');
+            .eq('direction', 'None')
+            .order('room_num', { ascending: true });
         if (error) {
             throw error;
         }
