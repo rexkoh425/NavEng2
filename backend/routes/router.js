@@ -357,7 +357,7 @@ async function break_down_img_path(img_name){
 async function full_query(source , destination , blocked_nodes , previous_node){
     return new Promise((resolve, reject) => {
         debug_log(blocked_nodes);
-        const inputObj = { source : source , destination : destination , blocked : blocked_nodes};
+        const inputObj = { source : source , destination : destination , blocked : blocked_nodes , getMapObj : false};
         const serializedData = JSON.stringify(inputObj);
         const cppProcess = spawn(__dirname + '/../Dijkstra/main' , []);
         cppProcess.stdin.write(serializedData);
@@ -502,7 +502,7 @@ async function full_query(source , destination , blocked_nodes , previous_node){
 
 async function transit_query(source , destination , blocked_nodes , previous_node){
     return new Promise((resolve, reject) => {
-        const inputObj = { source : source , destination : destination , blocked : blocked_nodes};
+        const inputObj = { source : source , destination : destination , blocked : blocked_nodes , getMapObj : false};
         const serializedData = JSON.stringify(inputObj);
         const cppProcess = spawn(__dirname + '/../Dijkstra/main' , []);
         cppProcess.stdin.write(serializedData);
