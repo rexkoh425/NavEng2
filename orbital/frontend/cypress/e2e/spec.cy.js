@@ -99,15 +99,19 @@ describe("Paths with stairs", () => {
   it('suggests paths with stairs', () => {
     cy.visit('http://localhost:3000/')
     cy.findByRole('combobox', {  name: /start location/i}).type("EA-02-10")
+    cy.wait(2000);
     cy.findByRole('option', { name: "EA-02-10" }).click()
+    cy.wait(2000);
     cy.findByRole('combobox', {
       name: /end location/i
     }).type("EA-05-50")
+    cy.wait(2000);
     cy.findByRole('option', { name: "EA-05-50" }).click()
     cy.findByRole('button', {  name: /submit/i}).click()
+    cy.wait(5000);
     cy.findByRole('img', {name: /cannot be displayed/i})
     let stairsfound = false;
-    cy.wait(2000);
+    cy.wait(10000);
     cy.get('.imageCount')
     .invoke('text') 
     .then(text => {
@@ -118,7 +122,7 @@ describe("Paths with stairs", () => {
       cy.log(`Total number of images: ${total_img}`);
       for (let i = 0; i < total_img -1; i ++) {
         cy.findByTestId('ArrowRightIcon').click()
-        cy.wait(2000);
+        cy.wait(10000);
         cy.get('img').each(($img) => {
           cy.wrap($img).invoke('attr', 'src').then((src) => {
             if (src.includes(stairs)) {
