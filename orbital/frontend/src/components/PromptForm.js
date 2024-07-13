@@ -287,7 +287,8 @@ function PromptForm() {
             console.log(distArray)
             setPathInstructions(response.data['Instructions'])
 
-            setNodesPath(response.data['nodes_path'])
+            setNodesPath(response.data['compressed_nodes_path']) 
+            setNode_id_array(response.data['nodes_path']);
             setStopsIndex(response.data['Stops_index']);
             setNode_id_array(response.data['nodes_path']);
             handleConvertToMetres(distArray);
@@ -333,7 +334,7 @@ function PromptForm() {
             setPathInstructions(response.data['Instructions'])
             setBlockedIndicator(true)
             setSubmitTrigger(!submitTrigger)
-            setNodesPath(response.data['nodes_path'])
+            setNodesPath(response.data['compressed_nodes_path'])
             setVisited(["0"])
 
 
@@ -553,7 +554,7 @@ function PromptForm() {
                         <br></br>
                         <Instructions formSubmitted = {formSubmitted}></Instructions>
                         {formSubmitted  && stopsIndex &&
-                        <TopDownMap nodes={graphnodes} visited={visited} originNodeId={blockedNodeID} nodesPath={nodesPath} stopsIndex={stopsIndex} submitTrigger={submitTrigger}></TopDownMap>}
+                        <TopDownMap nodes={graphnodes} visited={visited} originNodeId={blockedNodeID} nodesPath={nodesPath} stopsIndex={stopsIndex} submitTrigger={submitTrigger} Node_id_array={Node_id_array} arrayposition={arrayposition}></TopDownMap>}
 
 
                     </form>

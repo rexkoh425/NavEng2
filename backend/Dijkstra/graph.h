@@ -32,7 +32,7 @@ class GraphEdge {
 
  public:
   // Public constructor creates an invalid edge. Needed for use in vector.
-  GraphEdge() : _dest(-1), _weight(-1) , _dir(-1) {}
+  GraphEdge() : _dest(-1), _weight(999999) , _dir(-1) {}
   GraphEdge(int index, int weight , int dir) : _dest(index), _weight(weight) , _dir(dir) {}
   GraphEdge(const GraphEdge& e) : _dest(e._dest), _weight(e._weight) , _dir(e._dir) {}
   int dest() const { return _dest; }
@@ -55,6 +55,7 @@ class Graph {
   // contains all of the edges from that vertex.
   vector<forward_list<GraphEdge>> _vertices;
   vector<int> blocked_nodes;
+  
  public:
   // Create an empty graph with n vertices
   Graph(int n , vector<int> blocked_array) : _vertices(n) {

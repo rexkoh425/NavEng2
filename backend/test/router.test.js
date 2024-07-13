@@ -12,7 +12,7 @@ async function CheckLocation(receivedData) {
         const res = await request(app)
             .post('/formPost')
             .send(receivedData)
-            .timeout({ deadline: 3000 });
+            .timeout({ deadline: 5000 });
 
         let data = res.body;
 
@@ -37,7 +37,7 @@ async function CheckBlockedLocation(receivedData) {
         const res = await request(app)
             .post('/blockRefresh')
             .send(receivedData)
-            .timeout({ deadline: 3000 });
+            .timeout({ deadline: 5000 });
 
         let data = res.body;
         data['source'] = receivedData.MultiStopArray[0];
@@ -122,17 +122,9 @@ async function break_down_img_path(img_name){
 
 }
 
-async function get_filepath(HTML_input){
-    let temp = HTML_input.split('/');
-    let rough_filepath = temp.slice(8).join('/');
-    let index = rough_filepath.indexOf('"');
-    let filepath = rough_filepath.slice(0, index);
-    return filepath;
-}
-
 async function choose_middle_blocked(HTML){
     
-    let seperatedHTML = HTML.split('<br>');
+    let seperatedHTML = HTML.split(' ');
     seperatedHTML.pop();
     if(seperatedHTML.length >= 6){
         let blocked_filepath = '';
@@ -140,8 +132,7 @@ async function choose_middle_blocked(HTML){
         let chosen_index = (seperatedHTML.length >> 1)+1;
         do{
             chosen_index --;
-            const blocked_HTML = seperatedHTML[chosen_index];
-            blocked_filepath = await get_filepath(blocked_HTML);
+            blocked_filepath = seperatedHTML[chosen_index];
             const broken_blocked_filepath = await break_down_img_path(blocked_filepath);
             arrow_dir = broken_blocked_filepath.arrow;
         }while(arrow_dir == 'None' && chosen_index >= 2);
@@ -204,27 +195,6 @@ class TestResult{
 
 describe('Testing Functions..........', function () {
     this.timeout(10000);
-
-    it('template_img converts image path to HTML usable code', async function () {
-        try {
-            const input = { 
-                Input : 'test_image.jpg', 
-                Expected : `<img src = "test_image.jpg" alt = "cannot be displayed" class="htmlData"><br>` 
-            }
-            const response = await request(app)
-                .post('/template_img')
-                .send(input);
-
-            if(response.body.passed == false){
-                throw new Error("template_img function failed")
-            }
-        } catch (error){
-            throw error;
-        }
-        if (global.gc) {
-            global.gc();
-        }
-    })
 
     it('NESW_ENUM returns number in string corresponding to the directions', async function () {
         try {

@@ -1,14 +1,9 @@
 import React from 'react';
-import { useState, useEffect } from 'react';
-import { Button } from '@mui/material';
-import ArrowIcon from './ArrowIcon';
-import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
-import ArrowCircleDownIcon from '@mui/icons-material/ArrowCircleDown';
-import SvgIcon from '@mui/material';
+
 const svgwidth = 600;
 const svgheight = 400
 
-const TopDownMapMobile = ({ nodes, visited, originNodeId, nodesPath, stopsIndex, submitTrigger }) => {
+const TopDownMapMobile = ({ nodes, visited, originNodeId, nodesPath, stopsIndex, submitTrigger, Node_id_array}) => {
 
   <svg width="0" height="0" style="position:absolute; overflow: hidden;">
     <symbol id="arrow-icon" viewBox="0 0 24 24">
@@ -16,11 +11,26 @@ const TopDownMapMobile = ({ nodes, visited, originNodeId, nodesPath, stopsIndex,
     </symbol>
   </svg>
 
+function NewVisited(Node_id_array, originNodeId) {
+  let NewestVisited = [];
+ 
+  for (let elem of Node_id_array) {
+       if (elem === originNodeId) {
+         NewestVisited.push(elem);
+          break;
+       }
+       NewestVisited.push(elem);
+   }
+ 
+   return NewestVisited;
+ }
 
   const nodesForStopsString = stopsIndex.map(index => nodesPath[index]);
   const nodesForStops = nodesForStopsString.map(num => parseInt(num, 10));
   const visitedNum = visited.map(num => parseInt(num, 10));
   const path = nodesPath.map(num => parseInt(num, 10));
+  const uncompressedpath = Node_id_array.map(num => parseInt(num, 10));
+  let NewestVisited = NewVisited(uncompressedpath, originNodeId)
   const calculateNodePositions = (originNodeId) => {
     const calculatedPositions = new Map();
     const originNode = nodes.find(node => node.id === originNodeId);
@@ -162,6 +172,20 @@ const TopDownMapMobile = ({ nodes, visited, originNodeId, nodesPath, stopsIndex,
 
                 return (
                   <>
+                   <line
+                      key={`9th layer-${node.id}-${connectedNode.id}`}
+                      x1={x1}
+                      y1={y1}
+                      x2={x2}
+                      y2={y2}
+                      stroke={
+                        (NewestVisited.includes(node.id) && NewestVisited.includes(connection.id)) ? 'grey' :
+                          (uncompressedpath.includes(node.id) && uncompressedpath.includes(connection.id)) ? '#F05C2C' :
+                            'lightgrey'
+                      } strokeWidth="5"
+                      strokeOpacity={(path.includes(node.id) && uncompressedpath.includes(connection.id)) ? '1' :
+                        '0'}
+                    />
                     <line
                       key={`4th layer-${node.id}-${connectedNode.id}`}
                       x1={x1}
@@ -169,7 +193,7 @@ const TopDownMapMobile = ({ nodes, visited, originNodeId, nodesPath, stopsIndex,
                       x2={x2}
                       y2={y2}
                       stroke={
-                        (visitedNum.includes(node.id) && visitedNum.includes(connection.id)) ? 'grey' :
+                        (NewestVisited.includes(node.id) && visitedNum.includes(connection.id)) ? 'grey' :
                           (path.includes(node.id) && path.includes(connection.id)) ? '#F05C2C' :
                             'lightgrey'
                       } strokeWidth="5"
