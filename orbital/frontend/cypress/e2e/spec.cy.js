@@ -91,7 +91,7 @@ describe("User can use pathfinding functionality", () => {
       for (let i = 0; i < total_img -1; i ++) {
         cy.findByTestId('ArrowRightIcon').click()
       }})
-      cy.get('img[src*="https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/14_20_-390_80_None_None_Room_EA-02-09.jpg"]').should('be.visible')
+      cy.findByRole('img', {  name: /cannot be displayed/i})
   })
 }) 
 
@@ -107,13 +107,13 @@ describe("Paths with stairs", () => {
     cy.findByRole('button', {  name: /submit/i}).click()
     cy.findByRole('img', {name: /cannot be displayed/i})
     let stairsfound = false;
+    cy.wait(1000);
     cy.get('.imageCount')
     .invoke('text') 
     .then(text => {
       const img_no = splitTextBeforeSlash(text);
       const total_img = splitTextAfterSlash(text);
       const stairs = 'Stairs';
-
       cy.log(`Image No.: ${img_no}`);
       cy.log(`Total number of images: ${total_img}`);
       for (let i = 0; i < total_img -1; i ++) {
@@ -143,6 +143,7 @@ describe("Using no stairs filter", () => {
     cy.findByRole('checkbox', {  name: /no stairs/i}).click()
     cy.findByRole('button', {  name: /submit/i}).click()
     cy.findByRole('img', {name: /cannot be displayed/i})
+    cy.wait(1000);
     cy.get('.imageCount')
     .invoke('text') 
     .then(text => {

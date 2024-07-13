@@ -479,6 +479,8 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                     compressed_path : compressed_path
                 }
                 resolve(FinalResults);
+                console.log("nodesPath: " + nodes_path)
+                console.log("Compressed_path: " + compressed_path)
             } catch (error) {
                 reject(error);
             }
