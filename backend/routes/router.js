@@ -1092,10 +1092,10 @@ router.post('/getfloor' , async (req , res) => {
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
-    
-    let inputObj = { nodes : [...nodes_with_same_z] };
+
+    const inputObj = { nodes : [...nodes_with_same_z] , getMapObj : true};
     const serializedData = JSON.stringify(inputObj);
-    const cppProcess = spawn(__dirname + '/../Dijkstra/TopDownMap' , []);
+    const cppProcess = spawn(__dirname + '/../Dijkstra/main' , []);
     cppProcess.stdin.write(serializedData);
     cppProcess.stdin.end();
     

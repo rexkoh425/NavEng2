@@ -13,6 +13,26 @@
 using namespace std;
 using namespace rapidjson;
 
+void MapObj(Graph g , vector<int> nodes_array){
+  bool in_array_map[1000] = {false};
+    for(int i = 0 ; i < nodes_array.size() ; i++){
+        in_array_map[nodes_array[i]] = true;
+    }
+    for(int i = 0 ; i < nodes_array.size() ; i++){
+        forward_list<GraphEdge> neighbours = g.edges_from(nodes_array[i]);
+        cout << nodes_array[i] << "_";
+        for(auto i = neighbours.begin() ; i != neighbours.end() ; i++){
+            GraphEdge current = *i;
+            if(in_array_map[current.dest()]){
+                cout << current.dest() << "," << current.weight() << "," << current.dir();
+                cout << "/";
+            }
+        }
+
+        cout << "|";
+    }
+}
+
 int main(){
     
     std::string inputData;
@@ -26,10 +46,29 @@ int main(){
     }
     int source = 0;
     int dest = 0;
+    bool getMapObj = false;
     vector<int> blocked_nodes;
+    vector<int> nodes_array;
 
     // Access JSON data
     if (doc.IsObject()) {
+      if(doc.HasMember("getMapObj")){
+        getMapObj = doc["getMapObj"].GetBool();
+      }
+      if(getMapObj){
+        if (doc.HasMember("nodes")) {
+          const Value& nodes = doc["nodes"];
+
+          for (SizeType i = 0; i < nodes.Size(); ++i) {
+            if (nodes[i].IsInt()) {
+              nodes_array.push_back(nodes[i].GetInt() - 1);
+            } else {
+              std::cerr << "Non-integer value in \"nodes\" array" << std::endl;
+              return 1;
+            }
+          }
+        }
+      }else{
         if (doc.HasMember("source")) {
           source = doc["source"].GetInt() - 1;
         }
@@ -48,6 +87,7 @@ int main(){
               }
           }
         }
+      }
     } else {
       std::cerr << "Input is not a JSON object" << std::endl;
       return 1;
@@ -55,38 +95,43 @@ int main(){
     
     //vector<int> blocked_nodes;
     Graph test1 = createEngGraph(blocked_nodes);
-    Path result = shortestPath(test1 , source ,  dest);
+    if(getMapObj){
+      MapObj(test1 , nodes_array);
+    }else{
 
-    vector<int> final_path = result.path();
-    vector<int> final_directions = result.direction();
-    vector<int> dist_between = result.dist_array();
-    int distance = result.total_distance();
+      Path result = shortestPath(test1 , source ,  dest);
+      vector<int> final_path = result.path();
+      vector<int> final_directions = result.direction();
+      vector<int> dist_between = result.dist_array();
+      int distance = result.total_distance();
+      
+      int size = final_path.size();
+      for(int i = 0 ; i < size ; i++){
+        cout << final_path[i] + 1;
+        if(i != size-1){
+          cout << ",";
+        }
+      }
+      cout << "|";
+      size = final_directions.size();
+      for(int i = 0 ; i < size ; i++){
+        cout << final_directions[i];
+        if(i != size-1){
+          cout << ",";
+        }
+      }
+
+      cout << "|" << distance;
+
+      cout << "|";
+      size = dist_between.size();
+      for(int i = 0 ; i < size ; i++){
+        cout << dist_between[i];
+        if(i != size-1){
+          cout << ",";
+        }
+      }
+      return 0 ;
+    }
     
-    int size = final_path.size();
-    for(int i = 0 ; i < size ; i++){
-      cout << final_path[i] + 1;
-      if(i != size-1){
-        cout << ",";
-      }
-    }
-    cout << "|";
-    size = final_directions.size();
-    for(int i = 0 ; i < size ; i++){
-      cout << final_directions[i];
-      if(i != size-1){
-        cout << ",";
-      }
-    }
-
-    cout << "|" << distance;
-
-    cout << "|";
-    size = dist_between.size();
-    for(int i = 0 ; i < size ; i++){
-      cout << dist_between[i];
-      if(i != size-1){
-        cout << ",";
-      }
-    }
-    return 0 ;
 }
