@@ -391,11 +391,11 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                 Instructions.push('');
                 let directions_array_len = directions.length;
                 let splice_count = 0;
-
+                let is_exit = true;
                 for(i = 1 ; i < directions_array_len ; i ++){
                     
                     let is_up_down = await is_moving_up_down(directions[i-1] , directions[i]);    
-                    if((directions[i-1] == directions[i] && (parseInt(dist_array[i-1]) + parseInt(dist_array[i])) <= 80) || is_up_down){//is_up_down
+                    if(((directions[i-1] == directions[i] && (parseInt(dist_array[i-1]) + parseInt(dist_array[i])) <= 80) || is_up_down) && !is_exit){//is_up_down
                         do{
                             nodes.splice(i,1);
                             compressed_path.splice(i,1);
@@ -416,6 +416,11 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                     }else{
                         let pov = await get_pov(directions[i-1] , directions[i]); 
                         let direction = await get_arrow_dir(directions[i-1] , directions[i]);
+                        if(direction == '7'){
+                            is_exit = true;
+                        }else{
+                            is_exit = false;
+                        }
                         nodes[i] += pov;
                         nodes[i] += direction;
                         let instructions_obj = { 
@@ -531,10 +536,11 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                 Instructions.push('');
                 let directions_array_len = directions.length;
                 let splice_count = 0;
+                let is_exit = true;
                 for(i = 1 ; i < directions_array_len ; i ++){
                     
                     let is_up_down = await is_moving_up_down(directions[i-1] , directions[i]);
-                    if((directions[i-1] == directions[i] && (parseInt(dist_array[i-1]) + parseInt(dist_array[i])) <= 80) || is_up_down){
+                    if(((directions[i-1] == directions[i] && (parseInt(dist_array[i-1]) + parseInt(dist_array[i])) <= 80) || is_up_down) && !is_exit){
                         
                         do{
                             nodes.splice(i,1);
@@ -555,6 +561,11 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                     }else{
                         let pov = await get_pov(directions[i-1] , directions[i]); 
                         let direction = await get_arrow_dir(directions[i-1] , directions[i]);
+                        if(direction == '7'){
+                            is_exit = true;
+                        }else{
+                            is_exit = false;
+                        }
                         nodes[i] += pov;
                         nodes[i] += direction;
                         let instructions_obj = { 
@@ -756,7 +767,8 @@ router.post('/locations' , async(req,res) => {
             .from('pictures')
             .select('room_num')
             .eq('pov', 'None')
-            .eq('direction', 'None');
+            .eq('direction', 'None')
+            .order('room_num', { ascending: true });
         if (error) {
             throw error;
         }
