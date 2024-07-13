@@ -107,7 +107,7 @@ describe("Paths with stairs", () => {
     cy.findByRole('button', {  name: /submit/i}).click()
     cy.findByRole('img', {name: /cannot be displayed/i})
     let stairsfound = false;
-    cy.wait(1000);
+    cy.wait(2000);
     cy.get('.imageCount')
     .invoke('text') 
     .then(text => {
@@ -118,6 +118,7 @@ describe("Paths with stairs", () => {
       cy.log(`Total number of images: ${total_img}`);
       for (let i = 0; i < total_img -1; i ++) {
         cy.findByTestId('ArrowRightIcon').click()
+        cy.wait(2000);
         cy.get('img').each(($img) => {
           cy.wrap($img).invoke('attr', 'src').then((src) => {
             if (src.includes(stairs)) {

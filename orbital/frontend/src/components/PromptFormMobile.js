@@ -297,7 +297,7 @@ function PromptFormMobile() {
             const distArray = response.data['Dist_array'];
             setPathInstructions(response.data['Instructions'])
             
-            setNodesPath(response.data['nodes_path'])
+            setNodesPath(response.data['compressed_nodes_path'])
             setStopsIndex(response.data['Stops_index']);
             handleConvertToMetres(distArray);
             setNode_id_array(response.data['nodes_path']);
@@ -340,6 +340,7 @@ function PromptFormMobile() {
             const arrayFromString = response.data['HTML'].split('<img src');
             setBlocked(arrayFromString[0]);
 
+            setNodesPath(response.data['compressed_nodes_path'])
             setPathInstructions(response.data['Instructions'])
             setBlockedIndicator(true)
             setSubmitTrigger(!submitTrigger)
@@ -567,7 +568,7 @@ function PromptFormMobile() {
                         }}>Please select the starting and ending <br></br> locations to view the pictures</Box></div>}
 
                 <center>
-                { stopsIndex && <TopDownMapMobile nodes={graphnodes} visited={visited} originNodeId={blockedNodeID} nodesPath={nodesPath} stopsIndex={stopsIndex} submitTrigger={submitTrigger}></TopDownMapMobile>}
+                { stopsIndex && <TopDownMapMobile nodes={graphnodes} visited={visited} originNodeId={blockedNodeID} nodesPath={nodesPath} stopsIndex={stopsIndex} submitTrigger={submitTrigger} Node_id_array={Node_id_array}></TopDownMapMobile>}
                     <div className="two-columns-container">
                     <div className="column">
                     {!noPath && formSubmitted && !hideTimeTaken && <img src="Distance_Icon.png" className="distanceIcon"></img>}
