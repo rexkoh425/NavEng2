@@ -70,6 +70,8 @@ function PromptForm() {
     const [temp, setTemp] = useState([])
     const [graphnodes, setGraphnodes] = useState([]) ;
 
+    const [nodeDirection, setNodeDirection] = useState([]);
+
 
     const Local = process.env.REACT_APP_LOCAL;
     let websitelink = ""
@@ -175,6 +177,12 @@ function PromptForm() {
             const indexOfQuote = remainder.indexOf('"');
             const BlockedIMGNameVariable=remainder.slice(0, indexOfQuote)
             setBlockedIMGName(BlockedIMGNameVariable);
+            console.log("blocked: " + blocked)
+            console.log("blocked img name: " + BlockedIMGNameVariable)
+
+            const direction = BlockedIMGNameVariable.split("_")[4];
+            setNodeDirection(direction)
+
 
             const node_string = BlockedIMGNameVariable.split("_")[0];
             const before_node_id = parseInt(node_string);
@@ -213,6 +221,7 @@ function PromptForm() {
         }
         setDisableLeftButton(false)
         setShowBlockConfirmation(false)
+        console.log(graphnodes)
     };
 
     const decrementCounter = (e) => {
@@ -554,7 +563,7 @@ function PromptForm() {
                         <br></br>
                         <Instructions formSubmitted = {formSubmitted}></Instructions>
                         {formSubmitted  && stopsIndex &&
-                        <TopDownMap nodes={graphnodes} visited={visited} originNodeId={blockedNodeID} nodesPath={nodesPath} stopsIndex={stopsIndex} submitTrigger={submitTrigger} Node_id_array={Node_id_array} arrayposition={arrayposition}></TopDownMap>}
+                        <TopDownMap nodes={graphnodes} visited={visited} originNodeId={blockedNodeID} nodesPath={nodesPath} stopsIndex={stopsIndex} Node_id_array={Node_id_array} blockedIMGName={blockedIMGName}></TopDownMap>}
 
 
                     </form>

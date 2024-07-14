@@ -568,7 +568,7 @@ function PromptFormMobile() {
                         }}>Please select the starting and ending <br></br> locations to view the pictures</Box></div>}
 
                 <center>
-                { stopsIndex && <TopDownMapMobile nodes={graphnodes} visited={visited} originNodeId={blockedNodeID} nodesPath={nodesPath} stopsIndex={stopsIndex} submitTrigger={submitTrigger} Node_id_array={Node_id_array}></TopDownMapMobile>}
+                { stopsIndex && <TopDownMapMobile nodes={graphnodes} visited={visited} originNodeId={blockedNodeID} nodesPath={nodesPath} stopsIndex={stopsIndex} Node_id_array={Node_id_array} blockedIMGName={blockedIMGName}></TopDownMapMobile>}
                     <div className="two-columns-container">
                     <div className="column">
                     {!noPath && formSubmitted && !hideTimeTaken && <img src="Distance_Icon.png" className="distanceIcon"></img>}
