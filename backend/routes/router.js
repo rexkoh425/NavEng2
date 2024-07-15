@@ -707,7 +707,11 @@ class Result{
     async add(other){
         this.Expected += other.Expected;
         this.Queried += other.Queried ; 
-        this.HTML += other.HTML ;
+        if(this.HTML == ""){
+            this.HTML += other.HTML;
+        }else{
+            this.HTML = this.HTML + " " + other.HTML ;
+        }
         this.Distance = `${parseInt(this.Distance) + parseInt(other.Distance)}` ;
         this.Dist_array = this.Dist_array.concat(other.Dist_array);
         this.nodes_path = this.nodes_path.concat(other.nodes_path);

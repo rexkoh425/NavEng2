@@ -2,9 +2,12 @@
 #define __GRAPH_H__
 
 #include <forward_list>
+#include <stack>
+#include <unordered_set>
 #include <iostream>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 #define NORTH 0
 #define EAST 90

@@ -214,30 +214,30 @@ Graph createEngGraph(vector<int> blocked_nodes){
     g.addEdge(190, 191, 20 , EAST);
     g.addEdge(130, 189, 40 , EAST);//closed loop EA floor 6 to E1A
     g.addEdge(246, 242, 95 , EAST);//closed loop EA floor 7 to E1A
-    g.addEdge(187, 192, 1 , UP);
+    g.addEdge(187, 192, 40 , UP);
     g.addEdge(192, 193, 20 , NORTH);
     g.addEdge(193, 194, 20 , EAST);
     g.addEdge(194, 195, 25 , NORTH);
     g.addEdge(195, 196, 20 , WEST);
-    g.addEdge(192, 197, 1 , UP);
+    g.addEdge(192, 197, 40 , UP);
     g.addEdge(197, 198, 25 , NORTH);
     g.addEdge(198, 199, 20 , WEST);
-    g.addEdge(197, 200, 1 , UP);
+    g.addEdge(197, 200, 40 , UP);
     g.addEdge(200, 201, 25 , NORTH);
     g.addEdge(201, 202, 20 , WEST);
-    g.addEdge(200, 203, 1 , UP);
+    g.addEdge(200, 203, 40 , UP);
     g.addEdge(203, 204, 25 , NORTH);
     g.addEdge(204, 205, 20 , WEST);
-    g.addEdge(187, 206, 1 , DOWN);
+    g.addEdge(187, 206, 40 , DOWN);
     g.addEdge(206, 207, 25 , NORTH);
     g.addEdge(207, 208, 20 , WEST);
-    g.addEdge(208, 183, 1 , UP);//E1A FLOOR 2-3 stairs
-    g.addEdge(183, 196 , 1 , UP);//E1A FLOOR 3-4 stairs
-    g.addEdge(196, 199 , 1 , UP);//E1A FLOOR 4-5 stairs
-    g.addEdge(199, 202 , 1 , UP);//E1A FLOOR 5-6 stairs
-    g.addEdge(202, 205 , 1 , UP);//E1A FLOOR 6-7 stairs
-    g.addEdge(237, 226 , 1 , UP);//E1A FLOOR 5-6 stairs
-    g.addEdge(226, 221 , 1 , UP);//E1A FLOOR 6-7 stairs
+    g.addEdge(208, 183, 40 , UP);//E1A FLOOR 2-3 stairs
+    g.addEdge(183, 196 , 40 , UP);//E1A FLOOR 3-4 stairs
+    g.addEdge(196, 199 , 40 , UP);//E1A FLOOR 4-5 stairs
+    g.addEdge(199, 202 , 40 , UP);//E1A FLOOR 5-6 stairs
+    g.addEdge(202, 205 , 40 , UP);//E1A FLOOR 6-7 stairs
+    g.addEdge(237, 226 , 40 , UP);//E1A FLOOR 5-6 stairs
+    g.addEdge(226, 221 , 40 , UP);//E1A FLOOR 6-7 stairs
     g.addEdge(207, 209, 30 , NORTH);
     g.addEdge(209, 210, 80 , NORTH);
     g.addEdge(210, 211, 25 , EAST);
