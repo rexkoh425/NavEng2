@@ -94,7 +94,7 @@ int main(){
     }
     
     //vector<int> blocked_nodes;
-    Graph test1 = createEngGraph(blocked_nodes);
+    Graph test1 = createEngGraph(blocked_nodes , true);
     if(getMapObj){
       MapObj(test1 , nodes_array);
     }else{

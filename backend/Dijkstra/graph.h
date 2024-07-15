@@ -73,7 +73,7 @@ class Graph {
   }
 
   // Add an edge from source vertex to dest vertex with weight weight
-  void addEdge(int source, int dest, int weight , int dir);
+  void addEdge(int source, int dest, int weight , int dir , bool undirected);
 };
 
 ostream& operator<<(ostream&, const GraphEdge&);

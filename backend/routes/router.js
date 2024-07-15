@@ -761,7 +761,7 @@ router.post('/contact', (req, res) => {
 
   debug_log(email + ' | ' + message)
   res.send("Message sent. Thank you.")
-}) 
+})
 
 router.post('/locations' , async(req,res) => {
     try {
