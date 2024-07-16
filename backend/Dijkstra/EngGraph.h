@@ -146,13 +146,13 @@ Graph createEngGraph(vector<int> blocked_nodes , bool undirected){
     g.addEdge(126, 129, 125 , SOUTH , undirected);
     g.addEdge(129, 130, 70 , EAST , undirected);
     g.addEdge(111, 131, 40 , EAST , undirected);
-    g.addEdge(131, 132, 100 , EAST , undirected);
-    g.addEdge(132, 133, 55 , SOUTH , undirected);
-    g.addEdge(133, 134, 25 , SOUTH , undirected);
+    g.addEdge(131, 134, 100 , EAST , undirected);
+    //g.addEdge(132, 133, 55 , SOUTH , undirected);
+    //g.addEdge(133, 134, 25 , SOUTH , undirected);
     g.addEdge(134, 135, 40 , EAST , undirected);
     g.addEdge(135, 136, 40 , NORTH , undirected);
-    g.addEdge(136, 137, 20 , EAST , undirected);
-    g.addEdge(135, 138, 20 , EAST , undirected);
+    g.addEdge(136, 137, 60 , EAST , undirected);
+    g.addEdge(135, 138, 60 , EAST , undirected);
     g.addEdge(134, 139, 125 , SOUTH , undirected);
     g.addEdge(139, 140, 20 , EAST , undirected);
     g.addEdge(139, 141, 95 , SOUTH , undirected);
@@ -275,7 +275,7 @@ Graph createEngGraph(vector<int> blocked_nodes , bool undirected){
     g.addEdge(242, 243, 30 , SOUTH , undirected);
     g.addEdge(243, 244, 20 , EAST , undirected);
     g.addEdge(147, 245, 250 , SOUTH , undirected);
-    g.addEdge(245, 246, 335 , SOUTH , undirected);
+    g.addEdge(245, 246, 255 , SOUTH , undirected);
     g.addEdge(246, 247, 20 , SOUTH , undirected);
     g.addEdge(246, 248, 20 , WEST , undirected);
     g.addEdge(239, 249, 50 , NORTH , undirected);
