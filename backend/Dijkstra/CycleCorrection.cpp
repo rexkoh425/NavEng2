@@ -84,7 +84,6 @@ class Node {
         int get_node(){
             return node_id;
         }
-
 };
 
 void vector_print(Node source , Node destination){
@@ -92,6 +91,60 @@ void vector_print(Node source , Node destination){
     cout << "vector((" << source.get_x() << "," << source.get_y() << "," << source.get_z() << ") , (" << destination.get_x() << "," << destination.get_y() << "," << destination.get_z() << "))" << endl;   
 }
 
+void vector_print(Node source , int direction , int weight){
+    int new_x = source.get_x();
+    int new_y = source.get_y();
+    int new_z = source.get_z();
+    switch(direction){
+        case NORTH : 
+            new_y += weight;
+            break;
+        case EAST :
+            new_x += weight;
+            break;
+        case SOUTH : 
+            new_y -= weight;
+            break;
+        case WEST : 
+            new_x -= weight;
+            break;
+        case UP :
+            new_z += weight;
+            break;
+        case DOWN : 
+            new_z -= weight;
+            break;
+    }
+    cout << "vector((" << source.get_x() << "," << source.get_y() << "," << source.get_z() << ") , (" << new_x << "," << new_y << "," << new_z << "))" << endl;   
+}
+
+bool is_correct_coor(Node source , Node dest , GraphEdge edge){
+    int new_x = source.get_x();
+    int new_y = source.get_y();
+    int new_z = source.get_z();
+    int weight = edge.weight();
+    switch(edge.dir()){
+        case NORTH : 
+            new_y += weight;
+            break;
+        case EAST :
+            new_x += weight;
+            break;
+        case SOUTH : 
+            new_y -= weight;
+            break;
+        case WEST : 
+            new_x -= weight;
+            break;
+        case UP :
+            new_z += weight;
+            break;
+        case DOWN : 
+            new_z -= weight;
+            break;
+    }
+    return (dest.get_x() == new_x) && (dest.get_y() == new_y) && (dest.get_z() == new_z);
+}
 
 int main(){
     vector<int> blocked_nodes;
@@ -116,54 +169,43 @@ int main(){
         for(auto j = neighbours.begin() ; j != neighbours.end() ; j++){
             GraphEdge current = *j;
             if(!visited[current.dest()]){
-                /*
-                if(current.dest() == 302){
-                    cout << node << endl;
-                }
-                */
                 to_visit.push(current.dest());
                 visited[current.dest()] = true;
                 node_details[current.dest()] = node_details[node].add(current.dest() ,current.dir() , current.weight());
             }
         }
     }
-
-    for(int i = 0; i < num_of_nodes ; i++){
-        Node node = node_details[i];
-        //cout << node.get_node() << " :";
-        cout<< "(" << node.get_x() << " ," << node.get_y() << " ," << node.get_z() << ")" << endl;;
-    }
-    /*
-    vector<vector<int>> pairs;
-    vector<int> first{200 ,-275,120};
-    vector<int> second{200 ,-405, 120};
-    //(200,-275,120),(200,-405,120))
-    pairs.push_back(first);
-    pairs.push_back(second);
-    for(int j = 0 ; j < pairs.size() ; j++){
+    bool get_vect = false;
+    if(get_vect){
         for(int i = 0; i < num_of_nodes ; i++){
             Node node = node_details[i];
-            if(node.get_x() == pairs[j][0] && node.get_y() == pairs[j][1] && node.get_z() == pairs[j][2]){
-                cout << i << " ";
-                break;
+            //cout << node.get_node() << " :";
+            cout<< "(" << node.get_x() << " ," << node.get_y() << " ," << node.get_z() << ")" << endl;;
+        }
+
+        for(int i = 0 ; i < num_of_nodes ; i++){
+            forward_list<GraphEdge> neighbours = test1.edges_from(i);
+
+            for(auto j = neighbours.begin() ; j != neighbours.end() ; j++){
+                GraphEdge current = *j;
+                //vector_print(node_details[i] , current.dir() , current.weight());
+                vector_print(node_details[i] , node_details[current.dest()]);
             }
         }
-    }
-    */
-    
-    for(int i = 0 ; i < num_of_nodes ; i++){
-        forward_list<GraphEdge> neighbours = test1.edges_from(i);
+    }else{
+        test1 = createEngGraph(blocked_nodes , true);
+        int count = 0;
+        for(int i = 0 ; i < num_of_nodes ; i++){
+            forward_list<GraphEdge> neighbours = test1.edges_from(i);
 
-        for(auto j = neighbours.begin() ; j != neighbours.end() ; j++){
-            GraphEdge current = *j;
-            vector_print(node_details[i] , node_details[current.dest()]);
+            for(auto j = neighbours.begin() ; j != neighbours.end() ; j++){
+                GraphEdge current = *j;
+                if(!is_correct_coor(node_details[i] , node_details[current.dest()] , current)){
+                    cout << i << " to " << current.dest() << endl; 
+                    count ++;
+                }
+            }
         }
+        cout << count;
     }
-    
-    
-
-
-
-
-
 }
