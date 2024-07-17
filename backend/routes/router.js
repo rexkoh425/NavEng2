@@ -1246,7 +1246,7 @@ router.post('/convert__to_-' , async(req, res) => {
             .storage
             .from('Pictures')
             .list(`${folder_name}`, {
-                limit: 500 ,
+                limit: 1500 ,
                 offset: 0,
                 sortBy: { column: 'name', order: 'asc' }
             })

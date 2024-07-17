@@ -61,7 +61,7 @@ async function CheckBlockedLocation(receivedData) {
             //console.log(receivedData.Node_id_array)
             //console.log(receivedData.blocked_img_path);
             console.log(`${receivedData.MultiStopArray[0]} to ${receivedData.MultiStopArray[1]} : with blocking failed`);
-            //console.log(data.message);
+            console.log(data.message);
         }
         return data;
     } catch (error) {
