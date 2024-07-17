@@ -200,8 +200,9 @@
 
 .imageCount {
   text-align:center;
-  font-family: "Lexend";
   font-weight: lighter;
+  font-family: "Lexend";
+
 }
 
 .imageCountMobile {
@@ -416,6 +417,17 @@
   margin-bottom: 0px;
 }
 
+.overlay-image-count-mobile {
+  position: absolute;
+  height: 3vh;
+  width: 10vh;
+  bottom: 64vh;
+  right: 12vh;
+  display: inline-block;
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
 .NoMargins {
   margin-top: 0px;
   margin-bottom: 0px;
@@ -429,7 +441,16 @@
 .column {
   flex: 1; /* Grow to fill available space equally */
   padding: 2px;
-  
+  margin-bottom: -50px;
+}
+
+
+.column3 {
+  float: right;
+  flex: 40%;
+  margin-bottom: -80px;
+  vertical-align: bottom;
+
 }
 
 .distanceIcon {
@@ -441,5 +462,5 @@
 .timeIcon {
   width: 4vh;
   margin-bottom: -11px;
-  margin-right: 2px
+  margin-right: 8px
 }

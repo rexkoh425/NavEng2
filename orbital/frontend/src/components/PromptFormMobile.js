@@ -569,15 +569,12 @@ function PromptFormMobile() {
 
                 <center>
                 { stopsIndex && <TopDownMapMobile nodes={graphnodes} visited={visited} originNodeId={blockedNodeID} nodesPath={nodesPath} stopsIndex={stopsIndex} Node_id_array={Node_id_array} blockedIMGName={blockedIMGName}></TopDownMapMobile>}
-                    <div className="two-columns-container">
-                    <div className="column">
+                <div className="two-columns-container">
+                <div className="column">
                     {!noPath && formSubmitted && !hideTimeTaken && <img src="Distance_Icon.png" className="distanceIcon"></img>}
                     {!noPath && formSubmitted && !hideTimeTaken && <p className="parametricsContent">{distanceArray[arrayposition]}m</p>}
                     </div>
                     <div className="column">
-
-                    <div></div>
-
 
                     <div></div>
                     {!noPath && formSubmitted && !hideTimeTaken && <img src="Time_Icon.png" className="timeIcon"></img>}
@@ -585,8 +582,11 @@ function PromptFormMobile() {
 
 
                     </div>
+                    
                     </div>
-                    {!noPath && formSubmitted && <p className="imageCount">{arrayposition + 1}/{arrayFromString.length}</p>}
+                    <br></br>
+                    
+                    <br></br>
                     {!noPath && formSubmitted && <DestinationNotification stopsIndex={stopsIndex} arrayposition={arrayposition} MultiStopArray={MultiStopArrayNotification} pathInstructions={pathInstructions} blockedIndicator={blockedIndicator} />}
                     <div style={{ display: 'none' }}>
                         {/* Preload the next image */}
@@ -596,7 +596,7 @@ function PromptFormMobile() {
 
 
                     <center>
-                    {formSubmitted && <div className="container">
+                    {formSubmitted && <div className="containerMobile">
                         {!noPath && <Button variant="contained" type="submit" onClick={decrementCounter} disabled={disableLeftButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "55vh", width: "8vw", marginBottom: "8vh",  marginRight: "1vw"}}><ArrowLeftIcon></ArrowLeftIcon></Button>}
                     {formSubmitted && <div className="NoMargins">
                         <div className="imageContainer">
@@ -607,9 +607,13 @@ function PromptFormMobile() {
                                 {!noPath && !showBlockConfirmation && <Button className="overlay-button-mobile" onClick={blockConfirmation}><img src="block_logo.png" alt="cannot display" className="block-logo-mobile"></img></Button>}
                             </Tooltip>
                             {!noPath && showBlockConfirmation && <Button variant="contained" className="overlay-confirmation-button-mobile" sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }} onClick={axiosPostBlock}>Block this point?</Button>}
+                            
                             {showUpload && <div className="overlay-refresh-mobile">
                                 <Button variant="contained" type="submit" onClick={handleSubmitRefresh} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }}>Give me an alternate path</Button>
                             </div>}
+                            {<Box className="overlay-image-count-mobile" component="section"
+                        display="flex"
+                        alignItems="center"  borderRadius={16} sx={{ p: 0, background: "white" ,textAlign: 'center', justifyContent: 'center'}}><p className="imageCount">{arrayposition + 1}/{arrayFromString.length}</p></Box>}
 
                         </div>
                       
