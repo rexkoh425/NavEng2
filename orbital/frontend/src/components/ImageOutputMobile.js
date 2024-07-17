@@ -1,8 +1,7 @@
 import React from "react";
 
-function imageOutputMobile({ imgPath , arrayposition}) {
-    if (arrayposition != 0) {
-      return (
+function imageOutputMobile({ imgPath }) {
+    return (
         <img
           src={imgPath}
           alt="cannot be displayed"
@@ -10,6 +9,5 @@ function imageOutputMobile({ imgPath , arrayposition}) {
         />
     );
   }
-}
 
   export default imageOutputMobile
