@@ -18,7 +18,7 @@ ostream& operator<<(ostream& os, const Graph& g) {
   return os;
 }
 
-void Graph::addEdge(int source, int dest, int weight , int dir) {
+void Graph::addEdge(int source, int dest, int weight , int dir , bool undirected) {
   
   for(int i = 0 ; i < blocked_nodes.size() ; i++){
     if(dest == blocked_nodes[i] || source == blocked_nodes[i]){
@@ -26,10 +26,13 @@ void Graph::addEdge(int source, int dest, int weight , int dir) {
     }
   }
   
+  
   _vertices[source].emplace_front(dest, weight , dir);
-  int opposite_dir = 180 - dir;
-  if(dir == EAST || dir == WEST || dir == UP || dir == DOWN){
-    opposite_dir = -dir;
+  if(undirected){
+    int opposite_dir = 180 - dir;
+    if(dir == EAST || dir == WEST || dir == UP || dir == DOWN){
+      opposite_dir = -dir;
+    }
+    _vertices[dest].emplace_front(source,weight , opposite_dir);
   }
-  _vertices[dest].emplace_front(source,weight , opposite_dir);
 }
