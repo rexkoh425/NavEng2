@@ -17,7 +17,7 @@ const database_down_url = 'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/o
 let blocked_node = "";
 
 function debug_log(input){
-    let debug = true;
+    let debug = false;
     if(debug){
         console.log(input);
     }
