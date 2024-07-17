@@ -56,9 +56,9 @@ for file_name in os.listdir(folder_path):
                 if (i == "Up") or (i == "Down"):
                     position = (275, 450)
                 elif(i == "West"):
-                    position = (225, 900)
+                    position = (225, 600)
                 else:
-                    position = (275, 900)
+                    position = (275, 600)
                 # Adding arrow to background
                 background.paste(foreground, position, foreground)
         

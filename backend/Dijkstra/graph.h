@@ -2,9 +2,12 @@
 #define __GRAPH_H__
 
 #include <forward_list>
+#include <stack>
+#include <unordered_set>
 #include <iostream>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 #define NORTH 0
 #define EAST 90
@@ -70,7 +73,7 @@ class Graph {
   }
 
   // Add an edge from source vertex to dest vertex with weight weight
-  void addEdge(int source, int dest, int weight , int dir);
+  void addEdge(int source, int dest, int weight , int dir , bool undirected);
 };
 
 ostream& operator<<(ostream&, const GraphEdge&);

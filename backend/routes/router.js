@@ -357,7 +357,7 @@ async function break_down_img_path(img_name){
 async function full_query(source , destination , blocked_nodes , previous_node){
     return new Promise((resolve, reject) => {
         debug_log(blocked_nodes);
-        const inputObj = { source : source , destination : destination , blocked : blocked_nodes};
+        const inputObj = { source : source , destination : destination , blocked : blocked_nodes , getMapObj : false};
         const serializedData = JSON.stringify(inputObj);
         const cppProcess = spawn(__dirname + '/../Dijkstra/main' , []);
         cppProcess.stdin.write(serializedData);
@@ -392,6 +392,12 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                 let directions_array_len = directions.length;
                 let splice_count = 0;
                 let is_exit = true;
+                const start_direction = await get_arrow_dir(directions[0] , directions[1]);
+                if(start_direction == '7'){
+                    is_exit = true;
+                }else{
+                    is_exit = false;
+                }
                 for(i = 1 ; i < directions_array_len ; i ++){
                     
                     let is_up_down = await is_moving_up_down(directions[i-1] , directions[i]);    
@@ -502,7 +508,7 @@ async function full_query(source , destination , blocked_nodes , previous_node){
 
 async function transit_query(source , destination , blocked_nodes , previous_node){
     return new Promise((resolve, reject) => {
-        const inputObj = { source : source , destination : destination , blocked : blocked_nodes};
+        const inputObj = { source : source , destination : destination , blocked : blocked_nodes , getMapObj : false};
         const serializedData = JSON.stringify(inputObj);
         const cppProcess = spawn(__dirname + '/../Dijkstra/main' , []);
         cppProcess.stdin.write(serializedData);
@@ -535,6 +541,12 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                 let directions_array_len = directions.length;
                 let splice_count = 0;
                 let is_exit = true;
+                const start_direction = await get_arrow_dir(directions[0] , directions[1]);
+                if(start_direction == '7'){
+                    is_exit = true;
+                }else{
+                    is_exit = false;
+                }
                 for(i = 1 ; i < directions_array_len ; i ++){
                     
                     let is_up_down = await is_moving_up_down(directions[i-1] , directions[i]);
@@ -707,7 +719,11 @@ class Result{
     async add(other){
         this.Expected += other.Expected;
         this.Queried += other.Queried ; 
-        this.HTML += other.HTML ;
+        if(this.HTML == ""){
+            this.HTML += other.HTML;
+        }else{
+            this.HTML = this.HTML + " " + other.HTML ;
+        }
         this.Distance = `${parseInt(this.Distance) + parseInt(other.Distance)}` ;
         this.Dist_array = this.Dist_array.concat(other.Dist_array);
         this.nodes_path = this.nodes_path.concat(other.nodes_path);
@@ -757,7 +773,7 @@ router.post('/contact', (req, res) => {
 
   debug_log(email + ' | ' + message)
   res.send("Message sent. Thank you.")
-}) 
+})
 
 router.post('/locations' , async(req,res) => {
     try {
@@ -880,7 +896,7 @@ router.post('/formPost' , async (req ,res) => {
     let mergedArray = [];
     if(inputData.MultiStopArray.length < 2){
         debug_log("data incorrectly labelled or source and destination not filled"); 
-        return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : false});
+        return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : false , message : "no destination"});
     }
 
     try{
@@ -903,7 +919,7 @@ router.post('/formPost' , async (req ,res) => {
         mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered , ...stairs]));
         //debug_log(mergedArray);
     }catch(error){
-        return res.send({HTML : database_down_url , passed : false , error_can_handle : false});
+        return res.send({HTML : database_down_url , passed : false , error_can_handle : false , message : error});
     }
     let TotalResult = new Result();
 
@@ -927,9 +943,9 @@ router.post('/formPost' , async (req ,res) => {
         } catch(error){
             //console.error('Error caught:', error.message);
             if(error.message == "cannot find dest"){
-                return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : true});
+                return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : true , message : error});
             }
-            return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : false});
+            return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : false , message : error});
         }
     }
     
@@ -944,7 +960,7 @@ router.post('/blockRefresh' , async (req ,res) => {
     let destinations = inputData.MultiStopArray;
     if(inputData.MultiStopArray.length < 2){
         //debug_log("data incorrectly labelled or source and destination not filled"); 
-        return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : false});
+        return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : false , message : "no destination"});
     }
     let blocked_node_component;
     let mergedArray;
@@ -964,12 +980,12 @@ router.post('/blockRefresh' , async (req ,res) => {
         blocked_node_component = await break_down_img_path(inputData.blocked_img_path);
 
         if(blocked_node_component.type == 'Room'){
-            return res.send({ HTML : no_alt_path_url , passed : false , error_can_handle : false});
+            return res.send({ HTML : no_alt_path_url , passed : false , error_can_handle : false , message : "cannot block room"});
         }
         
         const b4_blocked_node_id = await get_b4_blocked_unique_id_from_array(blocked_node_component.node_id , inputData.Node_id_array);
         if(b4_blocked_node_id == ""){
-            return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : false});
+            return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : false , message : "cannot get previous node before blocked"});
         }
         destinations.unshift(parseInt(b4_blocked_node_id));
         
@@ -988,7 +1004,7 @@ router.post('/blockRefresh' , async (req ,res) => {
         }
         mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered , ...stairs]));
     }catch(error){
-        return res.send({HTML : database_down_url , passed : false , error_can_handle : false});
+        return res.send({HTML : database_down_url , passed : false , error_can_handle : false , message : error});
     }
     let TotalResult = new Result();
     //Destinations : destinations
@@ -1018,10 +1034,10 @@ router.post('/blockRefresh' , async (req ,res) => {
         }catch(error){
             //console.error('Error caught:', error.message);
             if(error.message == "cannot find dest"){
-                return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : true});
+                return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : true , message : error});
             }
           
-            return res.send({ HTML : no_alt_path_url , passed : false , error_can_handle : false});
+            return res.send({ HTML : no_alt_path_url , passed : false , error_can_handle : false , message : error});
 
         }
     }
@@ -1036,7 +1052,6 @@ router.post('/insertBlocked' , async (req ,res ) => {
     debug_log("input is : " + input)
     const node_string = input.split("_");
     const node_id = parseInt(node_string[0]);
-    
     
     try {
         const { error } = await supabase
@@ -1092,10 +1107,10 @@ router.post('/getfloor' , async (req , res) => {
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
-    
-    let inputObj = { nodes : [...nodes_with_same_z] };
+
+    const inputObj = { nodes : [...nodes_with_same_z] , getMapObj : true};
     const serializedData = JSON.stringify(inputObj);
-    const cppProcess = spawn(__dirname + '/../Dijkstra/TopDownMap' , []);
+    const cppProcess = spawn(__dirname + '/../Dijkstra/main' , []);
     cppProcess.stdin.write(serializedData);
     cppProcess.stdin.end();
     
@@ -1130,7 +1145,7 @@ router.post('/getfloor' , async (req , res) => {
                 FullMapObj.push(MapObj);   
             })
             res.send(FullMapObj);
-            console.log(FullMapObj[1])
+            //console.log(FullMapObj[1])
         }catch(error){
             
         }
@@ -1243,7 +1258,7 @@ router.post('/convert__to_-' , async(req, res) => {
             .storage
             .from('Pictures')
             .list(`${folder_name}`, {
-                limit: 500 ,
+                limit: 1500 ,
                 offset: 0,
                 sortBy: { column: 'name', order: 'asc' }
             })

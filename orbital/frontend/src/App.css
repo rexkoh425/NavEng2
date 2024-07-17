@@ -87,24 +87,31 @@
   font-weight: lighter;
 }
 
+.description1 {
+  padding: 0px
+}
+
 .StartAndEndLocation {
   font-size:x-large;
   font-family: "Lexend";
 }
 
 .child1 {
-  width: 60%;
-  height: 100vh;
-  text-align: right;
+  width: 60vw;
+  height: 90vh;
 }
 
 .child2 {
+
   margin-left: 6vw;
-  width: 40%;
-  height: 80vh;
-  margin-top: 3vh;
+  width: 40vw;
+  height: 60vh;
+  margin-top: 5vh;
   margin-right: 5vw;
+
 }
+
+
 
 .child2mobile {
   margin-left: 5vw;
@@ -173,7 +180,6 @@
   grid-template-columns: auto auto auto;
   height: 40vh;
   align-items: center;
-  width: 40vw;
   justify-content: center;
 }
 
@@ -334,14 +340,23 @@
 }
 
 .Autocomplete-container {
+  margin-top: 15px;
   display: flex;
   justify-content: center; /* Centers items horizontally */
   align-items: center; /* Centers items vertically */
   position: relative; /* Ensure relative positioning for absolute child */
+  margin-bottom: 5px;
 }
 
 .centered-element {
   /* Optional: Adjust width, padding, etc. */
+  padding: 5px;
+
+}
+
+.centered-element1 {
+  /* Optional: Adjust width, padding, etc. */
+  margin-top: 15px;
   padding: 5px;
 
 }

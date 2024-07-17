@@ -24,6 +24,7 @@ import Instructions from "./Instructions";
 import DestinationNotification from "./DestinationNotification";
 import TopDownMap from "./TopDownMap";
 import ImageOutput from "./ImageOutput";
+import { styled } from '@mui/system';
 
 
 function PromptForm() {
@@ -69,6 +70,8 @@ function PromptForm() {
     const [visited, setVisited] = useState(["0"])
     const [temp, setTemp] = useState([])
     const [graphnodes, setGraphnodes] = useState([]) ;
+
+    const [nodeDirection, setNodeDirection] = useState([]);
 
 
     const Local = process.env.REACT_APP_LOCAL;
@@ -175,6 +178,12 @@ function PromptForm() {
             const indexOfQuote = remainder.indexOf('"');
             const BlockedIMGNameVariable=remainder.slice(0, indexOfQuote)
             setBlockedIMGName(BlockedIMGNameVariable);
+            console.log("blocked: " + blocked)
+            console.log("blocked img name: " + BlockedIMGNameVariable)
+
+            const direction = BlockedIMGNameVariable.split("_")[4];
+            setNodeDirection(direction)
+
 
             const node_string = BlockedIMGNameVariable.split("_")[0];
             const before_node_id = parseInt(node_string);
@@ -213,6 +222,7 @@ function PromptForm() {
         }
         setDisableLeftButton(false)
         setShowBlockConfirmation(false)
+        console.log(graphnodes)
     };
 
     const decrementCounter = (e) => {
@@ -455,8 +465,8 @@ function PromptForm() {
                 <div className="child1"><center>
                     <form className="desktopForm">
                         <label className="StartAndEndLocation">Start Location</label>
-                        <Typography className="description" sx={{ marginBottom: "10px", fontFamily: "Lexend" }}>Search or select the location closest to you</Typography>
-                        <br></br>
+                        {!formSubmitted && <Typography className="description1" sx={{fontFamily: "Lexend" }}>Search or select the location closest to you</Typography>}
+                        <div className="centered-element1">
                         <Autocomplete
 
                             options={selectLocations} sx={{ width: 250, fontFamily: 'Georgia, serif' }} renderInput={(params) => (
@@ -472,11 +482,12 @@ function PromptForm() {
                             }
                             }
                         >
+                            
                         </Autocomplete>
-                        <br></br>
+                        </div>
                         <br></br>
                         <label className="StartAndEndLocation">End Location</label>
-                        <Typography className="description2" sx={{ marginBottom: "10px", fontFamily: "Lexend" }}>Search or select the location closest to your end point</Typography>
+                        {!formSubmitted && <Typography className="description" sx={{fontFamily: "Lexend" , marginBottom: 1 }}>Search or select the location closest to your end point</Typography>}
 
                         <div >
 
@@ -530,7 +541,7 @@ function PromptForm() {
                                 </div>
                             </div>
                         </div>
-                        <br></br>
+                        
                         <FormControlLabel control={<Checkbox sx={{
                             color: "#cdd8e6",
                             '&.Mui-checked': {
@@ -554,7 +565,7 @@ function PromptForm() {
                         <br></br>
                         <Instructions formSubmitted = {formSubmitted}></Instructions>
                         {formSubmitted  && stopsIndex &&
-                        <TopDownMap nodes={graphnodes} visited={visited} originNodeId={blockedNodeID} nodesPath={nodesPath} stopsIndex={stopsIndex} submitTrigger={submitTrigger} Node_id_array={Node_id_array} arrayposition={arrayposition}></TopDownMap>}
+                        <TopDownMap nodes={graphnodes} visited={visited} originNodeId={blockedNodeID} nodesPath={nodesPath} stopsIndex={stopsIndex} Node_id_array={Node_id_array} blockedIMGName={blockedIMGName}></TopDownMap>}
 
 
                     </form>
@@ -570,6 +581,8 @@ function PromptForm() {
                                 p: 2, border: '1px grey', bgcolor: '#F5F5F5', height: "68vh", marginRight: "10vh",
                                 textAlign: 'center', justifyContent: 'center', color: 'grey', fontFamily: "Lexend"
                             }}>Please select the starting and ending <br></br> locations to view the pictures</Box></div>}
+                    <div className="bottomAligncontent">
+                    <div>
                     <center>
 
                         {!noPath && formSubmitted && <p className="parametricsDescription">Total Distance: </p>}
@@ -616,8 +629,10 @@ function PromptForm() {
                         <div className="rightArrow">
                             {!noPath && <Button variant="contained" type="submit" onClick={incrementCounter} disabled={disableRightButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "10vh", width: "3vw" }}><ArrowRightIcon></ArrowRightIcon></Button>}
                         </div>
+                        
                     </div>}
-
+                    </div>
+                    </div>
                 </div>
             </div>
         </>

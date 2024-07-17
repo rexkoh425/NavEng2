@@ -16,7 +16,7 @@ using namespace rapidjson;
 int main(){
     
     vector<int> blocked_nodes;
-    Graph test1 = createEngGraph(blocked_nodes);
+    Graph test1 = createEngGraph(blocked_nodes , true);
     vector<int> wrong_nodes;
     for(int i = 0 ; i < test1.num_vertices() ; i++){
         forward_list<GraphEdge> neighbours = test1.edges_from(i);
