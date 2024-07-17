@@ -118,6 +118,10 @@ void vector_print(Node source , int direction , int weight){
     cout << "vector((" << source.get_x() << "," << source.get_y() << "," << source.get_z() << ") , (" << new_x << "," << new_y << "," << new_z << "))" << endl;   
 }
 
+void print_node(Node node){
+    cout << node.get_x()  << " " << node.get_y() << " " << node.get_z() << endl;
+}
+
 bool is_correct_coor(Node source , Node dest , GraphEdge edge){
     int new_x = source.get_x();
     int new_y = source.get_y();
@@ -143,7 +147,20 @@ bool is_correct_coor(Node source , Node dest , GraphEdge edge){
             new_z -= weight;
             break;
     }
-    return (dest.get_x() == new_x) && (dest.get_y() == new_y) && (dest.get_z() == new_z);
+    bool ok = (dest.get_x() == new_x) && (dest.get_y() == new_y) && (dest.get_z() == new_z);
+
+    if(!ok){
+        cout << "weight is : " << weight << endl;
+        cout << "source : " ;
+        print_node(source);
+        cout << "supposed dest : " ;
+        print_node(dest);
+        cout << "actual dest : ";
+        cout << new_x  << " " << new_y << " " << new_z << endl;
+    }
+    return ok;
+
+    
 }
 
 int main(){
@@ -169,6 +186,10 @@ int main(){
         for(auto j = neighbours.begin() ; j != neighbours.end() ; j++){
             GraphEdge current = *j;
             if(!visited[current.dest()]){
+                /*
+                if(current.dest() == 189){
+                    cout << node << endl;
+                }*/
                 to_visit.push(current.dest());
                 visited[current.dest()] = true;
                 node_details[current.dest()] = node_details[node].add(current.dest() ,current.dir() , current.weight());

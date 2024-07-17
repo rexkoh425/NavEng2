@@ -144,7 +144,7 @@ Graph createEngGraph(vector<int> blocked_nodes , bool undirected){
     g.addEdge(126, 127, 30 , WEST , undirected);
     g.addEdge(126, 128, 20 , EAST , undirected);
     g.addEdge(126, 129, 125 , SOUTH , undirected);
-    g.addEdge(129, 130, 70 , EAST , undirected);
+    g.addEdge(129, 130, 140 , EAST , undirected);
     g.addEdge(111, 131, 40 , EAST , undirected);
     g.addEdge(131, 134, 100 , EAST , undirected);
     //g.addEdge(132, 133, 55 , SOUTH , undirected);
@@ -209,10 +209,10 @@ Graph createEngGraph(vector<int> blocked_nodes , bool undirected){
     g.addEdge(184, 186, 30 , WEST , undirected);
     g.addEdge(186, 187, 20 , SOUTH , undirected);
     g.addEdge(186, 188, 410 , WEST , undirected);
-    g.addEdge(188, 189, 55 , SOUTH , undirected);
-    g.addEdge(189, 190, 40 , SOUTH , undirected);
+    g.addEdge(188, 189, 80 , SOUTH , undirected);
+    g.addEdge(189, 190, 30 , SOUTH , undirected);
     g.addEdge(190, 191, 20 , EAST , undirected);
-    g.addEdge(130, 189, 40 , EAST , undirected);//closed loop EA floor 6 to E1A
+    g.addEdge(130, 189, 110 , EAST , undirected);//closed loop EA floor 6 to E1A
     g.addEdge(246, 242, 365 , EAST , undirected);//closed loop EA floor 7 to E1A
     g.addEdge(187, 192, 40 , UP , undirected);
     g.addEdge(192, 193, 20 , NORTH , undirected);
