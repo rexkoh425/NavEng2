@@ -5,7 +5,7 @@ import { Button } from '@mui/material';
 
 
 const svgwidth = 900;
-const svgheight = 450
+const svgheight = 450;
 
 
 
@@ -118,13 +118,13 @@ const TopDownMap = ({ nodes, visited, originNodeId, nodesPath, stopsIndex, Node_
       rotationAngle = 0;
     }
     else if (directionBetweenNode === "east") {
-      rotationAngle = 90;
+      rotationAngle = 0;
     }
     else if (directionBetweenNode === "north") {
       rotationAngle = 180;
     }
     else {
-      rotationAngle = 270;
+      rotationAngle = 0;
       console.log(NodeDetails.pov)
 
     }
@@ -206,7 +206,6 @@ const TopDownMap = ({ nodes, visited, originNodeId, nodesPath, stopsIndex, Node_
     */
   return (
     <>
-      <Button variant="contained" onClick={toggleRotation} sx={{ bgcolor: "#cdd8e6", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend", margin: "5px" }}>{buttonContent}</Button>
       <svg
         width={"100%"}
         height={"20%"}
@@ -398,6 +397,7 @@ const TopDownMap = ({ nodes, visited, originNodeId, nodesPath, stopsIndex, Node_
           </>))}
 
       </svg>
+      <Button variant="contained" onClick={toggleRotation} sx={{ bgcolor: "#cdd8e6", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend", margin: "5px" }}>{buttonContent}</Button>
       <br />
     </>
   );
