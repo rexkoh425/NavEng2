@@ -541,7 +541,7 @@ function PromptForm() {
                                 </div>
                             </div>
                         </div>
-                        <br></br>
+                        
                         <FormControlLabel control={<Checkbox sx={{
                             color: "#cdd8e6",
                             '&.Mui-checked': {
@@ -581,6 +581,8 @@ function PromptForm() {
                                 p: 2, border: '1px grey', bgcolor: '#F5F5F5', height: "68vh", marginRight: "10vh",
                                 textAlign: 'center', justifyContent: 'center', color: 'grey', fontFamily: "Lexend"
                             }}>Please select the starting and ending <br></br> locations to view the pictures</Box></div>}
+                    <div className="bottomAligncontent">
+                    <div>
                     <center>
 
                         {!noPath && formSubmitted && <p className="parametricsDescription">Total Distance: </p>}
@@ -627,8 +629,10 @@ function PromptForm() {
                         <div className="rightArrow">
                             {!noPath && <Button variant="contained" type="submit" onClick={incrementCounter} disabled={disableRightButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "10vh", width: "3vw" }}><ArrowRightIcon></ArrowRightIcon></Button>}
                         </div>
+                        
                     </div>}
-
+                    </div>
+                    </div>
                 </div>
             </div>
         </>
