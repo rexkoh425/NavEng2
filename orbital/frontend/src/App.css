@@ -160,8 +160,7 @@
 .htmlContentMobile {
   display: inline-block;
   vertical-align: middle;
-  justify-content: center;
-  margin-bottom: 0px;
+  justify-content: left;
   height: 60vh;
   width: 34vh;
   
