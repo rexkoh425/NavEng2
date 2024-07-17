@@ -196,7 +196,7 @@ int main(){
             }
         }
     }
-    bool get_vect = false;
+    bool get_vect = true;
     if(get_vect){
         for(int i = 0; i < num_of_nodes ; i++){
             Node node = node_details[i];

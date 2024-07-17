@@ -43,3 +43,19 @@ GENERAL DEBUG NODE CONNECTIONS
 3) Check if the picture is added correctly
 
 
+TESTS
+
+npm run ImageTest -> test all sql file have a corresponding image
+
+npm test -> test all images are ok
+
+TestDoubleEdge.cpp -> test whether edges have been added wrongly in graph
+
+CycleCorrection.cpp -> able to check if all coordinates match & whether all images are 1D (essential for top-down map)
+
+Algorithms
+
+from PIL import py.py -> able to generate arrows on pictures
+
+rename_database.test.js -> converts - to _ in database pictures
+

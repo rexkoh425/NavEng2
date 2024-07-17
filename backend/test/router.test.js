@@ -7,6 +7,14 @@ if (global.gc) {
     console.warn('No GC hook! Start your program with `node --expose-gc file.js`.');
 }
 
+async function get_filepath(HTML_input){
+    let temp = HTML_input.split('/');
+    let rough_filepath = temp.slice(8).join('/');
+    let index = rough_filepath.indexOf('"');
+    let filepath = rough_filepath.slice(0, index);
+    return filepath;
+}
+
 async function CheckLocation(receivedData) {
     try {
         const res = await request(app)
@@ -48,6 +56,13 @@ async function CheckBlockedLocation(receivedData) {
             console.log(`${receivedData.MultiStopArray[0]} to ${receivedData.MultiStopArray[1]} : with blocking failed`);
             data['passed'] = false;
         }
+
+        if (!data['passed'] && !data['error_can_handle']){
+            //console.log(receivedData.Node_id_array)
+            //console.log(receivedData.blocked_img_path);
+            console.log(`${receivedData.MultiStopArray[0]} to ${receivedData.MultiStopArray[1]} : with blocking failed`);
+            //console.log(data.message);
+        }
         return data;
     } catch (error) {
         console.log(`${error}`);
@@ -67,7 +82,7 @@ async function performTest(destinations , blocked_input) {
 }
 
 async function performBlockedTest(destinations , blocked_input , non_block_result) {
-
+    
     const inputData = {
         blocked_array: [parseInt(blocked_input.blocked_filepath.split("_")[0])],
         Node_id_array : non_block_result.nodes_path,
@@ -138,6 +153,7 @@ async function choose_middle_blocked(HTML){
         }while(arrow_dir == 'None' && chosen_index >= 2);
         
         if(chosen_index >= 2){
+            blocked_filepath = await get_filepath(blocked_filepath);
             return {blocked_filepath : blocked_filepath , index : chosen_index};
         }
         return {blocked_filepath : '' , index : chosen_index};
