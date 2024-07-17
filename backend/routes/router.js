@@ -884,7 +884,7 @@ router.post('/formPost' , async (req ,res) => {
     let mergedArray = [];
     if(inputData.MultiStopArray.length < 2){
         debug_log("data incorrectly labelled or source and destination not filled"); 
-        return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : false});
+        return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : false , message : "no destination"});
     }
 
     try{
@@ -907,7 +907,7 @@ router.post('/formPost' , async (req ,res) => {
         mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered , ...stairs]));
         //debug_log(mergedArray);
     }catch(error){
-        return res.send({HTML : database_down_url , passed : false , error_can_handle : false});
+        return res.send({HTML : database_down_url , passed : false , error_can_handle : false , message : error});
     }
     let TotalResult = new Result();
 
@@ -931,9 +931,9 @@ router.post('/formPost' , async (req ,res) => {
         } catch(error){
             //console.error('Error caught:', error.message);
             if(error.message == "cannot find dest"){
-                return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : true});
+                return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : true , message : error});
             }
-            return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : false});
+            return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : false , message : error});
         }
     }
     
@@ -948,7 +948,7 @@ router.post('/blockRefresh' , async (req ,res) => {
     let destinations = inputData.MultiStopArray;
     if(inputData.MultiStopArray.length < 2){
         //debug_log("data incorrectly labelled or source and destination not filled"); 
-        return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : false});
+        return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : false , message : "no destination"});
     }
     let blocked_node_component;
     let mergedArray;
@@ -968,12 +968,12 @@ router.post('/blockRefresh' , async (req ,res) => {
         blocked_node_component = await break_down_img_path(inputData.blocked_img_path);
 
         if(blocked_node_component.type == 'Room'){
-            return res.send({ HTML : no_alt_path_url , passed : false , error_can_handle : false});
+            return res.send({ HTML : no_alt_path_url , passed : false , error_can_handle : false , message : "cannot block room"});
         }
         
         const b4_blocked_node_id = await get_b4_blocked_unique_id_from_array(blocked_node_component.node_id , inputData.Node_id_array);
         if(b4_blocked_node_id == ""){
-            return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : false});
+            return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : false , message : "cannot get previous node before blocked"});
         }
         destinations.unshift(parseInt(b4_blocked_node_id));
         
@@ -992,7 +992,7 @@ router.post('/blockRefresh' , async (req ,res) => {
         }
         mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered , ...stairs]));
     }catch(error){
-        return res.send({HTML : database_down_url , passed : false , error_can_handle : false});
+        return res.send({HTML : database_down_url , passed : false , error_can_handle : false , message : error});
     }
     let TotalResult = new Result();
     //Destinations : destinations
@@ -1022,10 +1022,10 @@ router.post('/blockRefresh' , async (req ,res) => {
         }catch(error){
             //console.error('Error caught:', error.message);
             if(error.message == "cannot find dest"){
-                return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : true});
+                return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : true , message : error});
             }
           
-            return res.send({ HTML : no_alt_path_url , passed : false , error_can_handle : false});
+            return res.send({ HTML : no_alt_path_url , passed : false , error_can_handle : false , message : error});
 
         }
     }
