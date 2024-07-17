@@ -392,6 +392,12 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                 let directions_array_len = directions.length;
                 let splice_count = 0;
                 let is_exit = true;
+                const start_direction = await get_arrow_dir(directions[0] , directions[1]);
+                if(start_direction == '7'){
+                    is_exit = true;
+                }else{
+                    is_exit = false;
+                }
                 for(i = 1 ; i < directions_array_len ; i ++){
                     
                     let is_up_down = await is_moving_up_down(directions[i-1] , directions[i]);    
@@ -535,6 +541,12 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                 let directions_array_len = directions.length;
                 let splice_count = 0;
                 let is_exit = true;
+                const start_direction = await get_arrow_dir(directions[0] , directions[1]);
+                if(start_direction == '7'){
+                    is_exit = true;
+                }else{
+                    is_exit = false;
+                }
                 for(i = 1 ; i < directions_array_len ; i ++){
                     
                     let is_up_down = await is_moving_up_down(directions[i-1] , directions[i]);

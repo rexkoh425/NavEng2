@@ -45,7 +45,7 @@ async function CheckBlockedLocation(receivedData) {
         const res = await request(app)
             .post('/blockRefresh')
             .send(receivedData)
-            .timeout({ deadline: 5000 });
+            .timeout({ deadline: 10000 });
 
         let data = res.body;
         data['source'] = receivedData.MultiStopArray[0];
@@ -58,8 +58,8 @@ async function CheckBlockedLocation(receivedData) {
         }
 
         if (!data['passed'] && !data['error_can_handle']){
-            //console.log(receivedData.Node_id_array)
-            //console.log(receivedData.blocked_img_path);
+            console.log(receivedData.Node_id_array)
+            console.log(receivedData.blocked_img_path);
             console.log(`${receivedData.MultiStopArray[0]} to ${receivedData.MultiStopArray[1]} : with blocking failed`);
             console.log(data.message);
         }
