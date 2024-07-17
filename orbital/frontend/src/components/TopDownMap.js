@@ -4,8 +4,8 @@ import { Button } from '@mui/material';
 
 
 
-const svgwidth = 800;
-const svgheight = 500
+const svgwidth = 900;
+const svgheight = 450
 
 
 

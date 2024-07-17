@@ -24,6 +24,7 @@ import Instructions from "./Instructions";
 import DestinationNotification from "./DestinationNotification";
 import TopDownMap from "./TopDownMap";
 import ImageOutput from "./ImageOutput";
+import { styled } from '@mui/system';
 
 
 function PromptForm() {
@@ -464,8 +465,8 @@ function PromptForm() {
                 <div className="child1"><center>
                     <form className="desktopForm">
                         <label className="StartAndEndLocation">Start Location</label>
-                        <Typography className="description" sx={{ marginBottom: "10px", fontFamily: "Lexend" }}>Search or select the location closest to you</Typography>
-                        <br></br>
+                        {!formSubmitted && <Typography className="description1" sx={{fontFamily: "Lexend" }}>Search or select the location closest to you</Typography>}
+                        <div className="centered-element1">
                         <Autocomplete
 
                             options={selectLocations} sx={{ width: 250, fontFamily: 'Georgia, serif' }} renderInput={(params) => (
@@ -481,11 +482,12 @@ function PromptForm() {
                             }
                             }
                         >
+                            
                         </Autocomplete>
-                        <br></br>
+                        </div>
                         <br></br>
                         <label className="StartAndEndLocation">End Location</label>
-                        <Typography className="description2" sx={{ marginBottom: "10px", fontFamily: "Lexend" }}>Search or select the location closest to your end point</Typography>
+                        {!formSubmitted && <Typography className="description" sx={{fontFamily: "Lexend" , marginBottom: 1 }}>Search or select the location closest to your end point</Typography>}
 
                         <div >
 

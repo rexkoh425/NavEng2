@@ -41,7 +41,7 @@ const Instructions = ({formSubmitted}) => {
       setArrowRotation(180)
       setExpanded(false)
     }
-  })
+  }, [formSubmitted])
 
     const toggleExpanded = () => {
         setExpanded(!expanded);
