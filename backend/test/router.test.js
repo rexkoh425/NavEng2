@@ -594,7 +594,7 @@ describe('Testing whether location pairs output correct number of pictures', fun
             
             result.print_result();
 
-            const percentage_pass = 0.005;
+            const percentage_pass = 0.5 / 100;
             if((result.no_of_cases - result.non_block_pass) == percentage_pass * 0.005){
                 throw new Error("No. of test cases failed is above margin for non blocking");
             }

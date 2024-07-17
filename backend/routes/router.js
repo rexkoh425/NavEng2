@@ -1041,7 +1041,6 @@ router.post('/insertBlocked' , async (req ,res ) => {
     const node_string = input.split("_");
     const node_id = parseInt(node_string[0]);
     
-    
     try {
         const { error } = await supabase
         .from('block_shelter')
@@ -1134,7 +1133,7 @@ router.post('/getfloor' , async (req , res) => {
                 FullMapObj.push(MapObj);   
             })
             res.send(FullMapObj);
-            console.log(FullMapObj[1])
+            //console.log(FullMapObj[1])
         }catch(error){
             
         }
