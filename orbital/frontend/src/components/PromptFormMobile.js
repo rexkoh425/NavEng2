@@ -553,35 +553,6 @@ function PromptFormMobile() {
                     <Instructions formSubmitted={formSubmitted}></Instructions>
                 </center>
             </form>
-
-            <center>
-                    {formSubmitted && <div className="containerMobile">
-                        
-                        {!noPath && <Button variant="contained" type="submit" onClick={decrementCounter} disabled={disableLeftButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "55vh", width: "8vw", marginBottom: "8vh",  marginRight: "1vw"}}><ArrowLeftIcon></ArrowLeftIcon></Button>}
-                    {formSubmitted && <div className="NoMargins">
-                        <div className="imageContainer">
-                            <ImageOutputMobile imgPath = {arrayFromString[arrayposition]} arrayposition = {arrayposition}/>
-                            <Tooltip title="Block?" arrow>
-                                {!noPath && !showBlockConfirmation && <Button className="overlay-button-mobile" onClick={blockConfirmation}><img src="block_logo.png" alt="cannot display" className="block-logo-mobile"></img></Button>}
-                            </Tooltip>
-                            {!noPath && showBlockConfirmation && <Button variant="contained" className="overlay-confirmation-button-mobile" sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }} onClick={axiosPostBlock}>Block this point?</Button>}
-                            
-                            {showUpload && <div className="overlay-refresh-mobile">
-                                <Button variant="contained" type="submit" onClick={handleSubmitRefresh} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }}>Give me an alternate path</Button>
-                            </div>}
-                            {<Box className="overlay-image-count-mobile" component="section"
-                        display="flex"
-                        alignItems="center"  borderRadius={16} sx={{ p: 0, background: "white" ,textAlign: 'center', justifyContent: 'center'}}><p className="imageCount">{arrayposition + 1}/{arrayFromString.length}</p></Box>}
-
-                        </div>
-                      
-
-
-
-                    </div>}
-                    {!noPath && <Button variant="contained" type="submit" onClick={incrementCounter} disabled={disableRightButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "55vh", width: "8vw", marginBottom: "8vh", marginLeft: "1vw"}}><ArrowRightIcon></ArrowRightIcon></Button>}
-                    </div>}
-                    </center>
             <br></br>
 
 
@@ -630,19 +601,17 @@ function PromptFormMobile() {
 
                                 </div>
                                 <Tooltip title="Block?" arrow>
-                                        {!noPath && !showBlockConfirmation && <Button className="overlay-button-mobile" onClick={blockConfirmation}><img src="block_logo.png" alt="cannot display" className="block-logo-mobile"></img></Button>}
-                                    </Tooltip>
+                                    {!noPath && !showBlockConfirmation && <Button className="overlay-button-mobile" onClick={blockConfirmation}><img src="block_logo.png" alt="cannot display" className="block-logo-mobile"></img></Button>}
+                                </Tooltip>
 
                                     {!noPath && showBlockConfirmation && <Button variant="contained" className="overlay-confirmation-button-mobile" sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }} onClick={axiosPostBlock}>Block this point?</Button>}
 
                                     {showUpload && <div className="overlay-refresh-mobile">
                                     <Button variant="contained" type="submit" onClick={handleSubmitRefresh} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }}>Give me an alternate path</Button>
                                     </div>}
-                                    
-                                   
-
+                                    {<Box className="overlay-image-count-mobile" component="section" display="flex" alignItems="center" borderRadius={16} sx={{ p: 0, background: "white", textAlign: 'center', justifyContent: 'center' }}><p className="imageCount">{arrayposition + 1}/{arrayFromString.length}</p></Box>}
                             </div>
-                            {<Box className="overlay-image-count-mobile" component="section" display="flex" alignItems="center" borderRadius={16} sx={{ p: 0, background: "white", textAlign: 'center', justifyContent: 'center' }}><p className="imageCount">{arrayposition + 1}/{arrayFromString.length}</p></Box>}
+                            
 
                             <div className="rightArrow">
                                 {!noPath && <Button variant="contained" type="submit" onClick={incrementCounter} disabled={disableRightButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "55vh", width: "8vw", marginBottom: "8vh", marginLeft: "1vw", marginRight: "4vw" }}><ArrowRightIcon></ArrowRightIcon></Button>}

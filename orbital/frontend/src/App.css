@@ -197,6 +197,7 @@
   display: flex;
   justify-content: space-between; /* Distribute items with space between them */
   align-items: center;
+  margin-top: -5px;
 }
 
 .leftArrow {
@@ -294,7 +295,6 @@
 {
   position: relative;
   display: inline-block;
-  height: auto;
 
 }
 
@@ -333,7 +333,7 @@
   position: absolute;
   height: 8vh;
   width: 20vh;
-  bottom: 59vh;
+  bottom: 55vh;
   right: 13vh;
   display: inline-block
 }
@@ -342,7 +342,7 @@
   position: absolute;
   height: 7vh;
   width: 20vh;
-  bottom: 59vh;
+  bottom: 56vh;
   right: -6vh;
   display: inline-block;
   margin-top: 0px;
@@ -406,7 +406,7 @@
 }
 
 .fileupload-mobile {
-  margin-top: 22vh;
+  margin-top: -8vh;
 }
 
 .pathInstructions {
@@ -434,13 +434,10 @@
   position: absolute;
   height: 7vh;
   width: 20vh;
-  bottom: 75vh;
+  bottom: 60vh;
   right: -22vh;
   display: inline-block
 }
-
-
-
 
 .NoMargins {
   margin-top: 0px;
@@ -484,10 +481,11 @@
 }
 
 .spacing {
-  padding: 5px
+  padding: 7px
 }
 
 .MiddleContent {
   flex: 1 1 auto;
   text-align: center;
+  position: relative;
 }

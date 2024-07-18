@@ -3,7 +3,7 @@ import { useState } from "react"
 import { Button } from '@mui/material';
 
 const svgwidth = 600;
-const svgheight = 350
+const svgheight = 275
 
 const TopDownMapMobile = ({ nodes, visited, originNodeId, nodesPath, stopsIndex, Node_id_array, blockedIMGName }) => {
 
