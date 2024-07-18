@@ -587,7 +587,6 @@ function PromptFormMobile() {
                     <br></br>
                     
                     <br></br>
-                    {arrayFromString[arrayposition]}
                     {!noPath && formSubmitted && <DestinationNotification stopsIndex={stopsIndex} arrayposition={arrayposition} MultiStopArray={MultiStopArrayNotification} pathInstructions={pathInstructions} blockedIndicator={blockedIndicator} />}
                     <center>
                     {formSubmitted && <div className="containerMobile">
@@ -620,6 +619,9 @@ function PromptFormMobile() {
                     </center>
                     {showUpload && <div className="fileupload-mobile"><FileUpload /></div>}
                 </center>
+                {!noPath && <Button variant="contained" type="submit" onClick={decrementCounter} disabled={disableLeftButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "55vh", width: "8vw", marginBottom: "8vh",  marginRight: "1vw"}}><ArrowLeftIcon></ArrowLeftIcon></Button>}
+                <ImageOutputMobile imgPath = {arrayFromString[arrayposition]} arrayposition = {arrayposition}/>
+                {!noPath && <Button variant="contained" type="submit" onClick={incrementCounter} disabled={disableRightButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "55vh", width: "8vw", marginBottom: "8vh", marginLeft: "1vw"}}><ArrowRightIcon></ArrowRightIcon></Button>}
             </div>
 
         </>
