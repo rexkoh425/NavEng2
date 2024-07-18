@@ -622,13 +622,13 @@ function PromptFormMobile() {
                 
                 {formSubmitted && <div className="containerMobile2">
                 <div className="leftArrow">
-                {!noPath && <Button variant="contained" type="submit" onClick={decrementCounter} disabled={disableLeftButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "55vh", width: "8vw", marginBottom: "8vh",  marginRight: "1vw"}}><ArrowLeftIcon></ArrowLeftIcon></Button>}
+                {!noPath && <Button variant="contained" type="submit" onClick={decrementCounter} disabled={disableLeftButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "55vh", width: "8vw", marginBottom: "0vh",  marginRight: "1vw", marginLeft: "3vw"}}><ArrowLeftIcon></ArrowLeftIcon></Button>}
                 </div>
                 <div className="MiddleContent">
                 <ImageOutputMobile imgPath = {arrayFromString[arrayposition]} arrayposition = {arrayposition}/>
                 </div>
                 <div className="rightArrow">
-                {!noPath && <Button variant="contained" type="submit" onClick={incrementCounter} disabled={disableRightButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "55vh", width: "8vw", marginBottom: "8vh", marginLeft: "1vw"}}><ArrowRightIcon></ArrowRightIcon></Button>}
+                {!noPath && <Button variant="contained" type="submit" onClick={incrementCounter} disabled={disableRightButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "55vh", width: "8vw", marginBottom: "0vh", marginLeft: "1vw", marginRight: "3vw"}}><ArrowRightIcon></ArrowRightIcon></Button>}
                 </div>
                 </div>}
                
