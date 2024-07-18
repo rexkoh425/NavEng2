@@ -560,9 +560,7 @@ function PromptFormMobile() {
                         {!noPath && <Button variant="contained" type="submit" onClick={decrementCounter} disabled={disableLeftButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "55vh", width: "8vw", marginBottom: "8vh",  marginRight: "1vw"}}><ArrowLeftIcon></ArrowLeftIcon></Button>}
                     {formSubmitted && <div className="NoMargins">
                         <div className="imageContainer">
-                            <div {...handlers} className="NoMargins" style={{ overflow: 'hidden' }}>
                             <ImageOutputMobile imgPath = {arrayFromString[arrayposition]} arrayposition = {arrayposition}/>
-                            </div>
                             <Tooltip title="Block?" arrow>
                                 {!noPath && !showBlockConfirmation && <Button className="overlay-button-mobile" onClick={blockConfirmation}><img src="block_logo.png" alt="cannot display" className="block-logo-mobile"></img></Button>}
                             </Tooltip>
