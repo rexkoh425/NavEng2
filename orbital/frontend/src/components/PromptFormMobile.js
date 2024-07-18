@@ -63,12 +63,12 @@ function PromptFormMobile() {
     const [showBlockConfirmation, setShowBlockConfirmation] = useState(false);
     const [hideTimeTaken, setHideTimeTaken] = useState(false)
     const [pathInstructions, setPathInstructions] = useState([])
-    const [Node_id_array , setNode_id_array] = useState([]);
+    const [Node_id_array, setNode_id_array] = useState([]);
     const [blockedIndicator, setBlockedIndicator] = useState(false)
     const [submitTrigger, setSubmitTrigger] = useState(false)
     const [visited, setVisited] = useState(["0"])
     const [temp, setTemp] = useState([])
-    const [graphnodes, setGraphnodes] = useState([]) 
+    const [graphnodes, setGraphnodes] = useState([])
 
 
     const Local = process.env.REACT_APP_LOCAL;
@@ -187,7 +187,7 @@ function PromptFormMobile() {
             const parts = blocked.split('/');
             const remainder = parts.slice(8).join('/');
             const indexOfQuote = remainder.indexOf('"');
-            const BlockedIMGNameVariable=remainder.slice(0, indexOfQuote)
+            const BlockedIMGNameVariable = remainder.slice(0, indexOfQuote)
             setBlockedIMGName(remainder.slice(0, indexOfQuote));
 
             const node_string = BlockedIMGNameVariable.split("_")[0];
@@ -205,7 +205,7 @@ function PromptFormMobile() {
 
     const updateMap = () => {
         axiosGetFloor()
-      }
+    }
 
     const incrementCounter = (e) => { //counter for image array
         preloadNextImage()
@@ -296,7 +296,7 @@ function PromptFormMobile() {
             setTotalDistance(response.data['Distance'] / 10);
             const distArray = response.data['Dist_array'];
             setPathInstructions(response.data['Instructions'])
-            
+
             setNodesPath(response.data['compressed_nodes_path'])
             setStopsIndex(response.data['Stops_index']);
             handleConvertToMetres(distArray);
@@ -317,7 +317,7 @@ function PromptFormMobile() {
 
         const postData = {
             blocked_array: blockedArray,
-            Node_id_array : Node_id_array,
+            Node_id_array: Node_id_array,
             blocked_img_path: blockedIMGName,
             sheltered: sheltered,
             NoStairs: NoStairs,
@@ -350,7 +350,7 @@ function PromptFormMobile() {
         }
     };
 
-    const axiosGetFloor = async () => { 
+    const axiosGetFloor = async () => {
         try {
             let postData = {
                 node_id: blockedNodeID
@@ -363,7 +363,7 @@ function PromptFormMobile() {
         } catch (error) {
             console.error('Error getting floor:', error);
         }
-};
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault()
@@ -553,41 +553,8 @@ function PromptFormMobile() {
                     <Instructions formSubmitted={formSubmitted}></Instructions>
                 </center>
             </form>
-            <br></br>
 
-
-            <div className="child2mobile">
-                {!formSubmitted
-                    && <div><Box
-                        component="section"
-                        display="flex"
-                        alignItems="center"
-                        sx={{
-                            p: 2, border: '1px grey', bgcolor: '#F5F5F5', height: "68vh", marginRight: "0px",
-                            textAlign: 'center', justifyContent: 'center', color: 'grey'
-                        }}>Please select the starting and ending <br></br> locations to view the pictures</Box></div>}
-
-                <center>
-                { stopsIndex && <TopDownMapMobile nodes={graphnodes} visited={visited} originNodeId={blockedNodeID} nodesPath={nodesPath} stopsIndex={stopsIndex} Node_id_array={Node_id_array} blockedIMGName={blockedIMGName}></TopDownMapMobile>}
-                <div className="two-columns-container">
-                <div className="column">
-                    {!noPath && formSubmitted && !hideTimeTaken && <img src="Distance_Icon.png" className="distanceIcon"></img>}
-                    {!noPath && formSubmitted && !hideTimeTaken && <p className="parametricsContent">{distanceArray[arrayposition]}m</p>}
-                    </div>
-                    <div className="column">
-
-                    <div></div>
-                    {!noPath && formSubmitted && !hideTimeTaken && <img src="Time_Icon.png" className="timeIcon"></img>}
-                    {!noPath && formSubmitted && !hideTimeTaken && <div className="parametricsContent"><CalculateTime distance={distanceArray[arrayposition]} /></div>}
-
-
-                    </div>
-                    
-                    </div>
-                    <br></br>
-                    <div className="spacing"></div>
-                    {!noPath && formSubmitted && <DestinationNotification stopsIndex={stopsIndex} arrayposition={arrayposition} MultiStopArray={MultiStopArrayNotification} pathInstructions={pathInstructions} blockedIndicator={blockedIndicator} />}
-                    <center>
+            <center>
                     {formSubmitted && <div className="containerMobile">
                         
                         {!noPath && <Button variant="contained" type="submit" onClick={decrementCounter} disabled={disableLeftButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "55vh", width: "8vw", marginBottom: "8vh",  marginRight: "1vw"}}><ArrowLeftIcon></ArrowLeftIcon></Button>}
@@ -617,21 +584,80 @@ function PromptFormMobile() {
                     {!noPath && <Button variant="contained" type="submit" onClick={incrementCounter} disabled={disableRightButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "55vh", width: "8vw", marginBottom: "8vh", marginLeft: "1vw"}}><ArrowRightIcon></ArrowRightIcon></Button>}
                     </div>}
                     </center>
+            <br></br>
+
+
+            <div className="child2mobile">
+                {!formSubmitted
+                    && <div><Box
+                        component="section"
+                        display="flex"
+                        alignItems="center"
+                        sx={{
+                            p: 2, border: '1px grey', bgcolor: '#F5F5F5', height: "68vh", marginRight: "0px",
+                            textAlign: 'center', justifyContent: 'center', color: 'grey'
+                        }}>Please select the starting and ending <br></br> locations to view the pictures</Box></div>}
+
+                <center>
+                    {stopsIndex && <TopDownMapMobile nodes={graphnodes} visited={visited} originNodeId={blockedNodeID} nodesPath={nodesPath} stopsIndex={stopsIndex} Node_id_array={Node_id_array} blockedIMGName={blockedIMGName}></TopDownMapMobile>}
+                    <div className="two-columns-container">
+                        <div className="column">
+                            {!noPath && formSubmitted && !hideTimeTaken && <img src="Distance_Icon.png" className="distanceIcon"></img>}
+                            {!noPath && formSubmitted && !hideTimeTaken && <p className="parametricsContent">{distanceArray[arrayposition]}m</p>}
+                        </div>
+                        <div className="column">
+
+                            <div></div>
+                            {!noPath && formSubmitted && !hideTimeTaken && <img src="Time_Icon.png" className="timeIcon"></img>}
+                            {!noPath && formSubmitted && !hideTimeTaken && <div className="parametricsContent"><CalculateTime distance={distanceArray[arrayposition]} /></div>}
+
+
+                        </div>
+
+                    </div>
+                    <br></br>
+                    <div className="spacing"></div>
+                    {!noPath && formSubmitted && <DestinationNotification stopsIndex={stopsIndex} arrayposition={arrayposition} MultiStopArray={MultiStopArrayNotification} pathInstructions={pathInstructions} blockedIndicator={blockedIndicator} />}
+                    <center>
+                        {formSubmitted && <div className="containerMobile2">
+                            <div className="leftArrow">
+                                {!noPath && <Button variant="contained" type="submit" onClick={decrementCounter} disabled={disableLeftButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "55vh", width: "8vw", marginBottom: "8vh", marginRight: "1vw", marginLeft: "4vw" }}><ArrowLeftIcon></ArrowLeftIcon></Button>}
+                            </div>
+
+                            <div className="MiddleContent">
+
+                                <div {...handlers} className="NoMargins" style={{ overflow: 'hidden' }}>
+
+                                    <ImageOutputMobile imgPath={arrayFromString[arrayposition]} arrayposition={arrayposition} />
+
+                                </div>
+                                <Tooltip title="Block?" arrow>
+                                        {!noPath && !showBlockConfirmation && <Button className="overlay-button-mobile" onClick={blockConfirmation}><img src="block_logo.png" alt="cannot display" className="block-logo-mobile"></img></Button>}
+                                    </Tooltip>
+
+                                    {!noPath && showBlockConfirmation && <Button variant="contained" className="overlay-confirmation-button-mobile" sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }} onClick={axiosPostBlock}>Block this point?</Button>}
+
+                                    {showUpload && <div className="overlay-refresh-mobile">
+                                    <Button variant="contained" type="submit" onClick={handleSubmitRefresh} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }}>Give me an alternate path</Button>
+                                    </div>}
+                                    
+                                   
+
+                            </div>
+                            {<Box className="overlay-image-count-mobile" component="section" display="flex" alignItems="center" borderRadius={16} sx={{ p: 0, background: "white", textAlign: 'center', justifyContent: 'center' }}><p className="imageCount">{arrayposition + 1}/{arrayFromString.length}</p></Box>}
+
+                            <div className="rightArrow">
+                                {!noPath && <Button variant="contained" type="submit" onClick={incrementCounter} disabled={disableRightButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "55vh", width: "8vw", marginBottom: "8vh", marginLeft: "1vw", marginRight: "4vw" }}><ArrowRightIcon></ArrowRightIcon></Button>}
+                            </div>
+                        </div>}
+                    </center>
                     {showUpload && <div className="fileupload-mobile"><FileUpload /></div>}
                 </center>
-                
-                {formSubmitted && <div className="containerMobile2">
-                <div className="leftArrow">
-                {!noPath && <Button variant="contained" type="submit" onClick={decrementCounter} disabled={disableLeftButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "55vh", width: "8vw", marginBottom: "0vh",  marginRight: "1vw", marginLeft: "3vw"}}><ArrowLeftIcon></ArrowLeftIcon></Button>}
-                </div>
-                <div className="MiddleContent">
-                <ImageOutputMobile imgPath = {arrayFromString[arrayposition]} arrayposition = {arrayposition}/>
-                </div>
-                <div className="rightArrow">
-                {!noPath && <Button variant="contained" type="submit" onClick={incrementCounter} disabled={disableRightButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "55vh", width: "8vw", marginBottom: "0vh", marginLeft: "1vw", marginRight: "3vw"}}><ArrowRightIcon></ArrowRightIcon></Button>}
-                </div>
-                </div>}
-               
+
+                <br></br>
+
+
+
             </div>
 
         </>
