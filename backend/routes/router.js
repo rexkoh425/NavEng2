@@ -37,7 +37,7 @@ async function template_instructions(distance , arrow_direction , levels){
         return `Walk Straight for ${distance / 10} metre`;
     }else{
         if ((distance / 10) > 1) {
-        return `Turn ${arrow_direction} and Walk Straight for ${distance / 10} metres` ;
+            return `Turn ${arrow_direction} and Walk Straight for ${distance / 10} metres` ;
         }
         return `Turn ${arrow_direction} and Walk Straight for ${distance / 10} metre` ;
     }
@@ -679,12 +679,6 @@ async function is_failed_location(source , destination){
     */
 }
 
-async function get_filepath_from_link(link_input){
-    let temp = link_input.split('/');
-    let filepath = temp.slice(8).join('/');
-    return filepath;
-}
-
 async function get_b4_blocked_unique_id_from_array(unique_id , array){
     for(let i = 0 ; i < array.length ; i++){
         if(array[i] == unique_id){
@@ -1171,7 +1165,7 @@ router.post('/convert_unique_id_filename' , async(req , res) => {
             .select('filepath')
             .eq('unique_id', inputData.unique_id);
 
-            filepath = await get_filepath_from_link(data[0].filepath);
+            filepath = await remove_weburl(data[0].filepath);
         if (error) {
             throw error;
         }
@@ -1593,6 +1587,95 @@ router.post('/full_query' , async (req , res) => {
     }
 });
 
+router.post('/angle_to_string_dir' , async (req , res) => {
+    const inputs = req.body.Input;
+    const expected = req.body.Expected;
+    const test_cases = inputs.length;
+    let passed = 0;
+    for(let i = 0 ; i < test_cases ; i ++){
+        const result = await angle_to_string_dir(inputs[i]);
+        if(result == expected[i]){
+            passed ++;
+        }
+    }
+    if(passed == test_cases){
+        res.send({ passed : true });
+    }else{
+        res.send({ passed : false});
+    }
+});
+
+router.post('/remove_weburl' , async (req , res) => {
+    const inputs = req.body.Input;
+    const expected = req.body.Expected;
+    const test_cases = inputs.length;
+    let passed = 0;
+    for(let i = 0 ; i < test_cases ; i ++){
+        const result = await remove_weburl(inputs[i]);
+        if(result == expected[i]){
+            passed ++;
+        }
+    }
+    if(passed == test_cases){
+        res.send({ passed : true });
+    }else{
+        res.send({ passed : false});
+    }
+});
+
+router.post('/get_b4_blocked_unique_id_from_array' , async (req , res) => {
+    const inputs = req.body.Input;
+    const expected = req.body.Expected;
+    const test_cases = inputs.length;
+    let passed = 0;
+    for(let i = 0 ; i < test_cases ; i ++){
+        const result = await get_b4_blocked_unique_id_from_array(inputs[i].query , inputs[i].array);
+        if(result == expected[i]){
+            passed ++;
+        }
+    }
+    if(passed == test_cases){
+        res.send({ passed : true });
+    }else{
+        res.send({ passed : false});
+    }
+});
+
+router.post('/template_instructions' , async (req , res) => {
+    const inputs = req.body.Input;
+    const expected = req.body.Expected;
+    const test_cases = inputs.length;
+    let passed = 0;
+    for(let i = 0 ; i < test_cases ; i ++){
+        const result = await template_instructions(inputs[i].distance , inputs[i].arrow , inputs[i].levels);
+        if(result == expected[i]){
+            passed ++;
+        }
+    }
+    if(passed == test_cases){
+        res.send({ passed : true });
+    }else{
+        res.send({ passed : false});
+    }
+});
+
+router.post('/ENUM_to_left_right' , async (req , res) => {
+    const inputs = req.body.Input;
+    const expected = req.body.Expected;
+    const test_cases = inputs.length;
+    let passed = 0;
+    for(let i = 0 ; i < test_cases ; i ++){
+        const result = await ENUM_to_left_right(inputs[i]);
+        if(result == expected[i]){
+            passed ++;
+        }
+    }
+    if(passed == test_cases){
+        res.send({ passed : true });
+    }else{
+        res.send({ passed : false});
+    }
+});
 
 
 

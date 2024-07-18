@@ -531,6 +531,162 @@ describe('Testing Functions..........', function () {
             global.gc();
         }
     })
+
+    it('angle_to_string_dir return direction in words' , async function() {
+        try {
+            const input = { 
+                Input : ['0' , '90' , '180' , '-90' , '45' , '-45' , '30'] ,
+                Expected : ["north" , "east" , "south" , "west" , "up" , "down" , "cannot convert"]
+                
+            }
+
+            const response = await request(app)
+                .post('/angle_to_string_dir')
+                .send(input);
+
+            if(response.body.passed == false){
+                throw new Error("angle_to_string_dir function failed")
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
+
+    it('remove_weburl takes in link and returns file name' , async function() {
+        try {
+            const input = { 
+                Input : 
+                [
+                    'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/1_0_0_40_None_None_Room_NIL.jpg' , 
+                    'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/3_50_-110_40_North_None_T_junction_NIL.jpg' ,
+                    'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/12_30_-390_80_North_None_Cross_junction_NIL.jpg' ,
+                    'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/15_30_-450_80_West_None_Cross_junction_NIL.jpg'
+                ] ,
+                Expected : 
+                [
+                    "1_0_0_40_None_None_Room_NIL.jpg" , 
+                    "3_50_-110_40_North_None_T_junction_NIL.jpg" , 
+                    "12_30_-390_80_North_None_Cross_junction_NIL.jpg" , 
+                    "15_30_-450_80_West_None_Cross_junction_NIL.jpg"
+                ]
+                
+            }
+
+            const response = await request(app)
+                .post('/remove_weburl')
+                .send(input);
+
+            if(response.body.passed == false){
+                throw new Error("remove_weburl function failed")
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
+
+    it('get_b4_blocked_unique_id_from_array returns node before blocked node' , async function() {
+        try {
+            const input = { 
+                Input : [
+                    {
+                        array : ['0' , '3' , '4' , '7' , '2'], 
+                        query : "4"
+                    } ,
+                    {
+                        array : ['0' , '2' , '3'], 
+                        query : "4"
+                    } 
+                ] ,
+                Expected : ["3" , ""] 
+            }
+
+            const response = await request(app)
+                .post('/get_b4_blocked_unique_id_from_array')
+                .send(input);
+
+            if(response.body.passed == false){
+                throw new Error("get_b4_blocked_unique_id_from_array function failed")
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
+
+    it('template_instructions returns instructions base on directions , distance etc  ', async function() {
+        try {
+            const input = { 
+                Input : 
+                [
+                    {
+                        distance : "70" ,
+                        arrow : "1" ,
+                        levels : 0
+                    } ,
+                    {
+                        distance : "80" ,
+                        arrow : "5" ,
+                        levels : 2
+                    } ,
+                    {
+                        distance : "50" ,
+                        arrow : "2" ,
+                        levels : 0
+                    }
+                    
+                ] ,
+                Expected : 
+                [
+                    "Walk Straight for 7 metres",
+                    "Go Up 2 level",
+                    "Turn Right and Walk Straight for 5 metres"
+                ]
+                
+            }
+
+            const response = await request(app)
+                .post('/template_instructions')
+                .send(input);
+
+            if(response.body.passed == false){
+                throw new Error("template_instructions function failed")
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
+
+    it('ENUM_to_left_right return left right straight instruction from ENUM', async function () {
+        try {
+            const input = { 
+                Input : ['1' , '2' , '3' , '4' , '5' , '6' , '7'], 
+                Expected : ['Straight' , 'Right' , 'around' , 'Left' , 'Up' , 'Down' , 'None'] 
+            }
+            const response = await request(app)
+                .post('/ENUM_to_left_right')
+                .send(input);
+            
+            if(response.body.passed == false){
+                throw new Error("ENUM_to_left_right function failed")
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
 })
 
 describe('Testing whether location pairs output correct number of pictures', function () {
