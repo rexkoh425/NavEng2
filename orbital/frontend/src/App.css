@@ -190,6 +190,17 @@
   align-items: center;
   justify-content:center;
   width: 90vw;
+  margin-top: -8px;
+}
+
+.containerMobile2 {
+  display: flex;
+  justify-content: space-between; /* Distribute items with space between them */
+  align-items: center;
+}
+
+.leftArrow {
+  flex: 0 1 auto;
 }
 
 .imageColumn {
@@ -222,7 +233,7 @@
 }
 
 .rightArrow {
-  justify-self: start;
+  flex: 0 1 auto;
 }
 
 .parametricsDescription{
@@ -238,6 +249,7 @@
   display: inline;
   font-weight: 400;
   font-family: "Lexend";
+  margin: 0px;
   
 }
 
@@ -463,4 +475,17 @@
   width: 4vh;
   margin-bottom: -11px;
   margin-right: 8px
+}
+
+.vPadding {
+  padding: 10vh 0;
+}
+
+.spacing {
+  padding: 5px
+}
+
+.MiddleContent {
+  flex: 1 1 auto;
+  text-align: center;
 }

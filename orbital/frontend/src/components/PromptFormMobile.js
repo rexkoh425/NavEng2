@@ -585,11 +585,11 @@ function PromptFormMobile() {
                     
                     </div>
                     <br></br>
-                    
-                    <br></br>
+                    <div className="spacing"></div>
                     {!noPath && formSubmitted && <DestinationNotification stopsIndex={stopsIndex} arrayposition={arrayposition} MultiStopArray={MultiStopArrayNotification} pathInstructions={pathInstructions} blockedIndicator={blockedIndicator} />}
                     <center>
                     {formSubmitted && <div className="containerMobile">
+                        
                         {!noPath && <Button variant="contained" type="submit" onClick={decrementCounter} disabled={disableLeftButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "55vh", width: "8vw", marginBottom: "8vh",  marginRight: "1vw"}}><ArrowLeftIcon></ArrowLeftIcon></Button>}
                     {formSubmitted && <div className="NoMargins">
                         <div className="imageContainer">
@@ -619,9 +619,19 @@ function PromptFormMobile() {
                     </center>
                     {showUpload && <div className="fileupload-mobile"><FileUpload /></div>}
                 </center>
+                
+                {formSubmitted && <div className="containerMobile2">
+                <div className="leftArrow">
                 {!noPath && <Button variant="contained" type="submit" onClick={decrementCounter} disabled={disableLeftButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "55vh", width: "8vw", marginBottom: "8vh",  marginRight: "1vw"}}><ArrowLeftIcon></ArrowLeftIcon></Button>}
+                </div>
+                <div className="MiddleContent">
                 <ImageOutputMobile imgPath = {arrayFromString[arrayposition]} arrayposition = {arrayposition}/>
+                </div>
+                <div className="rightArrow">
                 {!noPath && <Button variant="contained" type="submit" onClick={incrementCounter} disabled={disableRightButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "55vh", width: "8vw", marginBottom: "8vh", marginLeft: "1vw"}}><ArrowRightIcon></ArrowRightIcon></Button>}
+                </div>
+                </div>}
+               
             </div>
 
         </>
