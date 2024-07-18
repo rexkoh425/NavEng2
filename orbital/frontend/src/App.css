@@ -117,6 +117,7 @@
   margin-left: 5vw;
   margin-right: 5vw;
   margin-top: 0vw;
+  width: 90vw;
 }
 
 .InstructionsTitle {
@@ -160,8 +161,7 @@
 .htmlContentMobile {
   display: inline-block;
   vertical-align: middle;
-  justify-content: center;
-  margin-bottom: 0px;
+  justify-content: left;
   height: 60vh;
   width: 34vh;
   
@@ -190,6 +190,18 @@
   align-items: center;
   justify-content:center;
   width: 90vw;
+  margin-top: -8px;
+}
+
+.containerMobile2 {
+  display: flex;
+  justify-content: space-between; /* Distribute items with space between them */
+  align-items: center;
+  margin-top: -5px;
+}
+
+.leftArrow {
+  flex: 0 1 auto;
 }
 
 .imageColumn {
@@ -200,8 +212,9 @@
 
 .imageCount {
   text-align:center;
-  font-family: "Lexend";
   font-weight: lighter;
+  font-family: "Lexend";
+
 }
 
 .imageCountMobile {
@@ -221,7 +234,7 @@
 }
 
 .rightArrow {
-  justify-self: start;
+  flex: 0 1 auto;
 }
 
 .parametricsDescription{
@@ -237,6 +250,7 @@
   display: inline;
   font-weight: 400;
   font-family: "Lexend";
+  margin: 0px;
   
 }
 
@@ -281,7 +295,6 @@
 {
   position: relative;
   display: inline-block;
-  height: auto;
 
 }
 
@@ -320,9 +333,31 @@
   position: absolute;
   height: 8vh;
   width: 20vh;
-  bottom: 59vh;
+  bottom: 55vh;
   right: 13vh;
   display: inline-block
+}
+
+.overlay-confirmation-button-mobile {
+  position: absolute;
+  height: 7vh;
+  width: 20vh;
+  bottom: 56vh;
+  right: -6vh;
+  display: inline-block;
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+.overlay-image-count-mobile {
+  position: absolute;
+  height: 3vh;
+  width: 10vh;
+  bottom: 64vh;
+  right: 12.5vh;
+  display: inline-block;
+  margin-top: 0px;
+  margin-bottom: 0px;
 }
 
 .block-logo {
@@ -371,7 +406,7 @@
 }
 
 .fileupload-mobile {
-  margin-top: 22vh;
+  margin-top: -8vh;
 }
 
 .pathInstructions {
@@ -399,21 +434,9 @@
   position: absolute;
   height: 7vh;
   width: 20vh;
-  bottom: 75vh;
+  bottom: 60vh;
   right: -22vh;
   display: inline-block
-}
-
-
-.overlay-confirmation-button-mobile {
-  position: absolute;
-  height: 7vh;
-  width: 20vh;
-  bottom: 59vh;
-  right: -6vh;
-  display: inline-block;
-  margin-top: 0px;
-  margin-bottom: 0px;
 }
 
 .NoMargins {
@@ -429,7 +452,16 @@
 .column {
   flex: 1; /* Grow to fill available space equally */
   padding: 2px;
-  
+  margin-bottom: -50px;
+}
+
+
+.column3 {
+  float: right;
+  flex: 40%;
+  margin-bottom: -80px;
+  vertical-align: bottom;
+
 }
 
 .distanceIcon {
@@ -441,5 +473,19 @@
 .timeIcon {
   width: 4vh;
   margin-bottom: -11px;
-  margin-right: 2px
+  margin-right: 8px
+}
+
+.vPadding {
+  padding: 10vh 0;
+}
+
+.spacing {
+  padding: 7px
+}
+
+.MiddleContent {
+  flex: 1 1 auto;
+  text-align: center;
+  position: relative;
 }
