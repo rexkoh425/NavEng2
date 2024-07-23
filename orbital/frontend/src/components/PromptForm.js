@@ -25,6 +25,9 @@ import DestinationNotification from "./DestinationNotification";
 import TopDownMap from "./TopDownMap";
 import ImageOutput from "./ImageOutput";
 import { styled } from '@mui/system';
+import CircularProgress, {
+    circularProgressClasses,
+} from '@mui/material/CircularProgress';
 
 
 function PromptForm() {
@@ -66,12 +69,13 @@ function PromptForm() {
     const [blockedIndicator, setBlockedIndicator] = useState(false)
     const [submitTrigger, setSubmitTrigger] = useState(false)
 
-    const [Node_id_array , setNode_id_array] = useState([]);
+    const [Node_id_array, setNode_id_array] = useState([]);
     const [visited, setVisited] = useState(["0"])
     const [temp, setTemp] = useState([])
-    const [graphnodes, setGraphnodes] = useState([]) ;
+    const [graphnodes, setGraphnodes] = useState([]);
 
     const [nodeDirection, setNodeDirection] = useState([]);
+    const [loading, setLoading] = useState(false)
 
 
     const Local = process.env.REACT_APP_LOCAL;
@@ -119,7 +123,7 @@ function PromptForm() {
     useEffect(() => {
         const image = arrayFromString[arrayposition]
 
-        const URL = '<img src = "https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/Specials/No_alternate_path.png?t=2024-06-22T15%3A22%3A29.729Z" alt = "cannot be displayed" class="htmlData">'
+        const URL = 'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/Specials/No_alternate_path.png?t=2024-06-22T15%3A22%3A29.729Z'
 
         if (image === URL) {
             setNoPath(true);
@@ -176,7 +180,7 @@ function PromptForm() {
             const parts = blocked.split('/');
             const remainder = parts.slice(8).join('/');
             const indexOfQuote = remainder.indexOf('"');
-            const BlockedIMGNameVariable=remainder.slice(0, indexOfQuote)
+            const BlockedIMGNameVariable = remainder.slice(0, indexOfQuote)
             setBlockedIMGName(BlockedIMGNameVariable);
             console.log("blocked: " + blocked)
             console.log("blocked img name: " + BlockedIMGNameVariable)
@@ -200,7 +204,7 @@ function PromptForm() {
     let before_node_id = parseInt(node_string);
 
     const updateMap = () => {
-      axiosGetFloor()
+        axiosGetFloor()
     }
 
     const incrementCounter = (e) => { //counter for image array
@@ -211,10 +215,10 @@ function PromptForm() {
             setBlocked(arrayFromString[arrayposition + 1])
             setBeforeBlocked(arrayFromString[arrayposition])
             setBlockedNodeIndex(arrayposition + 1)
-           /* setVisited([...visited, blockedNodeID])
-            console.log("increment Visited: " + visited) */
-          const newVisited = nodesPath.slice(0, arrayposition + 2)
-          setVisited(newVisited)
+            /* setVisited([...visited, blockedNodeID])
+             console.log("increment Visited: " + visited) */
+            const newVisited = nodesPath.slice(0, arrayposition + 2)
+            setVisited(newVisited)
         }
         if (arrayposition === (arrayFromString.length - 2)) {
             setDisableRightButton(true)
@@ -280,6 +284,8 @@ function PromptForm() {
     }
 
     const axiosPostData = async () => { //Sending main form data
+        setLoading(true)
+        
         const postData = {
             blocked_array: blockedArray,
             sheltered: sheltered,
@@ -289,7 +295,7 @@ function PromptForm() {
 
         try {
             const response = await axios.post(websitelink + '/formPost', postData);
-
+            setLoading(false)
             // Update state variables with the response data
             setMessageError(response.data['HTML']);
             console.log("The HTML CONTENT: " + messageError)
@@ -297,7 +303,7 @@ function PromptForm() {
             console.log(distArray)
             setPathInstructions(response.data['Instructions'])
 
-            setNodesPath(response.data['compressed_nodes_path']) 
+            setNodesPath(response.data['compressed_nodes_path'])
             setNode_id_array(response.data['nodes_path']);
             setStopsIndex(response.data['Stops_index']);
             setNode_id_array(response.data['nodes_path']);
@@ -310,16 +316,18 @@ function PromptForm() {
             const arrayFromString = response.data['HTML'].split('<img src');
             setBlocked(arrayFromString[0]);
             setStopsIndex(response.data['Stops_index']);
+            
         } catch (error) {
             console.error('Error fetching data:', error);
         }
     };
 
     const axiosPostDataRefresh = async () => { //Sending data when alternate path button is clicked
+        setLoading(true)
 
         const postData = {
             blocked_array: blockedArray,
-            Node_id_array : Node_id_array,
+            Node_id_array: Node_id_array,
             blocked_img_path: blockedIMGName,
             sheltered: sheltered,
             NoStairs: NoStairs,
@@ -332,6 +340,7 @@ function PromptForm() {
             const response = await axios.post(websitelink + '/blockRefresh', postData);
 
             // Update state variables with the response data
+            setLoading(false)
             setMessageError(response.data['HTML']);
             const distArray = response.data['Dist_array'];
             handleConvertToMetres(distArray);
@@ -346,6 +355,7 @@ function PromptForm() {
             setSubmitTrigger(!submitTrigger)
             setNodesPath(response.data['compressed_nodes_path'])
             setVisited(["0"])
+            
 
 
         } catch (error) {
@@ -353,19 +363,19 @@ function PromptForm() {
         }
     };
 
-    const axiosGetFloor = async () => { 
-            try {
-                let postData = {
-                    node_id: blockedNodeID
-                };
-    
-                const response = await axios.post(websitelink + '/getfloor', postData);
-                setGraphnodes(response.data)
+    const axiosGetFloor = async () => {
+        try {
+            let postData = {
+                node_id: blockedNodeID
+            };
 
-    
-            } catch (error) {
-                console.error('Error getting floor:', error);
-            }
+            const response = await axios.post(websitelink + '/getfloor', postData);
+            setGraphnodes(response.data)
+
+
+        } catch (error) {
+            console.error('Error getting floor:', error);
+        }
     };
 
 
@@ -465,29 +475,29 @@ function PromptForm() {
                 <div className="child1"><center>
                     <form className="desktopForm">
                         <label className="StartAndEndLocation">Start Location</label>
-                        {!formSubmitted && <Typography className="description1" sx={{fontFamily: "Lexend" }}>Search or select the location closest to you</Typography>}
+                        {!formSubmitted && <Typography className="description1" sx={{ fontFamily: "Lexend" }}>Search or select the location closest to you</Typography>}
                         <div className="centered-element1">
-                        <Autocomplete
+                            <Autocomplete
 
-                            options={selectLocations} sx={{ width: 250, fontFamily: 'Georgia, serif' }} renderInput={(params) => (
-                                <TextField {...params} label="Start Location" ></TextField>
-                            )}
-                            onChange={(event, value) => {
-                                if (value) {
-                                    setSourceLocation(value);
-                                } else {
-                                    setSourceLocation(""); // Handle case when value is cleared
+                                options={selectLocations} sx={{ width: 250, fontFamily: 'Georgia, serif' }} renderInput={(params) => (
+                                    <TextField {...params} label="Start Location" ></TextField>
+                                )}
+                                onChange={(event, value) => {
+                                    if (value) {
+                                        setSourceLocation(value);
+                                    } else {
+                                        setSourceLocation(""); // Handle case when value is cleared
 
+                                    }
                                 }
-                            }
-                            }
-                        >
-                            
-                        </Autocomplete>
+                                }
+                            >
+
+                            </Autocomplete>
                         </div>
                         <br></br>
                         <label className="StartAndEndLocation">End Location</label>
-                        {!formSubmitted && <Typography className="description" sx={{fontFamily: "Lexend" , marginBottom: 1 }}>Search or select the location closest to your end point</Typography>}
+                        {!formSubmitted && <Typography className="description" sx={{ fontFamily: "Lexend", marginBottom: 1 }}>Search or select the location closest to your end point</Typography>}
 
                         <div >
 
@@ -541,7 +551,7 @@ function PromptForm() {
                                 </div>
                             </div>
                         </div>
-                        
+
                         <FormControlLabel control={<Checkbox sx={{
                             color: "#cdd8e6",
                             '&.Mui-checked': {
@@ -558,14 +568,14 @@ function PromptForm() {
                         }} checked={sheltered}
                             onChange={handleShelteredCheckbox} />} label="Sheltered Path" sx={{ fontFamily: "Lexend" }} />
                         <br></br>
-                        <Button variant="contained" type="submit" disabled={disableSubmit} onClick={handleSubmit} sx={{ bgcolor: "#cdd8e6", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }}>Submit</Button>
+                        <Button variant="contained" type="submit" disabled={disableSubmit} onClick={handleSubmit} sx={{ bgcolor: "#cdd8e6", color: 'white', "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }}>Submit</Button>
 
                         <br></br>
                         {showUpload && <div><FileUpload /></div>}
                         <br></br>
-                        <Instructions formSubmitted = {formSubmitted}></Instructions>
-                        {formSubmitted  && stopsIndex &&
-                        <TopDownMap nodes={graphnodes} visited={visited} originNodeId={blockedNodeID} nodesPath={nodesPath} stopsIndex={stopsIndex} Node_id_array={Node_id_array} blockedIMGName={blockedIMGName}></TopDownMap>}
+                        <Instructions formSubmitted={formSubmitted}></Instructions>
+                        {formSubmitted && stopsIndex && !noPath &&
+                            <TopDownMap nodes={graphnodes} visited={visited} originNodeId={blockedNodeID} nodesPath={nodesPath} stopsIndex={stopsIndex} Node_id_array={Node_id_array} blockedIMGName={blockedIMGName}></TopDownMap>}
 
 
                     </form>
@@ -582,56 +592,64 @@ function PromptForm() {
                                 textAlign: 'center', justifyContent: 'center', color: 'grey', fontFamily: "Lexend"
                             }}>Please select the starting and ending <br></br> locations to view the pictures</Box></div>}
                     <div className="bottomAligncontent">
-                    <div>
-                    <center>
+                        <div>
+                            <center>
+                                {!noPath && formSubmitted && <div>
+                                    {!noPath && formSubmitted && <p className="parametricsDescription">Total Distance: </p>}
+                                    {!noPath && formSubmitted && <p className="parametricsContent">{totalDistance}m</p>}
 
-                        {!noPath && formSubmitted && <p className="parametricsDescription">Total Distance: </p>}
-                        {!noPath && formSubmitted && <p className="parametricsContent">{totalDistance}m</p>}
+                                    <div></div>
+                                    {!noPath && formSubmitted && <p className="parametricsDescription">Total Estimated Time Taken: </p>}
+                                    {!noPath && formSubmitted && <div className="parametricsContent"><CalculateTime distance={totalDistance} /></div>}
+                                    <br></br>
+                                    <br></br>
+                                    {!noPath && formSubmitted && !hideTimeTaken && <p className="parametricsDescription">Distance Remaining: </p>}
+                                    {!noPath && formSubmitted && !hideTimeTaken && <p className="parametricsContent">{distanceArray[arrayposition]}m</p>}
 
-                        <div></div>
-                        {!noPath && formSubmitted && <p className="parametricsDescription">Total Estimated Time Taken: </p>}
-                        {!noPath && formSubmitted && <div className="parametricsContent"><CalculateTime distance={totalDistance} /></div>}
-                        <br></br>
-                        <br></br>
-                        {!noPath && formSubmitted && !hideTimeTaken && <p className="parametricsDescription">Distance Remaining: </p>}
-                        {!noPath && formSubmitted && !hideTimeTaken && <p className="parametricsContent">{distanceArray[arrayposition]}m</p>}
+                                    <div></div>
+                                    {!noPath && formSubmitted && !hideTimeTaken && <p className="parametricsDescription">Time to Destination: </p>}
+                                    {!noPath && formSubmitted && !hideTimeTaken && <div className="parametricsContent"><CalculateTime distance={distanceArray[arrayposition]} /></div>}
 
-                        <div></div>
-                        {!noPath && formSubmitted && !hideTimeTaken && <p className="parametricsDescription">Time to Destination: </p>}
-                        {!noPath && formSubmitted && !hideTimeTaken && <div className="parametricsContent"><CalculateTime distance={distanceArray[arrayposition]} /></div>}
+                                </div>}
+                            </center>
+                            {!noPath && formSubmitted && <p className="imageCount">{arrayposition + 1}/{arrayFromString.length}</p>}
+                            {!noPath && formSubmitted && <DestinationNotification stopsIndex={stopsIndex} arrayposition={arrayposition} MultiStopArray={MultiStopArrayNotification} pathInstructions={pathInstructions} blockedIndicator={blockedIndicator} />}
+                            <div style={{ display: 'none' }}>
+                                {/* Preload the next image */}
+                                <ImageOutput imgPath={arrayFromString[(arrayposition + 1) % arrayFromString.length]} />
+                            </div>
 
+                            <div className="container">
+                                {formSubmitted && !loading && !noPath && <Button variant="contained" type="submit" onClick={decrementCounter} disabled={disableLeftButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "10vh", width: "3vw" }}><ArrowLeftIcon></ArrowLeftIcon></Button>}
+                                <div className="imageContainer">
+                                    {formSubmitted && !loading && <ImageOutput imgPath={arrayFromString[arrayposition]} />}
+                                    <br></br>
+                                    <Tooltip title="Block?" arrow>
+                                        {formSubmitted && !loading && !noPath && !showBlockConfirmation && <Button className="overlay-button" onClick={blockConfirmation}><img src="block_logo.png" alt="cannot display" className="block-logo"></img></Button>}
+                                    </Tooltip>
+                                    {!noPath && showBlockConfirmation && <Button variant="contained" className="overlay-confirmation-button" sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }} onClick={axiosPostBlock}>Block this point?</Button>}
+                                    {showUpload && <div className="overlay-refresh">
+                                        <Button variant="contained" type="submit" onClick={handleSubmitRefresh} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }}>Give me an alternate path</Button>
+                                    </div>}
+                                    {formSubmitted && loading && <React.Fragment>
+                                        <svg width={0} height={0}>
+                                            <defs>
+                                                <linearGradient id="my_gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                                    <stop offset="0%" stopColor="#F05C2C" />
+                                                    <stop offset="100%" stopColor="#cdd8e6" />
+                                                </linearGradient>
+                                            </defs>
+                                        </svg>
+                                        <CircularProgress sx={{ 'svg circle': { stroke: 'url(#my_gradient)' } }} />
+                                    </React.Fragment>}
 
+                                </div>
+                                <div className="rightArrow">
+                                    {formSubmitted && !loading && !noPath && <Button variant="contained" type="submit" onClick={incrementCounter} disabled={disableRightButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "10vh", width: "3vw" }}><ArrowRightIcon></ArrowRightIcon></Button>}
+                                </div>
 
-                    </center>
-                    {!noPath && formSubmitted && <p className="imageCount">{arrayposition + 1}/{arrayFromString.length}</p>}
-                    {!noPath && formSubmitted && <DestinationNotification stopsIndex={stopsIndex} arrayposition={arrayposition} MultiStopArray={MultiStopArrayNotification} pathInstructions={pathInstructions} blockedIndicator={blockedIndicator} />}
-                    <div  style={{ display: 'none' }}>
-                        {/* Preload the next image */}
-                        <ImageOutput imgPath = {arrayFromString[(arrayposition + 1) % arrayFromString.length]}/>
-                    </div>
-
-
-
-                    {formSubmitted && <div className="container">
-                        {!noPath && <Button variant="contained" type="submit" onClick={decrementCounter} disabled={disableLeftButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "10vh", width: "3vw" }}><ArrowLeftIcon></ArrowLeftIcon></Button>}
-                        <div className="imageContainer">
-                        <ImageOutput imgPath = {arrayFromString[arrayposition]}/>
-                            <br></br>
-                            <Tooltip title="Block?" arrow>
-                                {!noPath && !showBlockConfirmation && <Button className="overlay-button" onClick={blockConfirmation}><img src="block_logo.png" alt="cannot display" className="block-logo"></img></Button>}
-                            </Tooltip>
-                            {!noPath && showBlockConfirmation && <Button variant="contained" className="overlay-confirmation-button" sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }} onClick={axiosPostBlock}>Block this point?</Button>}
-                            {showUpload && <div className="overlay-refresh">
-                                <Button variant="contained" type="submit" onClick={handleSubmitRefresh} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }}>Give me an alternate path</Button>
-                            </div>}
-
+                            </div>
                         </div>
-                        <div className="rightArrow">
-                            {!noPath && <Button variant="contained" type="submit" onClick={incrementCounter} disabled={disableRightButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "10vh", width: "3vw" }}><ArrowRightIcon></ArrowRightIcon></Button>}
-                        </div>
-                        
-                    </div>}
-                    </div>
                     </div>
                 </div>
             </div>
