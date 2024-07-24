@@ -25,6 +25,11 @@ import DestinationNotification from "./DestinationNotification";
 import { useSwipeable } from 'react-swipeable';
 import TopDownMapMobile from "./TopDownMapMobile";
 import ImageOutputMobile from "./ImageOutputMobile";
+import CircularProgress, {
+    circularProgressClasses,
+} from '@mui/material/CircularProgress';
+import SwipeIcon from '@mui/icons-material/Swipe';
+import Swipe from "@mui/icons-material/Swipe";
 
 
 function PromptFormMobile() {
@@ -69,6 +74,7 @@ function PromptFormMobile() {
     const [visited, setVisited] = useState(["0"])
     const [temp, setTemp] = useState([])
     const [graphnodes, setGraphnodes] = useState([])
+    const [loading, setLoading] = useState(false)
 
 
     const Local = process.env.REACT_APP_LOCAL;
@@ -130,7 +136,7 @@ function PromptFormMobile() {
     useEffect(() => {
         const image = arrayFromString[arrayposition]
 
-        const URL = '<img src = "https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/Specials/No_alternate_path.png?t=2024-06-22T15%3A22%3A29.729Z" alt = "cannot be displayed" class="htmlData">'
+        const URL = 'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/Specials/No_alternate_path.png?t=2024-06-22T15%3A22%3A29.729Z'
 
         if (image === URL) {
             setNoPath(true);
@@ -280,6 +286,8 @@ function PromptFormMobile() {
     }
 
     const axiosPostData = async () => { //Sending main form data
+        setLoading(true)
+
         const postData = {
             blocked_array: blockedArray,
             sheltered: sheltered,
@@ -289,7 +297,7 @@ function PromptFormMobile() {
 
         try {
             const response = await axios.post(websitelink + '/formPost', postData);
-
+            setLoading(false)
 
             // Update state variables with the response data
             setMessageError(response.data['HTML']);
@@ -308,12 +316,14 @@ function PromptFormMobile() {
             const arrayFromString = response.data['HTML'].split('<img src');
             setBlocked(arrayFromString[0]);
             setStopsIndex(response.data['Stops_index']);
+            
         } catch (error) {
             console.error('Error fetching data:', error);
         }
     };
 
     const axiosPostDataRefresh = async () => { //Sending data when alternate path button is clicked
+        setLoading(true)
 
         const postData = {
             blocked_array: blockedArray,
@@ -328,7 +338,7 @@ function PromptFormMobile() {
 
         try {
             const response = await axios.post(websitelink + '/blockRefresh', postData);
-
+            setLoading(false)
             // Update state variables with the response data
             setMessageError(response.data['HTML']);
             setTotalDistance(response.data['Distance'] / 10);
@@ -344,6 +354,7 @@ function PromptFormMobile() {
             setPathInstructions(response.data['Instructions'])
             setBlockedIndicator(true)
             setSubmitTrigger(!submitTrigger)
+            
 
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -547,7 +558,7 @@ function PromptFormMobile() {
                     }} checked={sheltered}
                         onChange={handleShelteredCheckbox} />} label="Sheltered Path" sx={{ fontFamily: "Lexend" }} />
                     <br></br>
-                    <Button variant="contained" type="submit" onClick={handleSubmit} sx={{ bgcolor: "#cdd8e6", "&:hover": { bgcolor: "#F05C2C" }, }}>Submit</Button>
+                    <Button variant="contained" type="submit"  disabled={disableSubmit} onClick={handleSubmit} sx={{ bgcolor: "#F05C2C", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }}>Submit</Button>
                     <br></br>
                     <br></br>
                     <Instructions formSubmitted={formSubmitted}></Instructions>
@@ -568,7 +579,7 @@ function PromptFormMobile() {
                         }}>Please select the starting and ending <br></br> locations to view the pictures</Box></div>}
 
                 <center>
-                    {stopsIndex && <TopDownMapMobile nodes={graphnodes} visited={visited} originNodeId={blockedNodeID} nodesPath={nodesPath} stopsIndex={stopsIndex} Node_id_array={Node_id_array} blockedIMGName={blockedIMGName}></TopDownMapMobile>}
+                    {stopsIndex && !noPath && <TopDownMapMobile nodes={graphnodes} visited={visited} originNodeId={blockedNodeID} nodesPath={nodesPath} stopsIndex={stopsIndex} Node_id_array={Node_id_array} blockedIMGName={blockedIMGName}></TopDownMapMobile>}
                     <div className="two-columns-container">
                         <div className="column">
                             {!noPath && formSubmitted && !hideTimeTaken && <img src="Distance_Icon.png" className="distanceIcon"></img>}
@@ -594,14 +605,25 @@ function PromptFormMobile() {
                             </div>
 
                             <div className="MiddleContent">
+                            {formSubmitted && loading && <React.Fragment>
+                                        <svg width={0} height={0}>
+                                            <defs>
+                                                <linearGradient id="my_gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                                    <stop offset="0%" stopColor="#F05C2C" />
+                                                    <stop offset="100%" stopColor="#cdd8e6" />
+                                                </linearGradient>
+                                            </defs>
+                                        </svg>
+                                        <CircularProgress sx={{ 'svg circle': { stroke: 'url(#my_gradient)' } }} />
+                                    </React.Fragment>}
 
                                 <div {...handlers} className="NoMargins" style={{ overflow: 'hidden' }}>
 
-                                    <ImageOutputMobile imgPath={arrayFromString[arrayposition]} arrayposition={arrayposition} />
+                                {!loading && <ImageOutputMobile imgPath={arrayFromString[arrayposition]} arrayposition={arrayposition} />}
 
                                 </div>
                                 <Tooltip title="Block?" arrow>
-                                    {!noPath && !showBlockConfirmation && <Button className="overlay-button-mobile" onClick={blockConfirmation}><img src="block_logo.png" alt="cannot display" className="block-logo-mobile"></img></Button>}
+                                    {!loading && !noPath && !showBlockConfirmation && <Button className="overlay-button-mobile" onClick={blockConfirmation}><img src="block_logo.png" alt="cannot display" className="block-logo-mobile"></img></Button>}
                                 </Tooltip>
 
                                     {!noPath && showBlockConfirmation && <Button variant="contained" className="overlay-confirmation-button-mobile" sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }} onClick={axiosPostBlock}>Block this point?</Button>}
@@ -609,7 +631,7 @@ function PromptFormMobile() {
                                     {showUpload && <div className="overlay-refresh-mobile">
                                     <Button variant="contained" type="submit" onClick={handleSubmitRefresh} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }}>Give me an alternate path</Button>
                                     </div>}
-                                    {<Box className="overlay-image-count-mobile" component="section" display="flex" alignItems="center" borderRadius={16} sx={{ p: 0, background: "white", textAlign: 'center', justifyContent: 'center' }}><p className="imageCount">{arrayposition + 1}/{arrayFromString.length}</p></Box>}
+                                    {!loading && !noPath && <Box className="overlay-image-count-mobile" component="section" display="flex" alignItems="center" borderRadius={16} sx={{ p: 0, background: "white", textAlign: 'center', justifyContent: 'center' }}><p className="imageCount">{arrayposition + 1}/{arrayFromString.length}</p></Box>}
                             </div>
                             
 
@@ -617,8 +639,11 @@ function PromptFormMobile() {
                                 {!noPath && <Button variant="contained" type="submit" onClick={incrementCounter} disabled={disableRightButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "55vh", width: "8vw", marginBottom: "8vh", marginLeft: "1vw" }}><ArrowRightIcon></ArrowRightIcon></Button>}
                             </div>
                         </div>}
+                        {!noPath && <SwipeIcon  style={{
+        animation: 'shiftIcon 3s infinite'
+      }} sx={{marginTop: '-3vh', color: "#F05C2C"}}/>}
                     </center>
-                    {showUpload && <div className="fileupload-mobile"><FileUpload /></div>}
+                    {showUpload && <div className="fileupload-mobile"><FileUpload/></div>}
                 </center>
 
                 <br></br>
