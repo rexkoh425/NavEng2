@@ -17,7 +17,7 @@ const database_down_url = 'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/o
 let blocked_node = "";
 
 function debug_log(input){
-    let debug = true;
+    let debug = false;
     if(debug){
         console.log(input);
     }
@@ -858,10 +858,10 @@ router.post('/InsertFailedLocations', async (req, res) => {
             }
         }
 
-        debug_log('Data added to database successfully.');
+        //debug_log('Data added to database successfully.');
         res.send('Data added to database successfully.'); 
     } catch (error) {
-        console.error('Error appending data to database:', err);
+        //console.error('Error appending data to database:', err);
         res.status(500).send('Failed to append data to database.'); 
     }
 });

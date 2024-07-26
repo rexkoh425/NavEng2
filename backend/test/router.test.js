@@ -718,6 +718,7 @@ describe('Testing Endpoints..........', function () {
             const response = await request(app)
                 .post('/feedback')
                 .send(input);
+            
             if(response.body != "Thank you for your feedback!"){
                 throw new Error("Not added successfully"); 
             }
@@ -782,7 +783,7 @@ describe('Testing Endpoints..........', function () {
     })
 
     it('/insertBlocked updates the node as blocked in the database', async function () {
-        const input = "3_50_-110_40_North_None_T_junction_NIL.jpg";
+        const input = { img_string : "3_50_-110_40_North_None_T_junction_NIL.jpg" } ;
         try {
             const response = await request(app)
                 .post('/insertBlocked')
@@ -810,8 +811,12 @@ describe('Testing Endpoints..........', function () {
                 throw new Error("empty array"); 
             }
             const Edge = response.body[0];
-            console.log(typeof(Edge.id));
-            if(typeof(Edge.id) != "Integer" || typeof(Edge.distance) != "Integer" || typeof(Edge.direction) != "String"){
+            const connections = Edge.connections[0];
+           
+            if(typeof(Edge.id) != "number" || typeof(Edge.label) != "string"){
+                throw new Error("wrong format"); 
+            }
+            if(typeof(connections.id) != "number" || typeof(connections.distance) != "number" || typeof(connections.direction) != "string"){
                 throw new Error("wrong format"); 
             }
         } catch (error){
@@ -828,8 +833,8 @@ describe('Testing Endpoints..........', function () {
             const response = await request(app)
                 .post('/convert_unique_id_filename')
                 .send(input);
-
-            if(response.body.filepath == "2_50_0_40_North_North_Cross_junction_NIL.jpg"){
+            
+            if(response.body.filepath != "2_50_0_40_North_North_Cross_junction_NIL.jpg"){
                 throw new Error("wrong filepath"); 
             }
             
@@ -857,6 +862,7 @@ describe('Testing Endpoints..........', function () {
         }
     }) 
 })
+
 describe('Testing whether location pairs output correct number of pictures', function () {
     this.timeout(5000000);
 
