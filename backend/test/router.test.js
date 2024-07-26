@@ -689,6 +689,174 @@ describe('Testing Functions..........', function () {
     })
 })
 
+describe('Testing Endpoints..........', function () {
+    this.timeout(50000);
+
+    it('/locations should return an array of locations', async function () {
+        try {
+            const response = await request(app)
+                .post('/locations');
+            
+            if(response.body.length <= 0){
+                throw new Error("empty array"); 
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
+
+    it('/feedback should append the user feedback into database', async function () {
+        const input = {
+            feedbackType : "Report bug with website", 
+            bugDetails : "there is no bug",
+            nodes : ["EA-01-12" , "EA-02-12"]
+        }
+        try {
+            const response = await request(app)
+                .post('/feedback')
+                .send(input);
+            if(response.body != "Thank you for your feedback!"){
+                throw new Error("Not added successfully"); 
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
+
+    it('/InsertFailedLocations should append the failed location into database', async function () {
+        const input = [
+            { source : "EA-01-11" , destination : "EA-05-11"} , 
+            { source : "EA-03-11" , destination : "E1-03-14"}
+        ]
+        try {
+            const response = await request(app)
+                .post('/InsertFailedLocations')
+                .send(input);
+            if(response.body != "Data added to database successfully."){
+                throw new Error("Not added successfully"); 
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
+
+    it('/FailedLocations get all failed locations from the database', async function () {
+        try {
+            const response = await request(app)
+                .post('/FailedLocations')
+
+            if(response.body.length <= 0){
+                throw new Error("empty array"); 
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
+
+    it('/DeleteFailedLocations deletes all failed locations from the database', async function () {
+        try {
+            const response = await request(app)
+                .post('/DeleteFailedLocations')
+
+            if(response.body != "Data deleted from database successfully."){
+                throw new Error("Not deleted successfully"); 
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
+
+    it('/insertBlocked updates the node as blocked in the database', async function () {
+        const input = "3_50_-110_40_North_None_T_junction_NIL.jpg";
+        try {
+            const response = await request(app)
+                .post('/insertBlocked')
+                .send(input);
+
+            if(response.body.message != "Data added to database successfully."){
+                throw new Error("Not added successfully"); 
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
+
+    it('/getfloor gets all other nodes with same floor as the input node', async function () {
+        const input = { node_id : 71 };
+        try {
+            const response = await request(app)
+                .post('/getfloor')
+                .send(input);
+
+            if(response.body.length <= 0){
+                throw new Error("empty array"); 
+            }
+            const Edge = response.body[0];
+            console.log(typeof(Edge.id));
+            if(typeof(Edge.id) != "Integer" || typeof(Edge.distance) != "Integer" || typeof(Edge.direction) != "String"){
+                throw new Error("wrong format"); 
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
+
+    it('/convert_unique_id_filename get filepath using a unique id', async function () {
+        const input = { unique_id : 211 };
+        try {
+            const response = await request(app)
+                .post('/convert_unique_id_filename')
+                .send(input);
+
+            if(response.body.filepath == "2_50_0_40_North_North_Cross_junction_NIL.jpg"){
+                throw new Error("wrong filepath"); 
+            }
+            
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
+
+    it('/get_image_links should return an array of image links', async function () {
+        try {
+            const response = await request(app)
+                .post('/get_image_links');
+            
+            if(response.body.link_array.length <= 0){
+                throw new Error("empty array"); 
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    }) 
+})
 describe('Testing whether location pairs output correct number of pictures', function () {
     this.timeout(5000000);
 

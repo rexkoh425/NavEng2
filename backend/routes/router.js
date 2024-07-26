@@ -17,7 +17,7 @@ const database_down_url = 'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/o
 let blocked_node = "";
 
 function debug_log(input){
-    let debug = false;
+    let debug = true;
     if(debug){
         console.log(input);
     }
@@ -478,7 +478,11 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                 debug_log(dist_array);
                 debug_log("distance : ")
                 debug_log(distance);
-
+                
+                debug_log("uncompressed path : ")
+                debug_log(nodes_path);
+                debug_log("compressed path : ")
+                debug_log(compressed_path)
                 const FinalResults = {
                     Expected : nodes.length ,
                     Queried : data_length , 
@@ -810,11 +814,11 @@ router.post('/feedback' , async(req,res) => {
         if (error) {
             throw error;
         }
-        debug_log('Data added to database successfully.');
+        //debug_log('Data added to database successfully.');
         //res.send('Data added to database successfully.'); 
     } catch (error) {
-        console.error('Error appending data to database:', error);
-        //res.status(500).send('Failed to append data to database.'); 
+        //console.error('Error appending data to database:', error);
+        res.status(500).send('Failed to add data to database.'); 
     }
 
     res.send("Thank you for your feedback!") //sending conformation message back to frontend

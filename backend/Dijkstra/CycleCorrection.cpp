@@ -186,10 +186,6 @@ int main(){
         for(auto j = neighbours.begin() ; j != neighbours.end() ; j++){
             GraphEdge current = *j;
             if(!visited[current.dest()]){
-                /*
-                if(current.dest() == 189){
-                    cout << node << endl;
-                }*/
                 to_visit.push(current.dest());
                 visited[current.dest()] = true;
                 node_details[current.dest()] = node_details[node].add(current.dest() ,current.dir() , current.weight());
@@ -201,7 +197,7 @@ int main(){
         for(int i = 0; i < num_of_nodes ; i++){
             Node node = node_details[i];
             //cout << node.get_node() << " :";
-            cout<< "(" << node.get_x() << " ," << node.get_y() << " ," << node.get_z() << ")" << endl;;
+            cout<< "(" << node.get_x() << " ," << node.get_y() << " ," << node.get_z() << ")" << endl;
         }
 
         for(int i = 0 ; i < num_of_nodes ; i++){
