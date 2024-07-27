@@ -719,7 +719,7 @@ describe('Testing Endpoints..........', function () {
                 .post('/feedback')
                 .send(input);
             
-            if(response.body != "Thank you for your feedback!"){
+            if(response.body.message != "Thank you for your feedback!"){
                 throw new Error("Not added successfully"); 
             }
         } catch (error){

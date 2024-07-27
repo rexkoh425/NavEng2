@@ -818,10 +818,10 @@ router.post('/feedback' , async(req,res) => {
         //res.send('Data added to database successfully.'); 
     } catch (error) {
         //console.error('Error appending data to database:', error);
-        res.status(500).send('Failed to add data to database.'); 
+        res.status(500).send({ message : 'Failed to add data to database.' }); 
     }
 
-    res.send("Thank you for your feedback!") //sending conformation message back to frontend
+    res.send({ message : "Thank you for your feedback!" }) //sending conformation message back to frontend
 })
 
 router.post('/FailedLocations' , async(req,res) => {
