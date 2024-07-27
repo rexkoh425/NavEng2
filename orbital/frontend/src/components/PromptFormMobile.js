@@ -579,7 +579,7 @@ function PromptFormMobile() {
                         }}>Please select the starting and ending <br></br> locations to view the pictures</Box></div>}
 
                 <center>
-                    {stopsIndex && !noPath && <TopDownMapMobile nodes={graphnodes} visited={visited} originNodeId={blockedNodeID} nodesPath={nodesPath} stopsIndex={stopsIndex} Node_id_array={Node_id_array} blockedIMGName={blockedIMGName}></TopDownMapMobile>}
+                    {stopsIndex && !noPath && formSubmitted && <TopDownMapMobile nodes={graphnodes} visited={visited} originNodeId={blockedNodeID} nodesPath={nodesPath} stopsIndex={stopsIndex} Node_id_array={Node_id_array} blockedIMGName={blockedIMGName}></TopDownMapMobile>}
                     <div className="two-columns-container">
                         <div className="column">
                             {!noPath && formSubmitted && !hideTimeTaken && <img src="Distance_Icon.png" className="distanceIcon"></img>}
@@ -639,7 +639,7 @@ function PromptFormMobile() {
                                 {!noPath && <Button variant="contained" type="submit" onClick={incrementCounter} disabled={disableRightButton} sx={{ bgcolor: "#D95328", "&:hover": { bgcolor: "#F05C2C" }, minWidth: 'unset', textAlign: 'center !important', px: '0px', py: '0px', height: "55vh", width: "8vw", marginBottom: "8vh", marginLeft: "1vw" }}><ArrowRightIcon></ArrowRightIcon></Button>}
                             </div>
                         </div>}
-                        {!noPath && <SwipeIcon  style={{
+                        {!noPath && formSubmitted && <SwipeIcon  style={{
         animation: 'shiftIcon 3s infinite'
       }} sx={{marginTop: '-3vh', color: "#F05C2C"}}/>}
                     </center>

@@ -365,9 +365,9 @@
 .overlay-image-count-mobile {
   position: absolute;
   height: 3vh;
-  width: 10vh;
+  width: 20vw;
   bottom: 64vh;
-  right: 12.5vh;
+  right: 27vw;
   display: inline-block;
   margin-top: 0px;
   margin-bottom: 0px;
