@@ -859,10 +859,10 @@ router.post('/InsertFailedLocations', async (req, res) => {
         }
 
         //debug_log('Data added to database successfully.');
-        res.send('Data added to database successfully.'); 
+        res.send({ message : 'Data added to database successfully.' }); 
     } catch (error) {
         //console.error('Error appending data to database:', err);
-        res.status(500).send('Failed to append data to database.'); 
+        res.status(500).send({ message : 'Failed to append data to database.'}); 
     }
 });
 
@@ -879,10 +879,10 @@ router.post('/DeleteFailedLocations', async (req, res) => {
         }
 
         debug_log('Data deleted from database successfully.');
-        res.send('Data deleted from database successfully.'); 
+        res.send({ message : 'Data deleted from database successfully.'}); 
     } catch (error) {
         console.error('Error deleting data from database:', err);
-        res.status(500).send('Failed to delete data from database.'); 
+        res.status(500).send({ message : 'Failed to delete data from database.'}); 
     }
 });
 

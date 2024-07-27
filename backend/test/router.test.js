@@ -739,7 +739,7 @@ describe('Testing Endpoints..........', function () {
             const response = await request(app)
                 .post('/InsertFailedLocations')
                 .send(input);
-            if(response.body != "Data added to database successfully."){
+            if(response.body.message != "Data added to database successfully."){
                 throw new Error("Not added successfully"); 
             }
         } catch (error){
@@ -771,7 +771,7 @@ describe('Testing Endpoints..........', function () {
             const response = await request(app)
                 .post('/DeleteFailedLocations')
 
-            if(response.body != "Data deleted from database successfully."){
+            if(response.body.message != "Data deleted from database successfully."){
                 throw new Error("Not deleted successfully"); 
             }
         } catch (error){
