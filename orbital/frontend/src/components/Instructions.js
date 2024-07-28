@@ -59,7 +59,8 @@ return (
     <p className="InstructionsContent">3) The first and last picture show the doors to the starting location and end location respectively</p>
     <p className="InstructionsContent">4) With your back facing towards the door of your starting location, refer to the second picture onwards and follow the arrows!</p>
     <p className="InstructionsContent">5) If any location along your path is blocked, please press the block <img src="block_logo.png" alt="Block the location?"  className="instruction-img"></img> button, and an alternate path will be provided for you</p>
-    <Hidden mdUp><p className="InstructionsContent">6) You can swipe the image to access the next image</p></Hidden>
+    <p className="InstructionsContent">6) If you want to unblock a path, you can reset it by refreshing the website.</p>
+    <Hidden mdUp><p className="InstructionsContent">7) You can swipe the image to access the next image</p></Hidden>
     </Box>
     <IconButton          sx={{
           position: 'absolute',

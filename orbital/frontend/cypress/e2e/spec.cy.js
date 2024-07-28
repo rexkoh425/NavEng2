@@ -20,6 +20,7 @@ describe("User can use pathfinding functionality", () => {
     cy.findByRole('option', { name: "EA-02-09" }).click()
     cy.findByRole('button', {  name: /submit/i}).click()
     cy.findByRole('img', {name: /cannot be displayed/i})
+    cy.wait(1000)
     cy.get('.imageCount')
     .invoke('text') 
     .then(text => {
@@ -162,5 +163,68 @@ describe("Using no stairs filter", () => {
           cy.wrap($img).invoke('attr', 'src').should('not.contain', stairs);
         });
       }})
+  })
+})
+
+describe("Users can see map,buttons, distance and time if path exists", () => {
+  it('does appear', () => {
+    cy.visit('http://localhost:3000/')
+    cy.findByRole('combobox', {  name: /start location/i}).type("EA-02-11")
+    cy.findByRole('option', { name: "EA-02-11" }).click()
+    cy.findByRole('combobox', {
+      name: /end location/i
+    }).type("EA-02-09")
+    cy.findByRole('option', { name: "EA-02-09" }).click()
+    cy.findByRole('button', {  name: /submit/i}).click()
+    cy.findByRole('img', {name: /cannot be displayed/i})
+    cy.wait(1000)
+    cy.findByText(/total distance:/i)
+    cy.findByText(/total estimated time taken:/i)
+    cy.get('#root > div:nth-child(2) > div > div > div:nth-child(1) > center > form > svg')
+    
+  })
+})
+
+
+describe("Users cannot see map or buttons if no path exists", () => {
+  it('does not appear', () => {
+    cy.visit('http://localhost:3000/')
+    cy.findByRole('combobox', {  name: /start location/i}).type("EA-02-11")
+    cy.findByRole('option', { name: "EA-02-11" }).click()
+    cy.findByRole('combobox', {
+      name: /end location/i
+    }).type("EA-02-09")
+    cy.findByRole('option', { name: "EA-02-09" }).click()
+    cy.findByRole('button', {  name: /submit/i}).click()
+    cy.findByRole('img', {name: /cannot be displayed/i})
+    cy.wait(1000)
+    
+    cy.findByTestId('ArrowRightIcon').click()
+    cy.findByRole('img', {
+      name: /cannot display/i
+    }).click()
+    cy.findByRole('button', {
+      name: /block this point\?/i
+    }).click()
+    cy.findByRole('button', {
+      name: /give me an alternate path/i
+    }).click()
+    cy.findByText(/total distance:/i).should('not.exist')
+    cy.findByText(/total estimated time taken:/i).should('not.exist')
+    cy.get('#root > div:nth-child(2) > div > div > div:nth-child(1) > center > form > svg').should('not.exist')
+  })
+})
+
+describe("User can choose more than one stop", () => {
+  it ('allows users to get successful paths with multistop', () => {
+    cy.visit('http://localhost:3000/')
+    cy.findByRole('combobox', {  name: /start location/i}).type("EA-02-11")
+    cy.findByRole('option', { name: "EA-02-11" }).click()
+    cy.findByRole('combobox', {
+      name: /end location/i
+    }).type("EA-02-09")
+    cy.findByRole('option', { name: "EA-02-09" }).click()
+    cy.findByTestId('AddCircleOutlineIcon')
+    
   })
 })

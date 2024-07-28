@@ -623,6 +623,7 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                 fixedLengthArray.pop();
                 nodes_path.pop();
                 nodes.pop();
+                compressed_path.pop()
                 data_length -= 1;
                 const final = fixedLengthArray.join(' ');
                 const FinalResults = {

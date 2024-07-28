@@ -234,7 +234,8 @@ describe("User can use pathfinding functionality", () => {
   })
 })
 
-describe("Users can pathfind and are notified upon destination arrival", () => {
+//Separated into component
+/*describe("Users can pathfind and are notified upon destination arrival", () => {
   it('lets users see "You have arrived at" text', () => {
     cy.mount(<PromptForm />)
     cy.findByRole('combobox', {  name: /start location/i}).type("EA-02-11")
@@ -257,7 +258,7 @@ describe("Users can pathfind and are notified upon destination arrival", () => {
       }})
       cy.findByText(/you have arrived at EA-02-09/i)
   })
-})
+}) */
 
 describe("User can get alternate path", () => {
   it('is visible', () => {
