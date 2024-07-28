@@ -26,10 +26,8 @@ const TopDownMap = ({ nodes, visited, originNodeId, nodesPath, stopsIndex, Node_
 
   console.log("Blocked Img name: " + blockedIMGName)
   //For debugging
-  console.log("nodes" + nodes);
-  console.log("visited" + visited);
   console.log("originNodeID" + nodesPath);
-  console.log("stopsIndex" + stopsIndex);
+  console.log("stopsIndex" + stopsIndex); 
 
   function getConnectedNode(nodeId, nodes) {
     const node = nodes.find(n => n.id === nodeId);
@@ -145,6 +143,7 @@ const TopDownMap = ({ nodes, visited, originNodeId, nodesPath, stopsIndex, Node_
   }
 
   let NewestVisited = NewVisited(uncompressedpath, originNodeId)
+  console.log("NewVisited: " + NewestVisited)
   const calculateNodePositions = (originNodeId) => {
     const calculatedPositions = new Map();
     const originNode = nodes.find(node => node.id === originNodeId);
@@ -237,7 +236,7 @@ const TopDownMap = ({ nodes, visited, originNodeId, nodesPath, stopsIndex, Node_
                     x2={x2}
                     y2={y2}
                     stroke={
-                      (visitedNum.includes(node.id) && visitedNum.includes(connection.id)) ? 'grey' :
+                      (NewestVisited.includes(node.id) && NewestVisited.includes(connection.id)) ? 'grey' :
                         'grey'
                     } strokeWidth="22"
                   />
@@ -251,7 +250,6 @@ const TopDownMap = ({ nodes, visited, originNodeId, nodesPath, stopsIndex, Node_
         {nodes.map(node => (
           <g key={`2nd layer-${node.id}`} transform={enableRotation ? `rotate(${rotationAngle} ${svgwidth / 2} ${svgheight / 2})` : `none`}>
             <circle cx={nodePositions.get(node.id)?.x || 0} cy={nodePositions.get(node.id)?.y || 0} r="10" fill={'lightgrey'} />
-            <circle cx={nodePositions.get(node.id)?.x || 0} cy={nodePositions.get(node.id)?.y || 0} r="5" fill={node.id === originNodeId ? 'purple' : 'blue'} fillOpacity={(path.includes(node.id)) ? "1" : "0"} />
             {node.connections.map(connection => {
               const connectedNode = nodes.find(n => n.id === connection.id);
               if (!connectedNode) return null;
@@ -317,7 +315,7 @@ const TopDownMap = ({ nodes, visited, originNodeId, nodesPath, stopsIndex, Node_
                     x2={x2}
                     y2={y2}
                     stroke={
-                      (visitedNum.includes(node.id) && visitedNum.includes(connection.id)) ? 'grey' :
+                      (NewestVisited.includes(node.id) && NewestVisited.includes(connection.id)) ? 'grey' :
                         (path.includes(node.id) && path.includes(connection.id)) ? '#F05C2C' :
                           'lightgrey'
                     } strokeWidth="5"
@@ -346,7 +344,7 @@ const TopDownMap = ({ nodes, visited, originNodeId, nodesPath, stopsIndex, Node_
               cx={nodePositions.get(node.id)?.x || 0}
               cy={nodePositions.get(node.id)?.y || 0}
               r="5"
-              fill={node.id === originNodeId ? '#0076EA' : (nodesPath[0] == node.id) ? '#B0151B' : (nodesForStops.includes(node.id)) ? '#6ACF1E' : (visitedNum.includes(node.id)) ? 'grey' : '#cdd8e6'}
+              fill={node.id === originNodeId ? '#0076EA' : (nodesPath[0] == node.id) ? '#B0151B' : (nodesForStops.includes(node.id)) ? '#6ACF1E' : (NewestVisited.includes(node.id)) ? 'grey' : '#cdd8e6'}
               fillOpacity={((node.label == "Elevator") || (node.label == "Stairs")) ? "0" : (path.includes(node.id)) ? "1" : "0"}
             />
             <rect
