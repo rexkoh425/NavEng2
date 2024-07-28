@@ -889,7 +889,7 @@ describe('Testing Endpoints..........', function () {
     }) 
 })
 
-describe('Testing whether multi-stop gives the correct path', function () {
+describe('Testing features....', function () {
     this.timeout(20000);
 
     it('Test for multi-stop', async function () {
@@ -921,10 +921,6 @@ describe('Testing whether multi-stop gives the correct path', function () {
             throw error;
         }
     });
-});
-
-describe('Testing whether no stairs filter works', function () {
-    this.timeout(20000);
 
     it('Test for No Stairs', async function () {
         try {
@@ -944,8 +940,30 @@ describe('Testing whether no stairs filter works', function () {
                 .send(filter_result.nodes_path);
                 //console.log(new_response.body)
                 if(new_response.body.NoStairs != true){
-                    throw new Error("filter did not work")
+                    throw new Error("no stairs filter did not work")
                 }
+            }
+            
+            if (global.gc) {
+                global.gc();
+            }
+            
+        } catch (error) {
+            throw error;
+        }
+    });
+
+    it('Test for sheltered path', async function () {
+        try {
+                
+            const filter_result = await performTestSheltered(['E1-04-12' , 'EA-02-14'] , []);
+            
+            const new_response = await request(app)
+            .post('/checkforsheltered')
+            .send(filter_result.nodes_path);
+            
+            if(new_response.body.sheltered != true){
+                throw new Error("sheltered filter did not work")
             }
             
             if (global.gc) {

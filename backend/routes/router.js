@@ -1331,21 +1331,21 @@ router.post('/checkforsheltered' , async(req, res) => {
 
         const inputData = req.body;
         const { data, error } = await supabase
-            .from('pictures')
-            .select('node_id' , 'self_type')
-            .in('node_id', inputData)
+            .from('block_shelter')
+            .select('id' , 'sheltered')
+            .in('id', inputData)
         if (error) {
             throw error;
         }
         for(let result of data){
-            if(result.self_type == 'Stairs'){
-                res.send({ NoStairs : false})
+            if(result.sheltered == false){
+                res.send({ sheltered : false})
             }
         }
 
-        res.send({ NoStairs : true})
+        res.send({ sheltered : true})
     }catch(error){
-        res.send({ NoStairs : false})
+        res.send({ sheltered : false})
     }
     
 });
