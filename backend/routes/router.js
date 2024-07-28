@@ -14,10 +14,9 @@ const supabaseKey = process.env.SUPABASE_KEY
 const supabase = createClient(supabaseUrl, supabaseKey);
 const no_alt_path_url = 'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/Specials/No_alternate_path.png?t=2024-06-22T15%3A22%3A29.729Z' ;
 const database_down_url = 'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/Specials/No_alternate_path.png?t=2024-06-22T15%3A22%3A29.729Z';
-let blocked_node = "";
 
 function debug_log(input){
-    let debug = false;
+    let debug = true;
     if(debug){
         console.log(input);
     }
@@ -1301,10 +1300,33 @@ router.post('/convert__to_-' , async(req, res) => {
     }
     
 });
+
+router.post('/checkforstairs' , async(req, res) => {
+    try{
+
+        const inputData = req.body;
+        const { data, error } = await supabase
+            .from('pictures')
+            .select('self_type')
+            .in('id', inputData)
+        if (error) {
+            throw error;
+        }
+        for(let result of data){
+            if(result.self_type == 'Stairs'){
+                res.send({ NoStairs : false})
+            }
+        }
+
+        res.send({ NoStairs : true})
+    }catch(error){
+        res.send({ NoStairs : false})
+    }
+    
+});
 //////////////////////////////////////////////////////////////////////////////
 ///////////////////////function testing region////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
-
 
 router.post('/NESW_ENUM' , async (req , res) => {
     const inputs = req.body.Input;

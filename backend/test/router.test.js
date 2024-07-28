@@ -81,6 +81,26 @@ async function performTest(destinations , blocked_input) {
     return await CheckLocation(inputData);
 }
 
+async function performTestNoStairs(destinations , blocked_input) {
+    const inputData = {
+        blocked_array: blocked_input,
+        sheltered: false , 
+        NoStairs : true , 
+        MultiStopArray : destinations
+    };
+    return await CheckLocation(inputData);
+}
+
+async function performTestSheltered(destinations , blocked_input) {
+    const inputData = {
+        blocked_array: blocked_input,
+        sheltered: true , 
+        NoStairs : false , 
+        MultiStopArray : destinations
+    };
+    return await CheckLocation(inputData);
+}
+
 async function performBlockedTest(destinations , blocked_input , non_block_result) {
     
     const inputData = {
@@ -200,12 +220,18 @@ class TestResult{
         this.non_block_pass ++;
     }
 
-    process_block_result(block_result){
+    process_block_result(block_result , source , destination){
         if(block_result.passed){   
             this.block_pass ++;  
         }else if(block_result.error_can_handle){
             this.no_path ++;
+        }else{
+            this.failed_locations.push( { source : source , destination : destination});
         }
+    }
+
+    append_failed(source , destination){
+        this.failed_locations.push( { source : source , destination : destination});
     }
 }
 
@@ -863,6 +889,73 @@ describe('Testing Endpoints..........', function () {
     }) 
 })
 
+describe('Testing whether multi-stop gives the correct path', function () {
+    this.timeout(20000);
+
+    it('Test for multi-stop', async function () {
+        try {
+            
+            const non_block_result = await performTest(['EA-02-09' , 'E1A-07-03' , 'E1-07-19'] , []);
+            let blocked = {blocked_filepath : '' , index : 0}
+            if(non_block_result.passed || non_block_result.error_can_handle){
+                blocked = await choose_middle_blocked(non_block_result.HTML);
+            }else{
+                throw new Error("did not pass the test");
+            }
+
+            let block_result = {HTML : "" , passed : true , error_can_handle : false}; 
+            
+            if(blocked.blocked_filepath != ''){
+                block_result = await performBlockedTest(['EA-02-09' , 'E1A-07-03' , 'E1-07-19'] , blocked , non_block_result);
+            }
+
+            if(!block_result.passed && !block_result.error_can_handle){
+                throw new Error("did not pass the test");
+            }
+            
+            if (global.gc) {
+                global.gc();
+            }
+            
+        } catch (error) {
+            throw error;
+        }
+    });
+});
+
+describe('Testing whether no stairs filter works', function () {
+    this.timeout(20000);
+
+    it('Test for No Stairs', async function () {
+        try {
+            
+            const no_filter_result = await performTest(['E1-04-12' , 'EA-02-14'] , []);
+            
+            const response = await request(app)
+                .post('/checkforstairs')
+                .send(no_filter_result.nodes_path);
+            console.log(response.body)
+            if(response.body.NoStairs == false){
+                const filter_result = await performTestNoStairs(['E1-04-12' , 'EA-02-14'] , []);
+                const response = await request(app)
+                .post('/checkforstairs')
+                .send(filter_result.nodes_path);
+            
+                if(response.body.NoStairs != true){
+                    throw new Error("filter did not work")
+                }
+            }
+            
+            if (global.gc) {
+                global.gc();
+            }
+            
+        } catch (error) {
+            throw error;
+        }
+    });
+});
+
 describe('Testing whether location pairs output correct number of pictures', function () {
     this.timeout(5000000);
 
@@ -890,13 +983,15 @@ describe('Testing whether location pairs output correct number of pictures', fun
                             if(non_block_result.passed || non_block_result.error_can_handle){
                                 result.incre_non_block_pass();
                                 blocked = await choose_middle_blocked(non_block_result.HTML);
+                            }else{
+                                result.append_failed(source , destination);
                             }
                             let block_result = {HTML : "" , passed : true , error_can_handle : false}; 
                             
                             if(blocked.blocked_filepath != ''){
                                 block_result = await performBlockedTest([source , destination] , blocked , non_block_result);
                             }
-                            result.process_block_result(block_result);
+                            result.process_block_result(block_result ,source , destination);
                             result.incre_process_count();
                             result.log_progress();
                             
