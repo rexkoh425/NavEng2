@@ -16,7 +16,7 @@ const no_alt_path_url = 'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/obj
 const database_down_url = 'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/Specials/No_alternate_path.png?t=2024-06-22T15%3A22%3A29.729Z';
 
 function debug_log(input){
-    let debug = true;
+    let debug = false;
     if(debug){
         console.log(input);
     }
@@ -222,7 +222,7 @@ async function get_blocked(){
         }
         let blocked_array = []
         for(const element of data){
-            blocked_array.push(element.id - 1);
+            blocked_array.push(element.id);
         }
         return blocked_array;
 
@@ -262,7 +262,7 @@ async function get_non_sheltered(){
         }
         let non_sheltered = []
         for(const element of data){
-            non_sheltered.push(element.id - 1);
+            non_sheltered.push(element.id);
         }
         return non_sheltered;
 
@@ -283,7 +283,7 @@ async function get_stairs(){
         }
         let stairs = [];
         for(const element of data){
-            stairs.push(element.node_id - 1);
+            stairs.push(element.node_id);
         }
         stairs = [...new Set(stairs)];
         return stairs;
@@ -901,7 +901,7 @@ router.post('/formPost' , async (req ,res) => {
         for(let i =  0; i < destinations.length ; i ++){
             destinations[i] = await room_num_to_node_id(destinations[i]);
         }
-        //debug_log(destinations);
+        debug_log(destinations);
         let blocked_array = await get_blocked();
         for(let i = 0 ; i < inputData.blocked_array.length ; i++){
             blocked_array.push(inputData.blocked_array[i]);
@@ -1308,8 +1308,32 @@ router.post('/checkforstairs' , async(req, res) => {
         const inputData = req.body;
         const { data, error } = await supabase
             .from('pictures')
-            .select('self_type')
-            .in('id', inputData)
+            .select('node_id' , 'self_type')
+            .in('node_id', inputData)
+        if (error) {
+            throw error;
+        }
+        for(let result of data){
+            if(result.self_type == 'Stairs'){
+                res.send({ NoStairs : false})
+            }
+        }
+
+        res.send({ NoStairs : true})
+    }catch(error){
+        res.send({ NoStairs : false})
+    }
+    
+});
+
+router.post('/checkforsheltered' , async(req, res) => {
+    try{
+
+        const inputData = req.body;
+        const { data, error } = await supabase
+            .from('pictures')
+            .select('node_id' , 'self_type')
+            .in('node_id', inputData)
         if (error) {
             throw error;
         }
@@ -1703,8 +1727,6 @@ router.post('/ENUM_to_left_right' , async (req , res) => {
         res.send({ passed : false});
     }
 });
-
-
 
 module.exports = router;
 

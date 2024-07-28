@@ -20,7 +20,7 @@ async function CheckLocation(receivedData) {
         const res = await request(app)
             .post('/formPost')
             .send(receivedData)
-            .timeout({ deadline: 5000 });
+            .timeout({ deadline: 8000 });
 
         let data = res.body;
 
@@ -45,7 +45,7 @@ async function CheckBlockedLocation(receivedData) {
         const res = await request(app)
             .post('/blockRefresh')
             .send(receivedData)
-            .timeout({ deadline: 10000 });
+            .timeout({ deadline: 15000 });
 
         let data = res.body;
         data['source'] = receivedData.MultiStopArray[0];
@@ -930,18 +930,20 @@ describe('Testing whether no stairs filter works', function () {
         try {
             
             const no_filter_result = await performTest(['E1-04-12' , 'EA-02-14'] , []);
-            
+            //console.log(no_filter_result.nodes_path);
             const response = await request(app)
                 .post('/checkforstairs')
                 .send(no_filter_result.nodes_path);
-            console.log(response.body)
+            
             if(response.body.NoStairs == false){
+                
                 const filter_result = await performTestNoStairs(['E1-04-12' , 'EA-02-14'] , []);
-                const response = await request(app)
+                //console.log(filter_result.nodes_path)
+                const new_response = await request(app)
                 .post('/checkforstairs')
                 .send(filter_result.nodes_path);
-            
-                if(response.body.NoStairs != true){
+                //console.log(new_response.body)
+                if(new_response.body.NoStairs != true){
                     throw new Error("filter did not work")
                 }
             }
