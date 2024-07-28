@@ -223,7 +223,7 @@ async function get_blocked(){
         }
         let blocked_array = []
         for(const element of data){
-            blocked_array.push(element.id - 1);
+            blocked_array.push(element.id);
         }
         return blocked_array;
 
@@ -263,7 +263,7 @@ async function get_non_sheltered(){
         }
         let non_sheltered = []
         for(const element of data){
-            non_sheltered.push(element.id - 1);
+            non_sheltered.push(element.id);
         }
         return non_sheltered;
 
@@ -284,7 +284,7 @@ async function get_stairs(){
         }
         let stairs = [];
         for(const element of data){
-            stairs.push(element.node_id - 1);
+            stairs.push(element.node_id);
         }
         stairs = [...new Set(stairs)];
         return stairs;
