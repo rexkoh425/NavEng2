@@ -411,6 +411,28 @@ describe('Testing Functions..........', function () {
         }
     })
 
+    it('node_id_to_room_num converts node_id to string room_num', async function () {
+        try {
+            const input = { 
+                
+                Input : [78 , 129 , 166 , 'EA-06-09'] ,
+                Expected : ['EA-04-16' , 'EA-06-13' , 'EA-01-22' , 'EA-06-09']
+            }
+            const response = await request(app)
+                .post('/node_id_to_room_num')
+                .send(input);
+
+            if(response.body.passed == false){
+                throw new Error("node_id_to_room_num function failed")
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
+
     it('get_diff returns the difference between two arrays', async function () {
         try {
             const input = { 

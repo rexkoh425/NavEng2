@@ -14,6 +14,7 @@ const supabaseKey = process.env.SUPABASE_KEY
 const supabase = createClient(supabaseUrl, supabaseKey);
 const no_alt_path_url = 'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/Specials/No_alternate_path.png?t=2024-06-22T15%3A22%3A29.729Z' ;
 const database_down_url = 'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/Specials/No_alternate_path.png?t=2024-06-22T15%3A22%3A29.729Z';
+const supa = new database(supabase);
 
 function debug_log(input){
     let debug = false;
@@ -195,6 +196,27 @@ async function room_num_to_node_id(room_number){
         } 
     }else{
         return room_number;
+    }
+}
+
+async function node_id_to_room_num(node_id){
+    if(typeof(node_id) == "number"){
+        try {
+            // Query the 'users' table for a specific user by ID
+            const { data, error } = await supabase
+                .from('pictures')
+                .select('room_num')
+                .eq('node_id', node_id);
+            if (error) {
+                throw error;
+            }
+            return data[0].room_num;
+
+        } catch (error) {
+            throw new Error("node_id to room_num cannot query database");
+        } 
+    }else{
+        return node_id;
     }
 }
 
@@ -758,6 +780,232 @@ class Result{
     }
 }
 
+class database{
+    constructor(db){
+        this.db = db;
+        this.feedback = {
+            unaltered : true , 
+            updated : false , 
+            deleted : false ,
+            inserted : false
+        };
+        this.pictures = {
+            unaltered : true , 
+            updated : false , 
+            deleted : false ,
+            inserted : false
+        };
+        this.failedtest = {
+            unaltered : true , 
+            updated : false , 
+            deleted : false ,
+            inserted : false
+        };
+        this.block_shelter = {
+            unaltered : true , 
+            updated : false , 
+            deleted : false ,
+            inserted : false
+        };
+    }
+
+    async get_all_locations(){
+        const { data, error } = await this.db
+            .from('pictures')
+            .select('room_num')
+            .eq('pov', 'None')
+            .eq('direction', 'None')
+            .order('room_num', { ascending: true });
+        if (error) {
+            throw error;
+        }
+        return data;
+    }
+
+    async insert_feedback(){
+        const { error } = await this.db
+            .from('feedback')
+            .insert(input);
+        if (error) {
+            throw error;
+        }
+        this.feedback.unaltered = false;
+        this.feedback.inserted = true;
+    }
+
+    async get_failed_locations(){
+        const { data, error } = await this.db
+            .from('failedtest')
+            .select('*');
+        if (error) {
+            throw error;
+        }
+        return data;
+    }
+
+    async insert_failed_locations(array){
+        for (const element of array) {
+            
+            const { error } = await this.db
+                .from('failedtest')
+                .insert([{ source: `${element.source}`, destination: `${element.destination}` }]);
+            if (error) {
+                throw error;
+            }
+        }
+        this.feedback.unaltered = false;
+        this.failedtest.inserted = true;
+    }
+
+    async delete_failed_locations(){
+        const { error } = await this.db
+            .from('failedtest')
+            .delete()
+            .gt('id', 0); // Condition equivalent to 'id > 0'
+
+        if (error) {
+            throw error;
+        }
+        this.feedback.unaltered = false;
+        this.failedtest.deleted = true;
+    }
+
+    async update_blocked_node(node_id){
+        const { error } = await this.db
+            .from('block_shelter')
+            .update({ blocked : true })
+            .eq('id', node_id);
+        if (error) {
+            throw error;
+        }
+        this.feedback.unaltered = false;
+        this.feedback.updated = true;
+    }
+
+    async get_z_coordinate(inputData){
+        const { data, error } = await this.db
+                .from('pictures')
+                .select('z_coordinate')
+                .eq('node_id', inputData)
+
+                
+            if (error) {
+                throw error;
+            }
+            
+        return data[0]['z_coordinate'];
+    }
+
+    async get_nodes_with_same_z(targeted_z){
+        const { data, error } = await this.db
+            .from('pictures')
+            .select('node_id , self_type')
+            .eq('z_coordinate', targeted_z);
+
+        if (error) {
+            throw error;
+        }
+        return data;
+    }
+
+    async get_filepath_using_unique_id(unique_id){
+        const { data, error } = await this.db
+                .from('pictures')
+                .select('filepath')
+                .eq('unique_id', unique_id);
+            if (error) {
+                throw error;
+            }
+        return data;
+    }
+
+    async get_all_image_links(){
+        const { data, error } = await this.db
+            .from('image_links')
+            .select('*')
+        
+        if (error) {
+            throw error;
+        }
+        return data;
+    }
+
+    async check_for_stairs(inputData){
+        const { data, error } = await this.db
+            .from('pictures')
+            .select('node_id' , 'self_type')
+            .in('node_id', inputData)
+        if (error) {
+            throw error;
+        }
+        return data;
+    }
+
+    async check_for_sheltered(inputData){
+        const { data, error } = await this.db
+            .from('block_shelter')
+            .select('id' , 'sheltered')
+            .in('id', inputData)
+        if (error) {
+            throw error;
+        }
+
+        return data;
+    }
+
+    log_changes(){
+        if(!this.feedback.unaltered){
+            console.log(`feedback table : `);
+            if(!this.feedback.updated){
+                process.stdout.write(`UPDATED`);
+            }
+            if(!this.feedback.deleted){
+                process.stdout.write(`DELETED`);
+            }
+            if(!this.feedback.inserted){
+                process.stdout.write(`INSERTED`);
+            }
+        }
+        if(!this.pictures.unaltered){
+            console.log(`pictures table : `);
+            if(!this.pictures.updated){
+                process.stdout.write(`UPDATED`);
+            }
+            if(!this.pictures.deleted){
+                process.stdout.write(`DELETED`);
+            }
+            if(!this.pictures.inserted){
+                process.stdout.write(`INSERTED`);
+            }
+        }
+        if(!this.failedtest.unaltered){
+            console.log(`failedtest table : `);
+            if(!this.failedtest.updated){
+                process.stdout.write(`UPDATED`);
+            }
+            if(!this.failedtest.deleted){
+                process.stdout.write(`DELETED`);
+            }
+            if(!this.failedtest.inserted){
+                process.stdout.write(`INSERTED`);
+            }
+        }
+        if(!this.block_shelter.unaltered){
+            console.log(`block_shelter table : `);
+            if(!this.block_shelter.updated){
+                process.stdout.write(`UPDATED`);
+            }
+            if(!this.block_shelter.deleted){
+                process.stdout.write(`DELETED`);
+            }
+            if(!this.block_shelter.inserted){
+                process.stdout.write(`INSERTED`);
+            }
+        }
+    }
+
+}
+
 router.get('/test', (req, res) => {
     const userData = 
     [
@@ -954,7 +1202,6 @@ router.post('/formPost' , async (req ,res) => {
 router.post('/blockRefresh' , async (req ,res) => { 
     
     const inputData = req.body;
-    debug_log(inputData.unique_id_array)
     let destinations = inputData.MultiStopArray;
     if(inputData.MultiStopArray.length < 2){
         //debug_log("data incorrectly labelled or source and destination not filled"); 
@@ -967,13 +1214,16 @@ router.post('/blockRefresh' , async (req ,res) => {
             destinations[i] = await room_num_to_node_id(destinations[i]);
         }
 
-        debug_log("stop index : " , inputData.Stops_index);
-        debug_log("blocked node index : " , inputData.BlockedNodeIndex);
+        debug_log("stop index : ");
+        debug_log(inputData.Stops_index);
+        debug_log("blocked node index : ");
+        debug_log(inputData.BlockedNodeIndex);
+        destinations.splice(0,1);
         while(inputData.Stops_index[0] < inputData.BlockedNodeIndex){
             destinations.splice(0,1);
             inputData.Stops_index.splice(0,1);
         }
-        destinations.splice(0,1);
+        
 
         blocked_node_component = await break_down_img_path(inputData.blocked_img_path);
 
@@ -987,7 +1237,8 @@ router.post('/blockRefresh' , async (req ,res) => {
         }
         destinations.unshift(parseInt(b4_blocked_node_id));
         
-        debug_log("destinations are : " , destinations);
+        debug_log("destinations are : ");
+        debug_log(destinations);
         let blocked_array = await get_blocked();
         for(let i = 0 ; i < inputData.blocked_array.length ; i++){
             blocked_array.push(inputData.blocked_array[i]);
@@ -1041,6 +1292,9 @@ router.post('/blockRefresh' , async (req ,res) => {
     }
     await TotalResult.convert_to_instructions();
     let TotalResultObj = TotalResult.get_object();
+    for(let i =  0; i < destinations.length ; i ++){
+        destinations[i] = await node_id_to_room_num(destinations[i]);
+    }
     TotalResultObj['Destinations'] = destinations;
     return res.send(TotalResultObj);
 });
@@ -1143,7 +1397,6 @@ router.post('/getfloor' , async (req , res) => {
                 FullMapObj.push(MapObj);   
             })
             res.send(FullMapObj);
-            //console.log(FullMapObj[1])
         }catch(error){
             
         }
@@ -1168,11 +1421,10 @@ router.post('/convert_unique_id_filename' , async(req , res) => {
             .from('pictures')
             .select('filepath')
             .eq('unique_id', inputData.unique_id);
-
-            filepath = await remove_weburl(data[0].filepath);
         if (error) {
             throw error;
         }
+        filepath = await remove_weburl(data[0].filepath);
         res.send({filepath : filepath});
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -1468,6 +1720,29 @@ router.post('/room_num_to_node_id' , async (req , res) => {
         let result;
         try{ 
             result = await room_num_to_node_id(inputs[i]);
+        }catch(error){
+            result = "failed to query database";
+        }
+        if(result == expected[i]){
+            passed ++;
+        }
+    }
+    if(passed == test_cases){
+        res.send({ passed : true });
+    }else{
+        res.send({ passed : false});
+    }
+});
+
+router.post('/node_id_to_room_num' , async (req , res) => {
+    const inputs = req.body.Input;
+    const expected = req.body.Expected;
+    const test_cases = inputs.length;
+    let passed = 0;
+    for(let i = 0 ; i < test_cases ; i ++){
+        let result;
+        try{ 
+            result = await node_id_to_room_num(inputs[i]);
         }catch(error){
             result = "failed to query database";
         }
