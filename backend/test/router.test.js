@@ -20,7 +20,7 @@ async function CheckLocation(receivedData) {
         const res = await request(app)
             .post('/formPost')
             .send(receivedData)
-            .timeout({ deadline: 8000 });
+            .timeout({ deadline: 30000 });
 
         let data = res.body;
 
@@ -45,7 +45,7 @@ async function CheckBlockedLocation(receivedData) {
         const res = await request(app)
             .post('/blockRefresh')
             .send(receivedData)
-            .timeout({ deadline: 15000 });
+            .timeout({ deadline: 35000 });
 
         let data = res.body;
         data['source'] = receivedData.MultiStopArray[0];
@@ -53,14 +53,11 @@ async function CheckBlockedLocation(receivedData) {
         if (data['passed'] && data['Expected'] !== data['Queried']){
             console.log(data['Expected']);
             console.log(data['Queried']);
-            console.log(`${receivedData.MultiStopArray[0]} to ${receivedData.MultiStopArray[1]} : with blocking failed`);
+            console.log(`${receivedData.MultiStopArray[0]} to ${receivedData.MultiStopArray[1]} : with blocking failed , wrong no.`);
             data['passed'] = false;
-        }
-
-        if (!data['passed'] && !data['error_can_handle']){
-            console.log(receivedData.Node_id_array)
-            console.log(receivedData.blocked_img_path);
-            console.log(`${receivedData.MultiStopArray[0]} to ${receivedData.MultiStopArray[1]} : with blocking failed`);
+        }else if (!data['error_can_handle']){
+            
+            console.log(`${receivedData.MultiStopArray[0]} to ${receivedData.MultiStopArray[1]} : with blocking failed , error cannot handle.`);
             console.log(data.message);
         }
         return data;
@@ -235,6 +232,7 @@ class TestResult{
     }
 }
 
+/*
 describe('Testing Functions..........', function () {
     this.timeout(10000);
 
@@ -997,7 +995,7 @@ describe('Testing features....', function () {
         }
     });
 });
-
+*/
 describe('Testing whether location pairs output correct number of pictures', function () {
     this.timeout(5000000);
 

@@ -148,7 +148,7 @@ bool is_correct_coor(Node source , Node dest , GraphEdge edge){
             break;
     }
     bool ok = (dest.get_x() == new_x) && (dest.get_y() == new_y) && (dest.get_z() == new_z);
-
+    
     if(!ok){
         cout << "weight is : " << weight << endl;
         cout << "source : " ;
@@ -192,15 +192,18 @@ int main(){
             }
         }
     }
-    bool get_vect = true;
+    //////////////////////////
+    bool get_vect = false;/////
+    //////////////////////////
+    int starting_from = 350;
     if(get_vect){
-        for(int i = 0; i < num_of_nodes ; i++){
+        for(int i = starting_from ; i < num_of_nodes ; i++){
             Node node = node_details[i];
             //cout << node.get_node() << " :";
             cout<< "(" << node.get_x() << " ," << node.get_y() << " ," << node.get_z() << ")" << endl;
         }
 
-        for(int i = 0 ; i < num_of_nodes ; i++){
+        for(int i = starting_from ; i < num_of_nodes ; i++){
             forward_list<GraphEdge> neighbours = test1.edges_from(i);
 
             for(auto j = neighbours.begin() ; j != neighbours.end() ; j++){

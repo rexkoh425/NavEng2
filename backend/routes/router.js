@@ -14,7 +14,8 @@ const supabaseKey = process.env.SUPABASE_KEY
 const supabase = createClient(supabaseUrl, supabaseKey);
 const no_alt_path_url = 'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/Specials/No_alternate_path.png?t=2024-06-22T15%3A22%3A29.729Z' ;
 const database_down_url = 'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/Specials/No_alternate_path.png?t=2024-06-22T15%3A22%3A29.729Z';
-const supa = new database(supabase);
+//const supa = new database(supabase);
+const table = 'pictures2'
 
 function debug_log(input){
     let debug = false;
@@ -183,7 +184,7 @@ async function room_num_to_node_id(room_number){
         try {
             // Query the 'users' table for a specific user by ID
             const { data, error } = await supabase
-                .from('pictures')
+                .from(`${table}`)
                 .select('node_id')
                 .eq('room_num', `${room_number}`);
             if (error) {
@@ -204,7 +205,7 @@ async function node_id_to_room_num(node_id){
         try {
             // Query the 'users' table for a specific user by ID
             const { data, error } = await supabase
-                .from('pictures')
+                .from(`${table}`)
                 .select('room_num')
                 .eq('node_id', node_id);
             if (error) {
@@ -296,7 +297,7 @@ async function get_non_sheltered(){
 async function get_stairs(){
     try { 
         const { data, error } = await supabase
-            .from('pictures')
+            .from(`${table}`)
             .select('node_id')
             .eq('self_type', 'Stairs');
             //dont need distinct cause will become distinct when merged later
@@ -465,7 +466,7 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                 debug_log(directions);
                 
                 const { data, error } = await supabase
-                    .from('pictures')
+                    .from(`${table}`)
                     .select('unique_id , filepath')
                     .in('unique_id', nodes)
                     .order('node_id', { ascending: true });
@@ -616,7 +617,7 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                 debug_log(directions);
 
                 const { data, error } = await supabase
-                    .from('pictures')
+                    .from(`${table}`)
                     .select('unique_id , filepath')
                     .in('unique_id', nodes)
                     .order('node_id', { ascending: true });
@@ -811,7 +812,7 @@ class database{
 
     async get_all_locations(){
         const { data, error } = await this.db
-            .from('pictures')
+            .from(`${table}`)
             .select('room_num')
             .eq('pov', 'None')
             .eq('direction', 'None')
@@ -884,7 +885,7 @@ class database{
 
     async get_z_coordinate(inputData){
         const { data, error } = await this.db
-                .from('pictures')
+                .from(`${table}`)
                 .select('z_coordinate')
                 .eq('node_id', inputData)
 
@@ -898,7 +899,7 @@ class database{
 
     async get_nodes_with_same_z(targeted_z){
         const { data, error } = await this.db
-            .from('pictures')
+            .from(`${table}`)
             .select('node_id , self_type')
             .eq('z_coordinate', targeted_z);
 
@@ -910,7 +911,7 @@ class database{
 
     async get_filepath_using_unique_id(unique_id){
         const { data, error } = await this.db
-                .from('pictures')
+                .from(`${table}`)
                 .select('filepath')
                 .eq('unique_id', unique_id);
             if (error) {
@@ -932,7 +933,7 @@ class database{
 
     async check_for_stairs(inputData){
         const { data, error } = await this.db
-            .from('pictures')
+            .from(`${table}`)
             .select('node_id' , 'self_type')
             .in('node_id', inputData)
         if (error) {
@@ -1024,7 +1025,7 @@ router.post('/contact', (req, res) => {
 router.post('/locations' , async(req,res) => {
     try {
         const { data, error } = await supabase
-            .from('pictures')
+            .from(`${table}`)
             .select('room_num')
             .eq('pov', 'None')
             .eq('direction', 'None')
@@ -1326,7 +1327,7 @@ router.post('/getfloor' , async (req , res) => {
     let node_label_map = {};
     try {
         const { data, error } = await supabase
-            .from('pictures')
+            .from(`${table}`)
             .select('z_coordinate')
             .eq('node_id', inputData)
 
@@ -1341,7 +1342,7 @@ router.post('/getfloor' , async (req , res) => {
     
     try {
         const { data, error } = await supabase
-            .from('pictures')
+            .from(`${table}`)
             .select('node_id , self_type')
             .eq('z_coordinate', targeted_z);
 
@@ -1418,7 +1419,7 @@ router.post('/convert_unique_id_filename' , async(req , res) => {
     try {
         let filepath = "";
         const { data, error } = await supabase
-            .from('pictures')
+            .from(`${table}`)
             .select('filepath')
             .eq('unique_id', inputData.unique_id);
         if (error) {
@@ -1559,7 +1560,7 @@ router.post('/checkforstairs' , async(req, res) => {
 
         const inputData = req.body;
         const { data, error } = await supabase
-            .from('pictures')
+            .from(`${table}`)
             .select('node_id' , 'self_type')
             .in('node_id', inputData)
         if (error) {
