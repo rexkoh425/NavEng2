@@ -56,7 +56,6 @@ async function CheckBlockedLocation(receivedData) {
             console.log(`${receivedData.MultiStopArray[0]} to ${receivedData.MultiStopArray[1]} : with blocking failed , wrong no.`);
             data['passed'] = false;
         }else if (!data['error_can_handle']){
-            
             console.log(`${receivedData.MultiStopArray[0]} to ${receivedData.MultiStopArray[1]} : with blocking failed , error cannot handle.`);
             console.log(data.message);
         }

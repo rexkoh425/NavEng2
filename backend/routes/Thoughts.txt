@@ -1,11 +1,2 @@
 E1-04-10 to EA-06-21
 
-
-440 -> south
-400 -> south
-360 -> south (508) level 6
-320 -> South (504) level 5
-280 -> West (489) level 4
-240 -> West (490) level 3 
-200 -> West (494) level 2 
-160 -> South (498) level 1
