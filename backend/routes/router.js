@@ -1166,7 +1166,7 @@ router.post('/formPost' , async (req ,res) => {
         mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered , ...stairs]));
         //debug_log(mergedArray);
     }catch(error){
-        return res.send({HTML : database_down_url , passed : false , error_can_handle : false , message : error});
+        return res.send({HTML : database_down_url , passed : false , error_can_handle : false , message : "query error"});
     }
     let TotalResult = new Result();
 
@@ -1190,9 +1190,9 @@ router.post('/formPost' , async (req ,res) => {
         } catch(error){
             //console.error('Error caught:', error.message);
             if(error.message == "cannot find dest"){
-                return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : true , message : error});
+                return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : true , message : error.message});
             }
-            return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : false , message : error});
+            return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : false , message : error.message});
         }
     }
     
@@ -1203,6 +1203,7 @@ router.post('/formPost' , async (req ,res) => {
 router.post('/blockRefresh' , async (req ,res) => { 
     
     const inputData = req.body;
+    
     let destinations = inputData.MultiStopArray;
     if(inputData.MultiStopArray.length < 2){
         //debug_log("data incorrectly labelled or source and destination not filled"); 
@@ -1254,7 +1255,7 @@ router.post('/blockRefresh' , async (req ,res) => {
         }
         mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered , ...stairs]));
     }catch(error){
-        return res.send({HTML : database_down_url , passed : false , error_can_handle : false , message : error});
+        return res.send({HTML : database_down_url , passed : false , error_can_handle : false , message : "query error"});
     }
     let TotalResult = new Result();
     //Destinations : destinations
@@ -1284,10 +1285,10 @@ router.post('/blockRefresh' , async (req ,res) => {
         }catch(error){
             //console.error('Error caught:', error.message);
             if(error.message == "cannot find dest"){
-                return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : true , message : error});
+                return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : true , message : error.message});
             }
           
-            return res.send({ HTML : no_alt_path_url , passed : false , error_can_handle : false , message : error});
+            return res.send({ HTML : no_alt_path_url , passed : false , error_can_handle : false , message : error.message});
 
         }
     }

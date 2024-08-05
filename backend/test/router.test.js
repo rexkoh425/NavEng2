@@ -55,7 +55,7 @@ async function CheckBlockedLocation(receivedData) {
             console.log(data['Queried']);
             console.log(`${receivedData.MultiStopArray[0]} to ${receivedData.MultiStopArray[1]} : with blocking failed , wrong no.`);
             data['passed'] = false;
-        }else if (!data['error_can_handle']){
+        }else if (!data['passed'] && !data['error_can_handle']){
             console.log(`${receivedData.MultiStopArray[0]} to ${receivedData.MultiStopArray[1]} : with blocking failed , error cannot handle.`);
             console.log(data.message);
         }
@@ -109,7 +109,7 @@ async function performBlockedTest(destinations , blocked_input , non_block_resul
         Stops_index: non_block_result.Stops_index,
         BlockedNodeIndex: blocked_input.index
     };
-    //console.log(inputData);
+    
     return await CheckBlockedLocation(inputData);
 }
 
@@ -1025,6 +1025,7 @@ describe('Testing whether location pairs output correct number of pictures', fun
                             }else{
                                 result.append_failed(source , destination);
                             }
+                            
                             let block_result = {HTML : "" , passed : true , error_can_handle : false}; 
                             
                             if(blocked.blocked_filepath != ''){
