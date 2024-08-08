@@ -24,6 +24,27 @@ function debug_log(input){
     }
 }
 
+async function node_id_to_room_num(node_id){
+    if(typeof(node_id) == "number"){
+        try {
+            // Query the 'users' table for a specific user by ID
+            const { data, error } = await supabase
+                .from('pictures')
+                .select('room_num')
+                .eq('node_id', node_id);
+            if (error) {
+                throw error;
+            }
+            return data[0].room_num;
+
+        } catch (error) {
+            throw new Error("node_id to room_num cannot query database");
+        } 
+    }else{
+        return node_id;
+    }
+}
+
 async function template_instructions(distance , arrow_direction , levels){
     
     arrow_direction = await ENUM_to_left_right(arrow_direction);
@@ -1294,6 +1315,7 @@ router.post('/blockRefresh' , async (req ,res) => {
     }
     await TotalResult.convert_to_instructions();
     let TotalResultObj = TotalResult.get_object();
+
     for(let i =  0; i < destinations.length ; i ++){
         destinations[i] = await node_id_to_room_num(destinations[i]);
     }

@@ -346,6 +346,7 @@ function PromptForm() {
             handleConvertToMetres(distArray);
             setStopsIndex(response.data['Stops_index']);
             setMultiStopArray(response.data['Destinations']);
+            setMultiStopArrayNotification(response.data['Destinations'])
             setNode_id_array(response.data['nodes_path']);
             const arrayFromString = response.data['HTML'].split('<img src');
             setBlocked(arrayFromString[0]);
