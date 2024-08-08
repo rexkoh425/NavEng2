@@ -15,7 +15,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const no_alt_path_url = 'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/Specials/No_alternate_path.png?t=2024-06-22T15%3A22%3A29.729Z' ;
 const database_down_url = 'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/Specials/No_alternate_path.png?t=2024-06-22T15%3A22%3A29.729Z';
 //const supa = new database(supabase);
-const table = 'pictures2'
+const table = 'pictures'
 
 function debug_log(input){
     let debug = false;
