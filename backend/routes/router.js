@@ -14,7 +14,8 @@ const supabaseKey = process.env.SUPABASE_KEY
 const supabase = createClient(supabaseUrl, supabaseKey);
 const no_alt_path_url = 'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/Specials/No_alternate_path.png?t=2024-06-22T15%3A22%3A29.729Z' ;
 const database_down_url = 'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/Specials/No_alternate_path.png?t=2024-06-22T15%3A22%3A29.729Z';
-let blocked_node = "";
+//const supa = new database(supabase);
+const table = 'pictures'
 
 function debug_log(input){
     let debug = false;
@@ -58,7 +59,7 @@ async function template_instructions(distance , arrow_direction , levels){
         return `Walk Straight for ${distance / 10} metre`;
     }else{
         if ((distance / 10) > 1) {
-        return `Turn ${arrow_direction} and Walk Straight for ${distance / 10} metres` ;
+            return `Turn ${arrow_direction} and Walk Straight for ${distance / 10} metres` ;
         }
         return `Turn ${arrow_direction} and Walk Straight for ${distance / 10} metre` ;
     }
@@ -204,7 +205,7 @@ async function room_num_to_node_id(room_number){
         try {
             // Query the 'users' table for a specific user by ID
             const { data, error } = await supabase
-                .from('pictures')
+                .from(`${table}`)
                 .select('node_id')
                 .eq('room_num', `${room_number}`);
             if (error) {
@@ -217,6 +218,27 @@ async function room_num_to_node_id(room_number){
         } 
     }else{
         return room_number;
+    }
+}
+
+async function node_id_to_room_num(node_id){
+    if(typeof(node_id) == "number"){
+        try {
+            // Query the 'users' table for a specific user by ID
+            const { data, error } = await supabase
+                .from(`${table}`)
+                .select('room_num')
+                .eq('node_id', node_id);
+            if (error) {
+                throw error;
+            }
+            return data[0].room_num;
+
+        } catch (error) {
+            throw new Error("node_id to room_num cannot query database");
+        } 
+    }else{
+        return node_id;
     }
 }
 
@@ -244,7 +266,7 @@ async function get_blocked(){
         }
         let blocked_array = []
         for(const element of data){
-            blocked_array.push(element.id - 1);
+            blocked_array.push(element.id);
         }
         return blocked_array;
 
@@ -284,7 +306,7 @@ async function get_non_sheltered(){
         }
         let non_sheltered = []
         for(const element of data){
-            non_sheltered.push(element.id - 1);
+            non_sheltered.push(element.id);
         }
         return non_sheltered;
 
@@ -296,7 +318,7 @@ async function get_non_sheltered(){
 async function get_stairs(){
     try { 
         const { data, error } = await supabase
-            .from('pictures')
+            .from(`${table}`)
             .select('node_id')
             .eq('self_type', 'Stairs');
             //dont need distinct cause will become distinct when merged later
@@ -305,7 +327,7 @@ async function get_stairs(){
         }
         let stairs = [];
         for(const element of data){
-            stairs.push(element.node_id - 1);
+            stairs.push(element.node_id);
         }
         stairs = [...new Set(stairs)];
         return stairs;
@@ -465,7 +487,7 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                 debug_log(directions);
                 
                 const { data, error } = await supabase
-                    .from('pictures')
+                    .from(`${table}`)
                     .select('unique_id , filepath')
                     .in('unique_id', nodes)
                     .order('node_id', { ascending: true });
@@ -499,7 +521,11 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                 debug_log(dist_array);
                 debug_log("distance : ")
                 debug_log(distance);
-
+                
+                debug_log("uncompressed path : ")
+                debug_log(nodes_path);
+                debug_log("compressed path : ")
+                debug_log(compressed_path)
                 const FinalResults = {
                     Expected : nodes.length ,
                     Queried : data_length , 
@@ -612,7 +638,7 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                 debug_log(directions);
 
                 const { data, error } = await supabase
-                    .from('pictures')
+                    .from(`${table}`)
                     .select('unique_id , filepath')
                     .in('unique_id', nodes)
                     .order('node_id', { ascending: true });
@@ -701,12 +727,6 @@ async function is_failed_location(source , destination){
     */
 }
 
-async function get_filepath_from_link(link_input){
-    let temp = link_input.split('/');
-    let filepath = temp.slice(8).join('/');
-    return filepath;
-}
-
 async function get_b4_blocked_unique_id_from_array(unique_id , array){
     for(let i = 0 ; i < array.length ; i++){
         if(array[i] == unique_id){
@@ -782,6 +802,232 @@ class Result{
     }
 }
 
+class database{
+    constructor(db){
+        this.db = db;
+        this.feedback = {
+            unaltered : true , 
+            updated : false , 
+            deleted : false ,
+            inserted : false
+        };
+        this.pictures = {
+            unaltered : true , 
+            updated : false , 
+            deleted : false ,
+            inserted : false
+        };
+        this.failedtest = {
+            unaltered : true , 
+            updated : false , 
+            deleted : false ,
+            inserted : false
+        };
+        this.block_shelter = {
+            unaltered : true , 
+            updated : false , 
+            deleted : false ,
+            inserted : false
+        };
+    }
+
+    async get_all_locations(){
+        const { data, error } = await this.db
+            .from(`${table}`)
+            .select('room_num')
+            .eq('pov', 'None')
+            .eq('direction', 'None')
+            .order('room_num', { ascending: true });
+        if (error) {
+            throw error;
+        }
+        return data;
+    }
+
+    async insert_feedback(){
+        const { error } = await this.db
+            .from('feedback')
+            .insert(input);
+        if (error) {
+            throw error;
+        }
+        this.feedback.unaltered = false;
+        this.feedback.inserted = true;
+    }
+
+    async get_failed_locations(){
+        const { data, error } = await this.db
+            .from('failedtest')
+            .select('*');
+        if (error) {
+            throw error;
+        }
+        return data;
+    }
+
+    async insert_failed_locations(array){
+        for (const element of array) {
+            
+            const { error } = await this.db
+                .from('failedtest')
+                .insert([{ source: `${element.source}`, destination: `${element.destination}` }]);
+            if (error) {
+                throw error;
+            }
+        }
+        this.feedback.unaltered = false;
+        this.failedtest.inserted = true;
+    }
+
+    async delete_failed_locations(){
+        const { error } = await this.db
+            .from('failedtest')
+            .delete()
+            .gt('id', 0); // Condition equivalent to 'id > 0'
+
+        if (error) {
+            throw error;
+        }
+        this.feedback.unaltered = false;
+        this.failedtest.deleted = true;
+    }
+
+    async update_blocked_node(node_id){
+        const { error } = await this.db
+            .from('block_shelter')
+            .update({ blocked : true })
+            .eq('id', node_id);
+        if (error) {
+            throw error;
+        }
+        this.feedback.unaltered = false;
+        this.feedback.updated = true;
+    }
+
+    async get_z_coordinate(inputData){
+        const { data, error } = await this.db
+                .from(`${table}`)
+                .select('z_coordinate')
+                .eq('node_id', inputData)
+
+                
+            if (error) {
+                throw error;
+            }
+            
+        return data[0]['z_coordinate'];
+    }
+
+    async get_nodes_with_same_z(targeted_z){
+        const { data, error } = await this.db
+            .from(`${table}`)
+            .select('node_id , self_type')
+            .eq('z_coordinate', targeted_z);
+
+        if (error) {
+            throw error;
+        }
+        return data;
+    }
+
+    async get_filepath_using_unique_id(unique_id){
+        const { data, error } = await this.db
+                .from(`${table}`)
+                .select('filepath')
+                .eq('unique_id', unique_id);
+            if (error) {
+                throw error;
+            }
+        return data;
+    }
+
+    async get_all_image_links(){
+        const { data, error } = await this.db
+            .from('image_links')
+            .select('*')
+        
+        if (error) {
+            throw error;
+        }
+        return data;
+    }
+
+    async check_for_stairs(inputData){
+        const { data, error } = await this.db
+            .from(`${table}`)
+            .select('node_id' , 'self_type')
+            .in('node_id', inputData)
+        if (error) {
+            throw error;
+        }
+        return data;
+    }
+
+    async check_for_sheltered(inputData){
+        const { data, error } = await this.db
+            .from('block_shelter')
+            .select('id' , 'sheltered')
+            .in('id', inputData)
+        if (error) {
+            throw error;
+        }
+
+        return data;
+    }
+
+    log_changes(){
+        if(!this.feedback.unaltered){
+            console.log(`feedback table : `);
+            if(!this.feedback.updated){
+                process.stdout.write(`UPDATED`);
+            }
+            if(!this.feedback.deleted){
+                process.stdout.write(`DELETED`);
+            }
+            if(!this.feedback.inserted){
+                process.stdout.write(`INSERTED`);
+            }
+        }
+        if(!this.pictures.unaltered){
+            console.log(`pictures table : `);
+            if(!this.pictures.updated){
+                process.stdout.write(`UPDATED`);
+            }
+            if(!this.pictures.deleted){
+                process.stdout.write(`DELETED`);
+            }
+            if(!this.pictures.inserted){
+                process.stdout.write(`INSERTED`);
+            }
+        }
+        if(!this.failedtest.unaltered){
+            console.log(`failedtest table : `);
+            if(!this.failedtest.updated){
+                process.stdout.write(`UPDATED`);
+            }
+            if(!this.failedtest.deleted){
+                process.stdout.write(`DELETED`);
+            }
+            if(!this.failedtest.inserted){
+                process.stdout.write(`INSERTED`);
+            }
+        }
+        if(!this.block_shelter.unaltered){
+            console.log(`block_shelter table : `);
+            if(!this.block_shelter.updated){
+                process.stdout.write(`UPDATED`);
+            }
+            if(!this.block_shelter.deleted){
+                process.stdout.write(`DELETED`);
+            }
+            if(!this.block_shelter.inserted){
+                process.stdout.write(`INSERTED`);
+            }
+        }
+    }
+
+}
+
 router.get('/test', (req, res) => {
     const userData = 
     [
@@ -800,7 +1046,7 @@ router.post('/contact', (req, res) => {
 router.post('/locations' , async(req,res) => {
     try {
         const { data, error } = await supabase
-            .from('pictures')
+            .from(`${table}`)
             .select('room_num')
             .eq('pov', 'None')
             .eq('direction', 'None')
@@ -838,14 +1084,14 @@ router.post('/feedback' , async(req,res) => {
         if (error) {
             throw error;
         }
-        debug_log('Data added to database successfully.');
+        //debug_log('Data added to database successfully.');
         //res.send('Data added to database successfully.'); 
     } catch (error) {
-        console.error('Error appending data to database:', error);
-        //res.status(500).send('Failed to append data to database.'); 
+        //console.error('Error appending data to database:', error);
+        res.status(500).send({ message : 'Failed to add data to database.' }); 
     }
 
-    res.send("Thank you for your feedback!") //sending conformation message back to frontend
+    res.send({ message : "Thank you for your feedback!" }) //sending conformation message back to frontend
 })
 
 router.post('/FailedLocations' , async(req,res) => {
@@ -882,11 +1128,11 @@ router.post('/InsertFailedLocations', async (req, res) => {
             }
         }
 
-        debug_log('Data added to database successfully.');
-        res.send('Data added to database successfully.'); 
+        //debug_log('Data added to database successfully.');
+        res.send({ message : 'Data added to database successfully.' }); 
     } catch (error) {
-        console.error('Error appending data to database:', err);
-        res.status(500).send('Failed to append data to database.'); 
+        //console.error('Error appending data to database:', err);
+        res.status(500).send({ message : 'Failed to append data to database.'}); 
     }
 });
 
@@ -903,10 +1149,10 @@ router.post('/DeleteFailedLocations', async (req, res) => {
         }
 
         debug_log('Data deleted from database successfully.');
-        res.send('Data deleted from database successfully.'); 
+        res.send({ message : 'Data deleted from database successfully.'}); 
     } catch (error) {
         console.error('Error deleting data from database:', err);
-        res.status(500).send('Failed to delete data from database.'); 
+        res.status(500).send({ message : 'Failed to delete data from database.'}); 
     }
 });
 
@@ -925,7 +1171,7 @@ router.post('/formPost' , async (req ,res) => {
         for(let i =  0; i < destinations.length ; i ++){
             destinations[i] = await room_num_to_node_id(destinations[i]);
         }
-        //debug_log(destinations);
+        debug_log(destinations);
         let blocked_array = await get_blocked();
         for(let i = 0 ; i < inputData.blocked_array.length ; i++){
             blocked_array.push(inputData.blocked_array[i]);
@@ -941,7 +1187,7 @@ router.post('/formPost' , async (req ,res) => {
         mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered , ...stairs]));
         //debug_log(mergedArray);
     }catch(error){
-        return res.send({HTML : database_down_url , passed : false , error_can_handle : false , message : error});
+        return res.send({HTML : database_down_url , passed : false , error_can_handle : false , message : "query error"});
     }
     let TotalResult = new Result();
 
@@ -965,9 +1211,9 @@ router.post('/formPost' , async (req ,res) => {
         } catch(error){
             //console.error('Error caught:', error.message);
             if(error.message == "cannot find dest"){
-                return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : true , message : error});
+                return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : true , message : error.message});
             }
-            return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : false , message : error});
+            return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : false , message : error.message});
         }
     }
     
@@ -978,7 +1224,7 @@ router.post('/formPost' , async (req ,res) => {
 router.post('/blockRefresh' , async (req ,res) => { 
     
     const inputData = req.body;
-    debug_log(inputData.unique_id_array)
+    
     let destinations = inputData.MultiStopArray;
     if(inputData.MultiStopArray.length < 2){
         //debug_log("data incorrectly labelled or source and destination not filled"); 
@@ -991,13 +1237,16 @@ router.post('/blockRefresh' , async (req ,res) => {
             destinations[i] = await room_num_to_node_id(destinations[i]);
         }
 
-        debug_log("stop index : " , inputData.Stops_index);
-        debug_log("blocked node index : " , inputData.BlockedNodeIndex);
+        debug_log("stop index : ");
+        debug_log(inputData.Stops_index);
+        debug_log("blocked node index : ");
+        debug_log(inputData.BlockedNodeIndex);
+        destinations.splice(0,1);
         while(inputData.Stops_index[0] < inputData.BlockedNodeIndex){
             destinations.splice(0,1);
             inputData.Stops_index.splice(0,1);
         }
-        destinations.splice(0,1);
+        
 
         blocked_node_component = await break_down_img_path(inputData.blocked_img_path);
 
@@ -1011,7 +1260,8 @@ router.post('/blockRefresh' , async (req ,res) => {
         }
         destinations.unshift(parseInt(b4_blocked_node_id));
         
-        debug_log("destinations are : " , destinations);
+        debug_log("destinations are : ");
+        debug_log(destinations);
         let blocked_array = await get_blocked();
         for(let i = 0 ; i < inputData.blocked_array.length ; i++){
             blocked_array.push(inputData.blocked_array[i]);
@@ -1026,7 +1276,7 @@ router.post('/blockRefresh' , async (req ,res) => {
         }
         mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered , ...stairs]));
     }catch(error){
-        return res.send({HTML : database_down_url , passed : false , error_can_handle : false , message : error});
+        return res.send({HTML : database_down_url , passed : false , error_can_handle : false , message : "query error"});
     }
     let TotalResult = new Result();
     //Destinations : destinations
@@ -1056,16 +1306,17 @@ router.post('/blockRefresh' , async (req ,res) => {
         }catch(error){
             //console.error('Error caught:', error.message);
             if(error.message == "cannot find dest"){
-                return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : true , message : error});
+                return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : true , message : error.message});
             }
           
-            return res.send({ HTML : no_alt_path_url , passed : false , error_can_handle : false , message : error});
+            return res.send({ HTML : no_alt_path_url , passed : false , error_can_handle : false , message : error.message});
 
         }
     }
     await TotalResult.convert_to_instructions();
     let TotalResultObj = TotalResult.get_object();
-    for (let i = 0; i < destinations.length ; i ++) {
+
+    for(let i =  0; i < destinations.length ; i ++){
         destinations[i] = await node_id_to_room_num(destinations[i]);
     }
     TotalResultObj['Destinations'] = destinations;
@@ -1099,7 +1350,7 @@ router.post('/getfloor' , async (req , res) => {
     let node_label_map = {};
     try {
         const { data, error } = await supabase
-            .from('pictures')
+            .from(`${table}`)
             .select('z_coordinate')
             .eq('node_id', inputData)
 
@@ -1114,7 +1365,7 @@ router.post('/getfloor' , async (req , res) => {
     
     try {
         const { data, error } = await supabase
-            .from('pictures')
+            .from(`${table}`)
             .select('node_id , self_type')
             .eq('z_coordinate', targeted_z);
 
@@ -1170,7 +1421,6 @@ router.post('/getfloor' , async (req , res) => {
                 FullMapObj.push(MapObj);   
             })
             res.send(FullMapObj);
-            //console.log(FullMapObj[1])
         }catch(error){
             
         }
@@ -1192,14 +1442,13 @@ router.post('/convert_unique_id_filename' , async(req , res) => {
     try {
         let filepath = "";
         const { data, error } = await supabase
-            .from('pictures')
+            .from(`${table}`)
             .select('filepath')
             .eq('unique_id', inputData.unique_id);
-
-            filepath = await get_filepath_from_link(data[0].filepath);
         if (error) {
             throw error;
         }
+        filepath = await remove_weburl(data[0].filepath);
         res.send({filepath : filepath});
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -1328,10 +1577,57 @@ router.post('/convert__to_-' , async(req, res) => {
     }
     
 });
+
+router.post('/checkforstairs' , async(req, res) => {
+    try{
+
+        const inputData = req.body;
+        const { data, error } = await supabase
+            .from(`${table}`)
+            .select('node_id' , 'self_type')
+            .in('node_id', inputData)
+        if (error) {
+            throw error;
+        }
+        for(let result of data){
+            if(result.self_type == 'Stairs'){
+                res.send({ NoStairs : false})
+            }
+        }
+
+        res.send({ NoStairs : true})
+    }catch(error){
+        res.send({ NoStairs : false})
+    }
+    
+});
+
+router.post('/checkforsheltered' , async(req, res) => {
+    try{
+
+        const inputData = req.body;
+        const { data, error } = await supabase
+            .from('block_shelter')
+            .select('id' , 'sheltered')
+            .in('id', inputData)
+        if (error) {
+            throw error;
+        }
+        for(let result of data){
+            if(result.sheltered == false){
+                res.send({ sheltered : false})
+            }
+        }
+
+        res.send({ sheltered : true})
+    }catch(error){
+        res.send({ sheltered : false})
+    }
+    
+});
 //////////////////////////////////////////////////////////////////////////////
 ///////////////////////function testing region////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
-
 
 router.post('/NESW_ENUM' , async (req , res) => {
     const inputs = req.body.Input;
@@ -1448,6 +1744,29 @@ router.post('/room_num_to_node_id' , async (req , res) => {
         let result;
         try{ 
             result = await room_num_to_node_id(inputs[i]);
+        }catch(error){
+            result = "failed to query database";
+        }
+        if(result == expected[i]){
+            passed ++;
+        }
+    }
+    if(passed == test_cases){
+        res.send({ passed : true });
+    }else{
+        res.send({ passed : false});
+    }
+});
+
+router.post('/node_id_to_room_num' , async (req , res) => {
+    const inputs = req.body.Input;
+    const expected = req.body.Expected;
+    const test_cases = inputs.length;
+    let passed = 0;
+    for(let i = 0 ; i < test_cases ; i ++){
+        let result;
+        try{ 
+            result = await node_id_to_room_num(inputs[i]);
         }catch(error){
             result = "failed to query database";
         }
@@ -1618,8 +1937,95 @@ router.post('/full_query' , async (req , res) => {
     }
 });
 
+router.post('/angle_to_string_dir' , async (req , res) => {
+    const inputs = req.body.Input;
+    const expected = req.body.Expected;
+    const test_cases = inputs.length;
+    let passed = 0;
+    for(let i = 0 ; i < test_cases ; i ++){
+        const result = await angle_to_string_dir(inputs[i]);
+        if(result == expected[i]){
+            passed ++;
+        }
+    }
+    if(passed == test_cases){
+        res.send({ passed : true });
+    }else{
+        res.send({ passed : false});
+    }
+});
 
+router.post('/remove_weburl' , async (req , res) => {
+    const inputs = req.body.Input;
+    const expected = req.body.Expected;
+    const test_cases = inputs.length;
+    let passed = 0;
+    for(let i = 0 ; i < test_cases ; i ++){
+        const result = await remove_weburl(inputs[i]);
+        if(result == expected[i]){
+            passed ++;
+        }
+    }
+    if(passed == test_cases){
+        res.send({ passed : true });
+    }else{
+        res.send({ passed : false});
+    }
+});
 
+router.post('/get_b4_blocked_unique_id_from_array' , async (req , res) => {
+    const inputs = req.body.Input;
+    const expected = req.body.Expected;
+    const test_cases = inputs.length;
+    let passed = 0;
+    for(let i = 0 ; i < test_cases ; i ++){
+        const result = await get_b4_blocked_unique_id_from_array(inputs[i].query , inputs[i].array);
+        if(result == expected[i]){
+            passed ++;
+        }
+    }
+    if(passed == test_cases){
+        res.send({ passed : true });
+    }else{
+        res.send({ passed : false});
+    }
+});
+
+router.post('/template_instructions' , async (req , res) => {
+    const inputs = req.body.Input;
+    const expected = req.body.Expected;
+    const test_cases = inputs.length;
+    let passed = 0;
+    for(let i = 0 ; i < test_cases ; i ++){
+        const result = await template_instructions(inputs[i].distance , inputs[i].arrow , inputs[i].levels);
+        if(result == expected[i]){
+            passed ++;
+        }
+    }
+    if(passed == test_cases){
+        res.send({ passed : true });
+    }else{
+        res.send({ passed : false});
+    }
+});
+
+router.post('/ENUM_to_left_right' , async (req , res) => {
+    const inputs = req.body.Input;
+    const expected = req.body.Expected;
+    const test_cases = inputs.length;
+    let passed = 0;
+    for(let i = 0 ; i < test_cases ; i ++){
+        const result = await ENUM_to_left_right(inputs[i]);
+        if(result == expected[i]){
+            passed ++;
+        }
+    }
+    if(passed == test_cases){
+        res.send({ passed : true });
+    }else{
+        res.send({ passed : false});
+    }
+});
 
 module.exports = router;
 

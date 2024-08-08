@@ -90,7 +90,7 @@ function Feedback() {
 
         await axios.post(websitelink + "/feedback", postData)
         .then(res => {
-            setFeedbackSubmission(res.data)
+            setFeedbackSubmission(res.data.message)
         })
         .catch(err => console.log("Fetch Location Error!!"))
     }

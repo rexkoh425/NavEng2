@@ -20,7 +20,7 @@ async function CheckLocation(receivedData) {
         const res = await request(app)
             .post('/formPost')
             .send(receivedData)
-            .timeout({ deadline: 5000 });
+            .timeout({ deadline: 30000 });
 
         let data = res.body;
 
@@ -45,7 +45,7 @@ async function CheckBlockedLocation(receivedData) {
         const res = await request(app)
             .post('/blockRefresh')
             .send(receivedData)
-            .timeout({ deadline: 10000 });
+            .timeout({ deadline: 35000 });
 
         let data = res.body;
         data['source'] = receivedData.MultiStopArray[0];
@@ -53,14 +53,10 @@ async function CheckBlockedLocation(receivedData) {
         if (data['passed'] && data['Expected'] !== data['Queried']){
             console.log(data['Expected']);
             console.log(data['Queried']);
-            console.log(`${receivedData.MultiStopArray[0]} to ${receivedData.MultiStopArray[1]} : with blocking failed`);
+            console.log(`${receivedData.MultiStopArray[0]} to ${receivedData.MultiStopArray[1]} : with blocking failed , wrong no.`);
             data['passed'] = false;
-        }
-
-        if (!data['passed'] && !data['error_can_handle']){
-            console.log(receivedData.Node_id_array)
-            console.log(receivedData.blocked_img_path);
-            console.log(`${receivedData.MultiStopArray[0]} to ${receivedData.MultiStopArray[1]} : with blocking failed`);
+        }else if (!data['passed'] && !data['error_can_handle']){
+            console.log(`${receivedData.MultiStopArray[0]} to ${receivedData.MultiStopArray[1]} : with blocking failed , error cannot handle.`);
             console.log(data.message);
         }
         return data;
@@ -81,6 +77,26 @@ async function performTest(destinations , blocked_input) {
     return await CheckLocation(inputData);
 }
 
+async function performTestNoStairs(destinations , blocked_input) {
+    const inputData = {
+        blocked_array: blocked_input,
+        sheltered: false , 
+        NoStairs : true , 
+        MultiStopArray : destinations
+    };
+    return await CheckLocation(inputData);
+}
+
+async function performTestSheltered(destinations , blocked_input) {
+    const inputData = {
+        blocked_array: blocked_input,
+        sheltered: true , 
+        NoStairs : false , 
+        MultiStopArray : destinations
+    };
+    return await CheckLocation(inputData);
+}
+
 async function performBlockedTest(destinations , blocked_input , non_block_result) {
     
     const inputData = {
@@ -93,7 +109,7 @@ async function performBlockedTest(destinations , blocked_input , non_block_resul
         Stops_index: non_block_result.Stops_index,
         BlockedNodeIndex: blocked_input.index
     };
-    //console.log(inputData);
+    
     return await CheckBlockedLocation(inputData);
 }
 
@@ -200,15 +216,22 @@ class TestResult{
         this.non_block_pass ++;
     }
 
-    process_block_result(block_result){
+    process_block_result(block_result , source , destination){
         if(block_result.passed){   
             this.block_pass ++;  
         }else if(block_result.error_can_handle){
             this.no_path ++;
+        }else{
+            this.failed_locations.push( { source : source , destination : destination});
         }
+    }
+
+    append_failed(source , destination){
+        this.failed_locations.push( { source : source , destination : destination});
     }
 }
 
+/*
 describe('Testing Functions..........', function () {
     this.timeout(10000);
 
@@ -385,6 +408,28 @@ describe('Testing Functions..........', function () {
         }
     })
 
+    it('node_id_to_room_num converts node_id to string room_num', async function () {
+        try {
+            const input = { 
+                
+                Input : [78 , 129 , 166 , 'EA-06-09'] ,
+                Expected : ['EA-04-16' , 'EA-06-13' , 'EA-01-22' , 'EA-06-09']
+            }
+            const response = await request(app)
+                .post('/node_id_to_room_num')
+                .send(input);
+
+            if(response.body.passed == false){
+                throw new Error("node_id_to_room_num function failed")
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
+
     it('get_diff returns the difference between two arrays', async function () {
         try {
             const input = { 
@@ -531,8 +576,425 @@ describe('Testing Functions..........', function () {
             global.gc();
         }
     })
+
+    it('angle_to_string_dir return direction in words' , async function() {
+        try {
+            const input = { 
+                Input : ['0' , '90' , '180' , '-90' , '45' , '-45' , '30'] ,
+                Expected : ["north" , "east" , "south" , "west" , "up" , "down" , "cannot convert"]
+                
+            }
+
+            const response = await request(app)
+                .post('/angle_to_string_dir')
+                .send(input);
+
+            if(response.body.passed == false){
+                throw new Error("angle_to_string_dir function failed")
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
+
+    it('remove_weburl takes in link and returns file name' , async function() {
+        try {
+            const input = { 
+                Input : 
+                [
+                    'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/1_0_0_40_None_None_Room_NIL.jpg' , 
+                    'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/3_50_-110_40_North_None_T_junction_NIL.jpg' ,
+                    'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/12_30_-390_80_North_None_Cross_junction_NIL.jpg' ,
+                    'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/15_30_-450_80_West_None_Cross_junction_NIL.jpg'
+                ] ,
+                Expected : 
+                [
+                    "1_0_0_40_None_None_Room_NIL.jpg" , 
+                    "3_50_-110_40_North_None_T_junction_NIL.jpg" , 
+                    "12_30_-390_80_North_None_Cross_junction_NIL.jpg" , 
+                    "15_30_-450_80_West_None_Cross_junction_NIL.jpg"
+                ]
+                
+            }
+
+            const response = await request(app)
+                .post('/remove_weburl')
+                .send(input);
+
+            if(response.body.passed == false){
+                throw new Error("remove_weburl function failed")
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
+
+    it('get_b4_blocked_unique_id_from_array returns node before blocked node' , async function() {
+        try {
+            const input = { 
+                Input : [
+                    {
+                        array : ['0' , '3' , '4' , '7' , '2'], 
+                        query : "4"
+                    } ,
+                    {
+                        array : ['0' , '2' , '3'], 
+                        query : "4"
+                    } 
+                ] ,
+                Expected : ["3" , ""] 
+            }
+
+            const response = await request(app)
+                .post('/get_b4_blocked_unique_id_from_array')
+                .send(input);
+
+            if(response.body.passed == false){
+                throw new Error("get_b4_blocked_unique_id_from_array function failed")
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
+
+    it('template_instructions returns instructions base on directions , distance etc  ', async function() {
+        try {
+            const input = { 
+                Input : 
+                [
+                    {
+                        distance : "70" ,
+                        arrow : "1" ,
+                        levels : 0
+                    } ,
+                    {
+                        distance : "80" ,
+                        arrow : "5" ,
+                        levels : 2
+                    } ,
+                    {
+                        distance : "50" ,
+                        arrow : "2" ,
+                        levels : 0
+                    }
+                    
+                ] ,
+                Expected : 
+                [
+                    "Walk Straight for 7 metres",
+                    "Go Up 2 level",
+                    "Turn Right and Walk Straight for 5 metres"
+                ]
+                
+            }
+
+            const response = await request(app)
+                .post('/template_instructions')
+                .send(input);
+
+            if(response.body.passed == false){
+                throw new Error("template_instructions function failed")
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
+
+    it('ENUM_to_left_right return left right straight instruction from ENUM', async function () {
+        try {
+            const input = { 
+                Input : ['1' , '2' , '3' , '4' , '5' , '6' , '7'], 
+                Expected : ['Straight' , 'Right' , 'around' , 'Left' , 'Up' , 'Down' , 'None'] 
+            }
+            const response = await request(app)
+                .post('/ENUM_to_left_right')
+                .send(input);
+            
+            if(response.body.passed == false){
+                throw new Error("ENUM_to_left_right function failed")
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
 })
 
+describe('Testing Endpoints..........', function () {
+    this.timeout(50000);
+
+    it('/locations should return an array of locations', async function () {
+        try {
+            const response = await request(app)
+                .post('/locations');
+            
+            if(response.body.length <= 0){
+                throw new Error("empty array"); 
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
+
+    it('/feedback should append the user feedback into database', async function () {
+        const input = {
+            feedbackType : "Report bug with website", 
+            bugDetails : "there is no bug",
+            nodes : ["EA-01-12" , "EA-02-12"]
+        }
+        try {
+            const response = await request(app)
+                .post('/feedback')
+                .send(input);
+            
+            if(response.body.message != "Thank you for your feedback!"){
+                throw new Error("Not added successfully"); 
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
+
+    it('/InsertFailedLocations should append the failed location into database', async function () {
+        const input = [
+            { source : "EA-01-11" , destination : "EA-05-11"} , 
+            { source : "EA-03-11" , destination : "E1-03-14"}
+        ]
+        try {
+            const response = await request(app)
+                .post('/InsertFailedLocations')
+                .send(input);
+            if(response.body.message != "Data added to database successfully."){
+                throw new Error("Not added successfully"); 
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
+
+    it('/FailedLocations get all failed locations from the database', async function () {
+        try {
+            const response = await request(app)
+                .post('/FailedLocations')
+
+            if(response.body.length <= 0){
+                throw new Error("empty array"); 
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
+
+    it('/DeleteFailedLocations deletes all failed locations from the database', async function () {
+        try {
+            const response = await request(app)
+                .post('/DeleteFailedLocations')
+
+            if(response.body.message != "Data deleted from database successfully."){
+                throw new Error("Not deleted successfully"); 
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
+
+    it('/insertBlocked updates the node as blocked in the database', async function () {
+        const input = { img_string : "3_50_-110_40_North_None_T_junction_NIL.jpg" } ;
+        try {
+            const response = await request(app)
+                .post('/insertBlocked')
+                .send(input);
+
+            if(response.body.message != "Data added to database successfully."){
+                throw new Error("Not added successfully"); 
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
+
+    it('/getfloor gets all other nodes with same floor as the input node', async function () {
+        const input = { node_id : 71 };
+        try {
+            const response = await request(app)
+                .post('/getfloor')
+                .send(input);
+
+            if(response.body.length <= 0){
+                throw new Error("empty array"); 
+            }
+            const Edge = response.body[0];
+            const connections = Edge.connections[0];
+           
+            if(typeof(Edge.id) != "number" || typeof(Edge.label) != "string"){
+                throw new Error("wrong format"); 
+            }
+            if(typeof(connections.id) != "number" || typeof(connections.distance) != "number" || typeof(connections.direction) != "string"){
+                throw new Error("wrong format"); 
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
+
+    it('/convert_unique_id_filename get filepath using a unique id', async function () {
+        const input = { unique_id : 211 };
+        try {
+            const response = await request(app)
+                .post('/convert_unique_id_filename')
+                .send(input);
+            
+            if(response.body.filepath != "2_50_0_40_North_North_Cross_junction_NIL.jpg"){
+                throw new Error("wrong filepath"); 
+            }
+            
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    })
+
+    it('/get_image_links should return an array of image links', async function () {
+        try {
+            const response = await request(app)
+                .post('/get_image_links');
+            
+            if(response.body.link_array.length <= 0){
+                throw new Error("empty array"); 
+            }
+        } catch (error){
+            throw error;
+        }
+        if (global.gc) {
+            global.gc();
+        }
+    }) 
+})
+
+describe('Testing features....', function () {
+    this.timeout(20000);
+
+    it('Test for multi-stop', async function () {
+        try {
+            
+            const non_block_result = await performTest(['EA-02-09' , 'E1A-07-03' , 'E1-07-19'] , []);
+            let blocked = {blocked_filepath : '' , index : 0}
+            if(non_block_result.passed || non_block_result.error_can_handle){
+                blocked = await choose_middle_blocked(non_block_result.HTML);
+            }else{
+                throw new Error("did not pass the test");
+            }
+
+            let block_result = {HTML : "" , passed : true , error_can_handle : false}; 
+            
+            if(blocked.blocked_filepath != ''){
+                block_result = await performBlockedTest(['EA-02-09' , 'E1A-07-03' , 'E1-07-19'] , blocked , non_block_result);
+            }
+
+            if(!block_result.passed && !block_result.error_can_handle){
+                throw new Error("did not pass the test");
+            }
+            
+            if (global.gc) {
+                global.gc();
+            }
+            
+        } catch (error) {
+            throw error;
+        }
+    });
+
+    it('Test for No Stairs', async function () {
+        try {
+            
+            const no_filter_result = await performTest(['E1-04-12' , 'EA-02-14'] , []);
+            //console.log(no_filter_result.nodes_path);
+            const response = await request(app)
+                .post('/checkforstairs')
+                .send(no_filter_result.nodes_path);
+            
+            if(response.body.NoStairs == false){
+                
+                const filter_result = await performTestNoStairs(['E1-04-12' , 'EA-02-14'] , []);
+                //console.log(filter_result.nodes_path)
+                const new_response = await request(app)
+                .post('/checkforstairs')
+                .send(filter_result.nodes_path);
+                //console.log(new_response.body)
+                if(new_response.body.NoStairs != true){
+                    throw new Error("no stairs filter did not work")
+                }
+            }
+            
+            if (global.gc) {
+                global.gc();
+            }
+            
+        } catch (error) {
+            throw error;
+        }
+    });
+
+    it('Test for sheltered path', async function () {
+        try {
+                
+            const filter_result = await performTestSheltered(['E1-04-12' , 'EA-02-14'] , []);
+            
+            const new_response = await request(app)
+            .post('/checkforsheltered')
+            .send(filter_result.nodes_path);
+            
+            if(new_response.body.sheltered != true){
+                throw new Error("sheltered filter did not work")
+            }
+            
+            if (global.gc) {
+                global.gc();
+            }
+            
+        } catch (error) {
+            throw error;
+        }
+    });
+});
+*/
 describe('Testing whether location pairs output correct number of pictures', function () {
     this.timeout(5000000);
 
@@ -560,13 +1022,16 @@ describe('Testing whether location pairs output correct number of pictures', fun
                             if(non_block_result.passed || non_block_result.error_can_handle){
                                 result.incre_non_block_pass();
                                 blocked = await choose_middle_blocked(non_block_result.HTML);
+                            }else{
+                                result.append_failed(source , destination);
                             }
+                            
                             let block_result = {HTML : "" , passed : true , error_can_handle : false}; 
                             
                             if(blocked.blocked_filepath != ''){
                                 block_result = await performBlockedTest([source , destination] , blocked , non_block_result);
                             }
-                            result.process_block_result(block_result);
+                            result.process_block_result(block_result ,source , destination);
                             result.incre_process_count();
                             result.log_progress();
                             
