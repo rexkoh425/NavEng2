@@ -223,7 +223,7 @@ function Feedback() {
             <Button variant="contained" disabled={!feedbackType} type="submit" onClick={handleSubmit} sx={{ bgcolor: "#cdd8e6", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }}>Submit</Button>
             <br></br>
             <br></br>
-            {feedbackSubmission}
+            <div className="ThankYou">{feedbackSubmission}</div>
     </center>
         </form>
         

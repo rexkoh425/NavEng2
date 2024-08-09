@@ -51,6 +51,8 @@ describe("access the feedback page and submit feedback about a bug", () => {
       name: /submit/i
     }).click()
     cy.wait(1000)
+    cy.get('.ThankYou')
+    .scrollIntoView() // Make sure the container is visible in the viewport
     cy.findByText(/thank you for your feedback!/i)
   })
 })
