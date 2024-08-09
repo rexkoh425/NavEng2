@@ -347,6 +347,7 @@ function PromptFormMobile() {
             setNode_id_array(response.data['nodes_path']);
             setStopsIndex(response.data['Stops_index']);
             setMultiStopArray(response.data['Destinations']);
+            setMultiStopArrayNotification(response.data['Destinations'])
             const arrayFromString = response.data['HTML'].split('<img src');
             setBlocked(arrayFromString[0]);
 

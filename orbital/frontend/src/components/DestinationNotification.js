@@ -1,6 +1,9 @@
 import React from 'react';
 
 const DestinationNotification = ({ stopsIndex, arrayposition, MultiStopArray, pathInstructions, blockedIndicator}) => {
+    console.log("ARRAY POSITION: " + arrayposition)
+    console.log("STOPS INDEX: " + stopsIndex)
+    console.log("MULTISTOPARRAY: " + MultiStopArray)
     if (arrayposition === 0 && !blockedIndicator) {
         return (
             <p className="startNotification">You are at the starting location {MultiStopArray[0]}</p>
