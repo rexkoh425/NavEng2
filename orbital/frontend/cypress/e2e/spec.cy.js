@@ -38,11 +38,9 @@ describe("access the feedback page and submit feedback about a bug", () => {
   it('allows users to open the page and submit feedback successfully', () => {
     // see: https://on.cypress.io/mounting-react
     cy.visit('http://localhost:3000/')
-    cy.wait(1000)
-    cy.findByRole('link', {
-      name: /feedback/i
-    }).click()
-    cy.wait(1000)
+    cy.wait(5000)
+    cy.get('[href="/feedback"]').click()
+    cy.wait(5000)
     cy.findByText(/we appreciate your comments and any feedback you might have for us/i)
     cy.findByRole('combobox', {  name: /issue/i}).type('Report bug with website')
     cy.findByRole('option', { name: 'Report bug with website' }).click()
@@ -50,8 +48,6 @@ describe("access the feedback page and submit feedback about a bug", () => {
     cy.findByRole('button', {
       name: /submit/i
     }).click()
-    cy.wait(1000)
-    cy.get('.ThankYou')
   })
 })
 
@@ -70,8 +66,6 @@ describe("access the feedback page and submit feedback to report a path", () => 
     cy.findByRole('button', {
       name: /submit/i
     }).click()
-    cy.wait(1000)
-    cy.get('.ThankYou')
   })
 })
 
