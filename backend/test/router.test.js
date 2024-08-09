@@ -231,7 +231,6 @@ class TestResult{
     }
 }
 
-/*
 describe('Testing Functions..........', function () {
     this.timeout(10000);
 
@@ -668,33 +667,36 @@ describe('Testing Functions..........', function () {
 
     it('template_instructions returns instructions base on directions , distance etc  ', async function() {
         try {
+            
             const input = { 
                 Input : 
                 [
                     {
                         distance : "70" ,
                         arrow : "1" ,
-                        levels : 0
+                        levels : 0 , 
+                        node_id : 0 
                     } ,
                     {
                         distance : "80" ,
-                        arrow : "5" ,
-                        levels : 2
+                        arrow : "6" ,
+                        levels : 2 , 
+                        node_id : 446
                     } ,
                     {
                         distance : "50" ,
                         arrow : "2" ,
-                        levels : 0
+                        levels : 0 ,
+                        node_id : 0
                     }
                     
                 ] ,
                 Expected : 
                 [
                     "Walk Straight for 7 metres",
-                    "Go Up 2 level",
+                    "Go Down 2 level from level 7 to level 5",
                     "Turn Right and Walk Straight for 5 metres"
                 ]
-                
             }
 
             const response = await request(app)
@@ -994,7 +996,7 @@ describe('Testing features....', function () {
         }
     });
 });
-*/
+
 describe('Testing whether location pairs output correct number of pictures', function () {
     this.timeout(5000000);
 

@@ -2042,8 +2042,9 @@ router.post('/template_instructions' , async (req , res) => {
     const expected = req.body.Expected;
     const test_cases = inputs.length;
     let passed = 0;
+    const track_floor = new building_floor('E4' , 4);
     for(let i = 0 ; i < test_cases ; i ++){
-        const result = await template_instructions(inputs[i].distance , inputs[i].arrow , inputs[i].levels);
+        const result = await template_instructions(inputs[i].distance , inputs[i].arrow , inputs[i].levels , inputs[i].node_id , track_floor);
         if(result == expected[i]){
             passed ++;
         }
