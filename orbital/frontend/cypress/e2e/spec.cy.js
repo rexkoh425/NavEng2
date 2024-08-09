@@ -66,6 +66,8 @@ describe("access the feedback page and submit feedback to report a path", () => 
     cy.findByRole('button', {
       name: /submit/i
     }).click()
+    cy.wait(10000)
+    cy.get('.ThankYou')
   })
 })
 
