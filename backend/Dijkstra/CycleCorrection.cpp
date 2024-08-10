@@ -148,7 +148,7 @@ bool is_correct_coor(Node source , Node dest , GraphEdge edge){
             break;
     }
     bool ok = (dest.get_x() == new_x) && (dest.get_y() == new_y) && (dest.get_z() == new_z);
-
+    
     if(!ok){
         cout << "weight is : " << weight << endl;
         cout << "source : " ;
@@ -186,25 +186,24 @@ int main(){
         for(auto j = neighbours.begin() ; j != neighbours.end() ; j++){
             GraphEdge current = *j;
             if(!visited[current.dest()]){
-                /*
-                if(current.dest() == 189){
-                    cout << node << endl;
-                }*/
                 to_visit.push(current.dest());
                 visited[current.dest()] = true;
                 node_details[current.dest()] = node_details[node].add(current.dest() ,current.dir() , current.weight());
             }
         }
     }
-    bool get_vect = true;
+    //////////////////////////
+    bool get_vect = false;////
+    //////////////////////////
+    int starting_from = 400;
     if(get_vect){
-        for(int i = 0; i < num_of_nodes ; i++){
+        for(int i = starting_from ; i < num_of_nodes ; i++){
             Node node = node_details[i];
             //cout << node.get_node() << " :";
-            cout<< "(" << node.get_x() << " ," << node.get_y() << " ," << node.get_z() << ")" << endl;;
+            cout<< "(" << node.get_x() << " ," << node.get_y() << " ," << node.get_z() << ")" << endl;
         }
 
-        for(int i = 0 ; i < num_of_nodes ; i++){
+        for(int i = starting_from ; i < num_of_nodes ; i++){
             forward_list<GraphEdge> neighbours = test1.edges_from(i);
 
             for(auto j = neighbours.begin() ; j != neighbours.end() ; j++){

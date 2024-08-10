@@ -90,7 +90,7 @@ function Feedback() {
 
         await axios.post(websitelink + "/feedback", postData)
         .then(res => {
-            setFeedbackSubmission(res.data)
+            setFeedbackSubmission(res.data.message)
         })
         .catch(err => console.log("Fetch Location Error!!"))
     }
@@ -223,7 +223,7 @@ function Feedback() {
             <Button variant="contained" disabled={!feedbackType} type="submit" onClick={handleSubmit} sx={{ bgcolor: "#cdd8e6", "&:hover": { bgcolor: "#F05C2C" }, fontFamily: "Lexend" }}>Submit</Button>
             <br></br>
             <br></br>
-            {feedbackSubmission}
+            {feedbackSubmission && <div className="ThankYou">{feedbackSubmission}</div>}
     </center>
         </form>
         

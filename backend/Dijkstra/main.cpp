@@ -16,18 +16,18 @@ using namespace rapidjson;
 void MapObj(Graph g , vector<int> nodes_array){
   bool in_array_map[1000] = {false};
     for(int i = 0 ; i < nodes_array.size() ; i++){
-        in_array_map[nodes_array[i]] = true;
+      in_array_map[nodes_array[i]] = true;
     }
     for(int i = 0 ; i < nodes_array.size() ; i++){
-        forward_list<GraphEdge> neighbours = g.edges_from(nodes_array[i]);
-        cout << nodes_array[i] << "_";
-        for(auto i = neighbours.begin() ; i != neighbours.end() ; i++){
-            GraphEdge current = *i;
-            if(in_array_map[current.dest()]){
-                cout << current.dest() << "," << current.weight() << "," << current.dir();
-                cout << "/";
-            }
+      forward_list<GraphEdge> neighbours = g.edges_from(nodes_array[i]);
+      cout << nodes_array[i] << "_";
+      for(auto i = neighbours.begin() ; i != neighbours.end() ; i++){
+        GraphEdge current = *i;
+        if(in_array_map[current.dest()]){
+          cout << current.dest() << "," << current.weight() << "," << current.dir();
+          cout << "/";
         }
+      }
 
         cout << "|";
     }
@@ -79,12 +79,12 @@ int main(){
           const Value& blocked = doc["blocked"];
 
           for (SizeType i = 0; i < blocked.Size(); ++i) {
-              if (blocked[i].IsInt()) {
-                  blocked_nodes.push_back(blocked[i].GetInt() - 1);
-              } else {
-                  std::cerr << "Non-integer value in \"blocked\" array" << std::endl;
-                  return 1;
-              }
+            if (blocked[i].IsInt()) {
+              blocked_nodes.push_back(blocked[i].GetInt() - 1);
+            } else {
+              std::cerr << "Non-integer value in \"blocked\" array" << std::endl;
+              return 1;
+            }
           }
         }
       }

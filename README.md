@@ -59,3 +59,11 @@ from PIL import py.py -> able to generate arrows on pictures
 
 rename_database.test.js -> converts - to _ in database pictures
 
+
+When add new nodes 
+
+add to sql statement to database
+add edges to main , and update number of nodes
+update block sheltered table in data base
+run double edge.cpp
+start debug using get_diff
