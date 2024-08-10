@@ -8,6 +8,7 @@ const { decode } = require('base64-arraybuffer')
 const { createClient } = require('@supabase/supabase-js');
 const { fail } = require('assert');
 const { totalmem } = require('os');
+const { start } = require('repl');
 
 const supabaseUrl = process.env.SUPABASE_URL
 const supabaseKey = process.env.SUPABASE_KEY
@@ -24,34 +25,19 @@ function debug_log(input){
     }
 }
 
-async function node_id_to_room_num(node_id){
-    if(typeof(node_id) == "number"){
-        try {
-            // Query the 'users' table for a specific user by ID
-            const { data, error } = await supabase
-                .from('pictures')
-                .select('room_num')
-                .eq('node_id', node_id);
-            if (error) {
-                throw error;
-            }
-            return data[0].room_num;
-
-        } catch (error) {
-            throw new Error("node_id to room_num cannot query database");
-        } 
-    }else{
-        return node_id;
-    }
-}
-
-async function template_instructions(distance , arrow_direction , levels){
+async function template_instructions(distance , arrow_direction , levels , node_id , track_floor){
     
     arrow_direction = await ENUM_to_left_right(arrow_direction);
     
     distance = parseInt(distance);
     if(arrow_direction == 'Down' || arrow_direction == 'Up'){
-        return `Go ${arrow_direction} ${levels} level`;
+        const start_end = await track_floor.get_floor(node_id , levels , arrow_direction);
+        if(start_end.start == 0){
+            start_end.start = 'B1'
+        }else if(start_end.end == 0){
+            start_end.end = 'B1';
+        }
+        return `Go ${arrow_direction} ${levels} level from level ${start_end.start} to level ${start_end.end}`;
     }else if(arrow_direction == 'Straight' || arrow_direction == 'None'){
         if ((distance / 10) > 1) {
             return `Walk Straight for ${distance / 10} metres` ;
@@ -470,12 +456,14 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                         }else{
                             is_exit = false;
                         }
+                        const current_node_id = nodes[i];
                         nodes[i] += pov;
                         nodes[i] += direction;
                         let instructions_obj = { 
                             distance : dist_array[i] , 
                             arrow_direction : direction ,
-                            levels : parseInt(dist_array[i])/40
+                            levels : parseInt(dist_array[i])/40 ,
+                            node_id : current_node_id
                         }
                         Instructions.push(instructions_obj);
                     }
@@ -623,12 +611,14 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                         }else{
                             is_exit = false;
                         }
+                        const current_node_id = nodes[i];
                         nodes[i] += pov;
                         nodes[i] += direction;
                         let instructions_obj = { 
                             distance : dist_array[i] , 
                             arrow_direction : direction ,
-                            levels : parseInt(dist_array[i])/40
+                            levels : parseInt(dist_array[i])/40 ,
+                            node_id : current_node_id
                         }
                         Instructions.push(instructions_obj);
                     }
@@ -744,6 +734,56 @@ async function remove_weburl(filepath){
     return components[components.length - 1];
 }
 
+class building_floor{
+    constructor(building , floor){
+        this.current_building = building;
+        this.current_floor = floor;
+        this.floor_map = { EA : 40 , E1 : 160 , E1A : 160 , E2 : 320 , E2A : 360 , E4 : 160 , E4A : 40}
+    }
+
+    async get_floor(node_id , levels , ENUM_dir){
+        
+        const node_building = await this.get_building(node_id);
+
+        if(node_building == 'no such node'){
+            return { start : 0 , end : 0};
+        }else if(node_building == this.current_building){
+            const old_floor = this.current_floor;
+            if(ENUM_dir == 'Up'){
+                this.current_floor += levels;
+            }else{
+                this.current_floor -= levels;
+            }
+            return { start : old_floor , end : this.current_floor}
+        }else{
+            const level_diff = (this.floor_map[`${node_building}`] - this.floor_map[`${this.current_building}`])/40;
+            this.current_building = node_building;
+            this.current_floor -= level_diff;
+            const old_floor = this.current_floor;
+            if(ENUM_dir == 'Up'){
+                this.current_floor += levels;
+            }else{
+                this.current_floor -= levels;
+            }
+            return { start : old_floor , end : this.current_floor}
+        }
+    }
+
+    async get_building(node_id){
+        const { data, error } = await supabase
+            .from(`elevator_building`)
+            .select('building')
+            .eq('id', node_id);
+        if (error) {
+            throw error;
+        }
+        if(data[0].length == 0){
+            return 'no such node'
+        }
+        return data[0]['building'];
+    }
+}
+
 class Result{
     constructor(){
         this.Expected = 0;
@@ -792,11 +832,15 @@ class Result{
         }
     }
 
-    async convert_to_instructions(){
+    async convert_to_instructions(first_room){
+        const break_down_room_num = first_room.split("-");
+        const building = break_down_room_num[0];
+        const floor = parseInt(break_down_room_num[1].split("")[1])
+        const track_floor = new building_floor(building , floor);
         for(let i = 0 ; i < this.Instructions.length ; i ++){
             let instructions_obj = this.Instructions[i];
             if(instructions_obj != ''){
-                this.Instructions[i] = await template_instructions(instructions_obj.distance , instructions_obj.arrow_direction , instructions_obj.levels);
+                this.Instructions[i] = await template_instructions(instructions_obj.distance , instructions_obj.arrow_direction , instructions_obj.levels , instructions_obj.node_id , track_floor);
             }
         }
     }
@@ -1161,6 +1205,7 @@ router.post('/formPost' , async (req ,res) => {
     const inputData = req.body;
     
     let destinations = inputData.MultiStopArray;
+    const first_room = destinations[0];
     let mergedArray = [];
     if(inputData.MultiStopArray.length < 2){
         debug_log("data incorrectly labelled or source and destination not filled"); 
@@ -1217,7 +1262,7 @@ router.post('/formPost' , async (req ,res) => {
         }
     }
     
-    await TotalResult.convert_to_instructions();
+    await TotalResult.convert_to_instructions(first_room);
     return res.send(TotalResult.get_object());
 });
 
@@ -1226,6 +1271,7 @@ router.post('/blockRefresh' , async (req ,res) => {
     const inputData = req.body;
     
     let destinations = inputData.MultiStopArray;
+    const first_room = destinations[0];
     if(inputData.MultiStopArray.length < 2){
         //debug_log("data incorrectly labelled or source and destination not filled"); 
         return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : false , message : "no destination"});
@@ -1313,7 +1359,7 @@ router.post('/blockRefresh' , async (req ,res) => {
 
         }
     }
-    await TotalResult.convert_to_instructions();
+    await TotalResult.convert_to_instructions(first_room);
     let TotalResultObj = TotalResult.get_object();
 
     for (let i = 0; i < destinations.length ; i ++) {
@@ -1996,8 +2042,9 @@ router.post('/template_instructions' , async (req , res) => {
     const expected = req.body.Expected;
     const test_cases = inputs.length;
     let passed = 0;
+    const track_floor = new building_floor('E4' , 4);
     for(let i = 0 ; i < test_cases ; i ++){
-        const result = await template_instructions(inputs[i].distance , inputs[i].arrow , inputs[i].levels);
+        const result = await template_instructions(inputs[i].distance , inputs[i].arrow , inputs[i].levels , inputs[i].node_id , track_floor);
         if(result == expected[i]){
             passed ++;
         }
