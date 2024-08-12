@@ -1362,7 +1362,7 @@ router.post('/blockRefresh' , async (req ,res) => {
     await TotalResult.convert_to_instructions(first_room);
     let TotalResultObj = TotalResult.get_object();
 
-    for(let i =  0; i < destinations.length ; i ++){
+    for (let i = 0; i < destinations.length ; i ++) {
         destinations[i] = await node_id_to_room_num(destinations[i]);
     }
     TotalResultObj['Destinations'] = destinations;
