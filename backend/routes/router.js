@@ -16,7 +16,6 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const no_alt_path_url = 'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/Specials/No_alternate_path.png?t=2024-06-22T15%3A22%3A29.729Z' ;
 const database_down_url = 'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/Specials/No_alternate_path.png?t=2024-06-22T15%3A22%3A29.729Z';
 //const supa = new database(supabase);
-const table = 'pictures'
 
 function debug_log(input){
     let debug = false;
@@ -31,9 +30,11 @@ async function template_instructions(distance , arrow_direction , levels , node_
     
     distance = parseInt(distance);
     if(arrow_direction == 'Down' || arrow_direction == 'Up'){
+
         const start_end = await track_floor.get_floor(node_id , levels , arrow_direction);
+
         if(start_end.start == 0){
-            start_end.start = 'B1'
+            start_end.start = 'B1';
         }else if(start_end.end == 0){
             start_end.end = 'B1';
         }
@@ -191,7 +192,7 @@ async function room_num_to_node_id(room_number){
         try {
             // Query the 'users' table for a specific user by ID
             const { data, error } = await supabase
-                .from(`${table}`)
+                .from('pictures')
                 .select('node_id')
                 .eq('room_num', `${room_number}`);
             if (error) {
@@ -212,7 +213,7 @@ async function node_id_to_room_num(node_id){
         try {
             // Query the 'users' table for a specific user by ID
             const { data, error } = await supabase
-                .from(`${table}`)
+                .from('pictures')
                 .select('room_num')
                 .eq('node_id', node_id);
             if (error) {
@@ -304,7 +305,7 @@ async function get_non_sheltered(){
 async function get_stairs(){
     try { 
         const { data, error } = await supabase
-            .from(`${table}`)
+            .from('pictures')
             .select('node_id')
             .eq('self_type', 'Stairs');
             //dont need distinct cause will become distinct when merged later
@@ -475,7 +476,7 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                 debug_log(directions);
                 
                 const { data, error } = await supabase
-                    .from(`${table}`)
+                    .from('pictures')
                     .select('unique_id , filepath')
                     .in('unique_id', nodes)
                     .order('node_id', { ascending: true });
@@ -628,7 +629,7 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                 debug_log(directions);
 
                 const { data, error } = await supabase
-                    .from(`${table}`)
+                    .from('pictures')
                     .select('unique_id , filepath')
                     .in('unique_id', nodes)
                     .order('node_id', { ascending: true });
@@ -738,7 +739,7 @@ class building_floor{
     constructor(building , floor){
         this.current_building = building;
         this.current_floor = floor;
-        this.floor_map = { EA : 40 , E1 : 160 , E1A : 160 , E2 : 320 , E2A : 360 , E4 : 160 , E4A : 40}
+        this.floor_map = { EA : 40 , E1 : 160 , E1A : 160 , E2 : 320 , E2A : 360 , E3 : 80 , E4 : 160 , E4A : 40}
     }
 
     async get_floor(node_id , levels , ENUM_dir){
@@ -834,8 +835,16 @@ class Result{
 
     async convert_to_instructions(first_room){
         const break_down_room_num = first_room.split("-");
-        const building = break_down_room_num[0];
-        const floor = parseInt(break_down_room_num[1].split("")[1])
+        let building = 'EA';
+        let floor = 0;
+        if(break_down_room_num.length == 1){
+            const components = await this.get_room_mapping(first_room);
+            building = components.building;
+            floor = components.floor;
+        }else{
+            building = break_down_room_num[0];
+            floor = parseInt(break_down_room_num[1].split("")[1])
+        }
         const track_floor = new building_floor(building , floor);
         for(let i = 0 ; i < this.Instructions.length ; i ++){
             let instructions_obj = this.Instructions[i];
@@ -843,6 +852,17 @@ class Result{
                 this.Instructions[i] = await template_instructions(instructions_obj.distance , instructions_obj.arrow_direction , instructions_obj.levels , instructions_obj.node_id , track_floor);
             }
         }
+    }
+
+    async get_room_mapping(room_name){
+        const { data, error } = await supabase
+            .from('room_mapping')
+            .select('building , floor')
+            .eq('room_name', `${room_name}`)
+        if (error) {
+            throw error;
+        }
+        return { building : data[0].building , floor : data[0].floor };
     }
 }
 
@@ -877,7 +897,7 @@ class database{
 
     async get_all_locations(){
         const { data, error } = await this.db
-            .from(`${table}`)
+            .from('pictures')
             .select('room_num')
             .eq('pov', 'None')
             .eq('direction', 'None')
@@ -950,7 +970,7 @@ class database{
 
     async get_z_coordinate(inputData){
         const { data, error } = await this.db
-                .from(`${table}`)
+                .from('pictures')
                 .select('z_coordinate')
                 .eq('node_id', inputData)
 
@@ -964,7 +984,7 @@ class database{
 
     async get_nodes_with_same_z(targeted_z){
         const { data, error } = await this.db
-            .from(`${table}`)
+            .from('pictures')
             .select('node_id , self_type')
             .eq('z_coordinate', targeted_z);
 
@@ -976,7 +996,7 @@ class database{
 
     async get_filepath_using_unique_id(unique_id){
         const { data, error } = await this.db
-                .from(`${table}`)
+                .from('pictures')
                 .select('filepath')
                 .eq('unique_id', unique_id);
             if (error) {
@@ -998,7 +1018,7 @@ class database{
 
     async check_for_stairs(inputData){
         const { data, error } = await this.db
-            .from(`${table}`)
+            .from('pictures')
             .select('node_id' , 'self_type')
             .in('node_id', inputData)
         if (error) {
@@ -1090,7 +1110,7 @@ router.post('/contact', (req, res) => {
 router.post('/locations' , async(req,res) => {
     try {
         const { data, error } = await supabase
-            .from(`${table}`)
+            .from('pictures')
             .select('room_num')
             .eq('pov', 'None')
             .eq('direction', 'None')
@@ -1396,7 +1416,7 @@ router.post('/getfloor' , async (req , res) => {
     let node_label_map = {};
     try {
         const { data, error } = await supabase
-            .from(`${table}`)
+            .from('pictures')
             .select('z_coordinate')
             .eq('node_id', inputData)
 
@@ -1411,7 +1431,7 @@ router.post('/getfloor' , async (req , res) => {
     
     try {
         const { data, error } = await supabase
-            .from(`${table}`)
+            .from('pictures')
             .select('node_id , self_type')
             .eq('z_coordinate', targeted_z);
 
@@ -1488,7 +1508,7 @@ router.post('/convert_unique_id_filename' , async(req , res) => {
     try {
         let filepath = "";
         const { data, error } = await supabase
-            .from(`${table}`)
+            .from('pictures')
             .select('filepath')
             .eq('unique_id', inputData.unique_id);
         if (error) {
@@ -1629,7 +1649,7 @@ router.post('/checkforstairs' , async(req, res) => {
 
         const inputData = req.body;
         const { data, error } = await supabase
-            .from(`${table}`)
+            .from('pictures')
             .select('node_id' , 'self_type')
             .in('node_id', inputData)
         if (error) {
@@ -2042,7 +2062,7 @@ router.post('/template_instructions' , async (req , res) => {
     const expected = req.body.Expected;
     const test_cases = inputs.length;
     let passed = 0;
-    const track_floor = new building_floor('E4' , 4);
+    const track_floor = new building_floor('E4' , 7);
     for(let i = 0 ; i < test_cases ; i ++){
         const result = await template_instructions(inputs[i].distance , inputs[i].arrow , inputs[i].levels , inputs[i].node_id , track_floor);
         if(result == expected[i]){
