@@ -317,6 +317,23 @@ class database{
         }
     }
 
+    async get_type(node_id){
+        try {
+            const { data, error } = await this.db
+                .from('pictures')
+                .select('self_type')
+                .eq('node_id', node_id);
+                //dont need distinct cause will become distinct when merged later
+            if (error) {
+                throw error;
+            }
+
+            return data[0]['self_type'];
+        } catch (error) {
+            throw new Error("cannot get the type of node");
+        }
+    }
+
     log_changes(){
         if(!this.feedback.unaltered){
             console.log(`feedback table : `);
@@ -394,6 +411,11 @@ async function template_instructions(distance , arrow_direction , levels , node_
         }
         return `Go ${arrow_direction} ${levels} level from level ${start_end.start} to level ${start_end.end}`;
     }else if(arrow_direction == 'Straight' || arrow_direction == 'None'){
+        const type = await supa.get_type(node_id);
+
+        if(type == 'Elevator' || type == 'Stairs'){
+            return `Exit the ${type}`;
+        }
         if ((distance / 10) > 1) {
             return `Walk Straight for ${distance / 10} metres` ;
         }
