@@ -160,7 +160,7 @@ describe('test one path only', function(){
         }
     });
 });
-
+*/
 describe('test full_query', function(){
 
     this.timeout(500000);
@@ -168,15 +168,16 @@ describe('test full_query', function(){
         
         try {
             const response = await request(app)
-            .post('/convert__to_-')
+            .post('/test_supa')
 
-            //console.log(response.body);
+            console.log(response.body);
         } catch(error){
             throw error;
         }
     });
 });
-*/
+
+/*
 describe('Testing whether no stairs filter works', function () {
     this.timeout(20000);
 
@@ -211,3 +212,4 @@ describe('Testing whether no stairs filter works', function () {
         }
     });
 });
+*/
