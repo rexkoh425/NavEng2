@@ -1,6 +1,8 @@
 import React from 'react'
 import Feedback from './Feedback'
-/*
+
+//Unit Testing
+
 describe('<Feedback />', () => {
   it('renders', () => {
     // see: https://on.cypress.io/mounting-react
@@ -91,7 +93,7 @@ describe('Test whether user receives appropriate warning if filled wrong', () =>
     }).click()
     cy.findByText(/Please fill out the nodes/i)
   })
-}) */
+}) 
 
 //Integration Testing
 

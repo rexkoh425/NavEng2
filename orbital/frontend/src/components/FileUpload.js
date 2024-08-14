@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import axios from "axios"
 import { Button, Grid, Typography } from '@mui/material';
 
+//Component to allow users to upload picture of blocked path
 
 const FileUpload = () => {
 
@@ -23,19 +24,15 @@ const FileUpload = () => {
   };
 
   const axiosPostData = async () => {
-    // Create a FormData object
     const formData = new FormData();
     // Append the file to FormData with the field name 'photo'
     formData.append('photo', selectedFile);
   
     try {
-      // Make the POST request using axios
       const response = await axios.post(websitelink + '/blocked_img', formData);
   
-      // Handle the response data
       setMessage(response.data);
     } catch (error) {
-      // Handle errors, if any
       console.error('Error uploading file:', error);
     }
   };

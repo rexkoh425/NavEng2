@@ -1,5 +1,7 @@
 import React from 'react';
 
+//Component to calculate the time to destination from distance
+
 const CalculateTime = ({ distance }) => {
     if (Math.round((distance/1.2)/60) > 1.5) {return (
         <p className='time-taken'>
