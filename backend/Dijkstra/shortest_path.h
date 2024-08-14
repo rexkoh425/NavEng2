@@ -3,8 +3,6 @@
 
 #include <vector>
 #include "graph.h"
-// We should include graph.h here, but that causes problems with coursemology.
-// So instead, please make sure to include it before this file.
 
 using std::vector;
 
@@ -26,4 +24,4 @@ class Path {
 
 Path shortestPath(const Graph& g, int source, int dest);
 
-#endif /* __SHORTESTPATH_H__ */
+#endif 

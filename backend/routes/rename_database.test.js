@@ -4,7 +4,7 @@ const request = require('supertest');
 const app = require('../app');
 
 if (global.gc) {
-    global.gc(); // Expose garbage collection if enabled
+    global.gc(); 
 } else {
     console.warn('No GC hook! Start your program with `node --expose-gc file.js`.');
 }
@@ -18,7 +18,6 @@ describe('test full_query', function(){
             const response = await request(app)
             .post('/convert__to_-')
 
-            //console.log(response.body);
         } catch(error){
             throw error;
         }
