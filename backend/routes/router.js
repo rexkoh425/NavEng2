@@ -15,7 +15,6 @@ const supabaseKey = process.env.SUPABASE_KEY
 const supabase = createClient(supabaseUrl, supabaseKey);
 const no_alt_path_url = 'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/Specials/No_alternate_path.png?t=2024-06-22T15%3A22%3A29.729Z' ;
 const database_down_url = 'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/Specials/No_alternate_path.png?t=2024-06-22T15%3A22%3A29.729Z';
-//const supa = new database(supabase);
 
 function debug_log(input){
     let debug = false;
@@ -108,7 +107,6 @@ async function NESW_ENUM(input){
         case WEST:
             return "4";
         default :
-            //throw new Error("not NESW");
             return "not NESW";
     }
 }
@@ -128,7 +126,6 @@ async function get_opposite(input){
         case "6" :
             return "5";
         default : 
-            //throw new Error("no opposite");
             return "no opposite";
     }
 }
@@ -210,7 +207,6 @@ async function is_moving_up_down(incoming , outgoing){
 async function room_num_to_node_id(room_number){
     if(typeof(room_number) == "string"){
         try {
-            // Query the 'users' table for a specific user by ID
             const { data, error } = await supabase
                 .from('pictures')
                 .select('node_id')
@@ -231,7 +227,6 @@ async function room_num_to_node_id(room_number){
 async function node_id_to_room_num(node_id){
     if(typeof(node_id) == "number"){
         try {
-            // Query the 'users' table for a specific user by ID
             const { data, error } = await supabase
                 .from('pictures')
                 .select('room_num')
@@ -328,7 +323,6 @@ async function get_stairs(){
             .from('pictures')
             .select('node_id')
             .eq('self_type', 'Stairs');
-            //dont need distinct cause will become distinct when merged later
         if (error) {
             throw error;
         }
@@ -406,7 +400,6 @@ async function break_down_img_path(img_name){
 
 async function full_query(source , destination , blocked_nodes , previous_node){
     return new Promise((resolve, reject) => {
-        debug_log(blocked_nodes);
         const inputObj = { source : source , destination : destination , blocked : blocked_nodes , getMapObj : false};
         const serializedData = JSON.stringify(inputObj);
         const cppProcess = spawn(__dirname + '/../Dijkstra/main' , []);
@@ -415,7 +408,6 @@ async function full_query(source , destination , blocked_nodes , previous_node){
         
         cppProcess.stdout.on('data', async (cpp_data) => {
             try {
-                debug_log(cpp_data.toString());
                 const outputData = cpp_data.toString().split("|");
                 let nodes = outputData[0].split(",");
                 if(nodes.length == 1){
@@ -491,9 +483,6 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                 }
                 nodes[directions.length] += "67";
                 Instructions.push('');
-                debug_log("nodes : ");
-                debug_log(nodes);
-                debug_log(directions);
                 
                 const { data, error } = await supabase
                     .from('pictures')
@@ -521,20 +510,8 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                     debug_array[debug_array_index] = result.unique_id;
                     debug_array_index++;
                 });
-                const diff = await get_diff(nodes , debug_array);
-                debug_log("diff is ");
-                debug_log(diff);
-                //debug_log("dist array length is " + dist_array.length + " and nodes array length is " + nodes.length);
+            
                 const final = fixedLengthArray.join(' ');
-                debug_log("dist_array : ")
-                debug_log(dist_array);
-                debug_log("distance : ")
-                debug_log(distance);
-                
-                debug_log("uncompressed path : ")
-                debug_log(nodes_path);
-                debug_log("compressed path : ")
-                debug_log(compressed_path)
                 const FinalResults = {
                     Expected : nodes.length ,
                     Queried : data_length , 
@@ -645,9 +622,7 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                     }
                 }
                 nodes[directions.length] += "67";
-                debug_log(nodes);
-                debug_log(directions);
-
+        
                 const { data, error } = await supabase
                     .from('pictures')
                     .select('unique_id , filepath')
@@ -673,7 +648,7 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                     debug_array[debug_array_index] = result.unique_id;
                     debug_array_index++;
                 });
-                debug_log("diff is " , get_diff(nodes , debug_array));
+                
                 fixedLengthArray.pop();
                 nodes_path.pop();
                 nodes.pop();
@@ -705,37 +680,6 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
             debug_log(`C++ process exited with code: ${code}`);
         });
     })
-}
-
-async function is_failed_location(source , destination){
-    
-    try { 
-        const { data, error } = await supabase
-            .from('failedtest')
-            .select('*')
-            .eq('source', source)
-            .eq('destination' , destination);
-        if (error) {
-            throw error;
-        }
-        if(data.length >= 1){
-            return true;
-        }
-        return false;
-
-    } catch (error) {
-        debug_log(error);
-        return "failed" ;
-    }
-    /*
-    const failed_location = await is_failed_location(destinations[0] , destinations[1])
-    if(failed_location){
-        debug_log("failed");
-    }else{
-        debug_log("not failed");
-    }
-    code to filter failed location
-    */
 }
 
 async function get_b4_blocked_unique_id_from_array(unique_id , array){
@@ -1168,10 +1112,8 @@ router.post('/feedback' , async(req,res) => {
         if (error) {
             throw error;
         }
-        //debug_log('Data added to database successfully.');
-        //res.send('Data added to database successfully.'); 
+        
     } catch (error) {
-        //console.error('Error appending data to database:', error);
         res.status(500).send({ message : 'Failed to add data to database.' }); 
     }
 
@@ -1211,11 +1153,8 @@ router.post('/InsertFailedLocations', async (req, res) => {
                 throw error;
             }
         }
-
-        //debug_log('Data added to database successfully.');
         res.send({ message : 'Data added to database successfully.' }); 
     } catch (error) {
-        //console.error('Error appending data to database:', err);
         res.status(500).send({ message : 'Failed to append data to database.'}); 
     }
 });
@@ -1231,24 +1170,20 @@ router.post('/DeleteFailedLocations', async (req, res) => {
         if (error) {
             throw error;
         }
-
-        debug_log('Data deleted from database successfully.');
         res.send({ message : 'Data deleted from database successfully.'}); 
     } catch (error) {
-        console.error('Error deleting data from database:', err);
         res.status(500).send({ message : 'Failed to delete data from database.'}); 
     }
 });
 
 router.post('/formPost' , async (req ,res) => { 
-    //add to formPost input ,  elements = new added node 
+   
     const inputData = req.body;
     
     let destinations = inputData.MultiStopArray;
     const first_room = destinations[0];
     let mergedArray = [];
     if(inputData.MultiStopArray.length < 2){
-        debug_log("data incorrectly labelled or source and destination not filled"); 
         return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : false , message : "no destination"});
     }
 
@@ -1256,7 +1191,6 @@ router.post('/formPost' , async (req ,res) => {
         for(let i =  0; i < destinations.length ; i ++){
             destinations[i] = await room_num_to_node_id(destinations[i]);
         }
-        debug_log(destinations);
         let blocked_array = await get_blocked();
         for(let i = 0 ; i < inputData.blocked_array.length ; i++){
             blocked_array.push(inputData.blocked_array[i]);
@@ -1270,7 +1204,6 @@ router.post('/formPost' , async (req ,res) => {
             stairs = await get_stairs();
         }
         mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered , ...stairs]));
-        //debug_log(mergedArray);
     }catch(error){
         return res.send({HTML : database_down_url , passed : false , error_can_handle : false , message : "query error"});
     }
@@ -1292,9 +1225,9 @@ router.post('/formPost' , async (req ,res) => {
             }else{
                 await TotalResult.append_stops(TotalResult.Expected);
             }
-            //debug_log(TotalResult.Instructions);
+           
         } catch(error){
-            //console.error('Error caught:', error.message);
+            
             if(error.message == "cannot find dest"){
                 return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : true , message : error.message});
             }
@@ -1313,7 +1246,7 @@ router.post('/blockRefresh' , async (req ,res) => {
     let destinations = inputData.MultiStopArray;
     const first_room = destinations[0];
     if(inputData.MultiStopArray.length < 2){
-        //debug_log("data incorrectly labelled or source and destination not filled"); 
+        
         return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : false , message : "no destination"});
     }
     let blocked_node_component;
@@ -1323,10 +1256,6 @@ router.post('/blockRefresh' , async (req ,res) => {
             destinations[i] = await room_num_to_node_id(destinations[i]);
         }
 
-        debug_log("stop index : ");
-        debug_log(inputData.Stops_index);
-        debug_log("blocked node index : ");
-        debug_log(inputData.BlockedNodeIndex);
         destinations.splice(0,1);
         while(inputData.Stops_index[0] < inputData.BlockedNodeIndex){
             destinations.splice(0,1);
@@ -1346,8 +1275,6 @@ router.post('/blockRefresh' , async (req ,res) => {
         }
         destinations.unshift(parseInt(b4_blocked_node_id));
         
-        debug_log("destinations are : ");
-        debug_log(destinations);
         let blocked_array = await get_blocked();
         for(let i = 0 ; i < inputData.blocked_array.length ; i++){
             blocked_array.push(inputData.blocked_array[i]);
@@ -1365,7 +1292,7 @@ router.post('/blockRefresh' , async (req ,res) => {
         return res.send({HTML : database_down_url , passed : false , error_can_handle : false , message : "query error"});
     }
     let TotalResult = new Result();
-    //Destinations : destinations
+   
     const no_previous = { have_previous : false , pov : "" , arrow : ""};
     const previous_node = { have_previous : true , blocked_pov : blocked_node_component.pov};
     for(let i = 1 ; i < destinations.length ; i++){
@@ -1411,7 +1338,6 @@ router.post('/blockRefresh' , async (req ,res) => {
 
 router.post('/insertBlocked' , async (req ,res ) => {
     const input = req.body.img_string;
-    debug_log("input is : " + input)
     const node_string = input.split("_");
     const node_id = parseInt(node_string[0]);
     
@@ -1420,11 +1346,9 @@ router.post('/insertBlocked' , async (req ,res ) => {
         .from('block_shelter')
         .update({ blocked : true })
         .eq('id', node_id);
-        debug_log('Data added to database successfully.');
-        debug_log('Blocked ID is : ' + node_id)
+        
         res.send({ message : 'Data added to database successfully.' , node : node_id} ); 
     } catch (error) {
-        console.error('Error appending data to database:', err);
         res.status(500).send( { message : 'Failed to append data to database.'  , node : node_id}); 
     }
 });
@@ -1584,8 +1508,6 @@ router.post('/blocked_img', upload.single('photo'), async(req, res) => {
         if(error){
             throw error;
         }
-        console.log("data.path is : ");
-        console.log(data.path);
         const { data: image } = supabase.storage
             .from("Pictures")
             .getPublicUrl(data.path);
@@ -1649,7 +1571,6 @@ router.post('/convert__to_-' , async(req, res) => {
                     break;
                 }
             }
-            console.log(`${old_name} to ${new_name}`);
             const { data, error } = await supabase
             .storage
             .from('Pictures')
