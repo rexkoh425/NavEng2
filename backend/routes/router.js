@@ -24,6 +24,20 @@ function debug_log(input){
     }
 }
 
+async function get_type(node_id){
+
+    try {
+        const { data, error } = await supabase
+            .from('pictures')
+            .select('self_type')
+            .eq('node_id', node_id);
+          
+        return data[0]['self_type'];
+    } catch (error) {
+        return "NIL";
+    }
+}
+
 async function template_instructions(distance , arrow_direction , levels , node_id , track_floor){
     
     arrow_direction = await ENUM_to_left_right(arrow_direction);
@@ -40,6 +54,12 @@ async function template_instructions(distance , arrow_direction , levels , node_
         }
         return `Go ${arrow_direction} ${levels} level from level ${start_end.start} to level ${start_end.end}`;
     }else if(arrow_direction == 'Straight' || arrow_direction == 'None'){
+        
+        const type = await get_type(node_id);
+        if(type == 'Elevator' || type == 'Stairs'){
+            return `Exit the ${type}`;
+        }
+        
         if ((distance / 10) > 1) {
             return `Walk Straight for ${distance / 10} metres` ;
         }
