@@ -620,6 +620,11 @@ function PromptFormMobile() {
 
                                 <div {...handlers} className="NoMargins" style={{ overflow: 'hidden' }}>
 
+                                <div style={{ display: 'none' }}>
+                                {/* Preload the next image */}
+                                <ImageOutputMobile imgPath={arrayFromString[(arrayposition + 1) % arrayFromString.length]} />
+                            </div>
+
                                 {!loading && <ImageOutputMobile imgPath={arrayFromString[arrayposition]} arrayposition={arrayposition} />}
 
                                 </div>

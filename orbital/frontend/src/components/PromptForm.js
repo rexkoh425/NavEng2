@@ -71,7 +71,6 @@ function PromptForm() {
 
     const [Node_id_array, setNode_id_array] = useState([]);
     const [visited, setVisited] = useState(["0"])
-    const [temp, setTemp] = useState([])
     const [graphnodes, setGraphnodes] = useState([]);
 
     const [nodeDirection, setNodeDirection] = useState([]);
@@ -182,8 +181,6 @@ function PromptForm() {
             const indexOfQuote = remainder.indexOf('"');
             const BlockedIMGNameVariable = remainder.slice(0, indexOfQuote)
             setBlockedIMGName(BlockedIMGNameVariable);
-            console.log("blocked: " + blocked)
-            console.log("blocked img name: " + BlockedIMGNameVariable)
 
             const direction = BlockedIMGNameVariable.split("_")[4];
             setNodeDirection(direction)
@@ -215,8 +212,6 @@ function PromptForm() {
             setBlocked(arrayFromString[arrayposition + 1])
             setBeforeBlocked(arrayFromString[arrayposition])
             setBlockedNodeIndex(arrayposition + 1)
-            /* setVisited([...visited, blockedNodeID])
-             console.log("increment Visited: " + visited) */
             const newVisited = nodesPath.slice(0, arrayposition + 2)
             setVisited(newVisited)
         }
@@ -226,7 +221,6 @@ function PromptForm() {
         }
         setDisableLeftButton(false)
         setShowBlockConfirmation(false)
-        console.log(graphnodes)
     };
 
     const decrementCounter = (e) => {
@@ -272,7 +266,7 @@ function PromptForm() {
                 if (processing) {
                 }
             })
-            .catch(err => console.log("Fetch Error!!"))
+            .catch(err => console.log("Fetch Error!"))
     }
 
     const axiosFetchLocations = async (processing) => {
@@ -280,12 +274,12 @@ function PromptForm() {
             .then(res => {
                 setSelectLocations(res.data)
             })
-            .catch(err => console.log("Fetch Location Error!!"))
+            .catch(err => console.log("Fetch Location Error!"))
     }
 
     const axiosPostData = async () => { //Sending main form data
         setLoading(true)
-        
+
         const postData = {
             blocked_array: blockedArray,
             sheltered: sheltered,
@@ -298,9 +292,7 @@ function PromptForm() {
             setLoading(false)
             // Update state variables with the response data
             setMessageError(response.data['HTML']);
-            console.log("The HTML CONTENT: " + messageError)
             const distArray = response.data['Dist_array'];
-            console.log(distArray)
             setPathInstructions(response.data['Instructions'])
 
             setNodesPath(response.data['compressed_nodes_path'])
@@ -316,7 +308,7 @@ function PromptForm() {
             const arrayFromString = response.data['HTML'].split('<img src');
             setBlocked(arrayFromString[0]);
             setStopsIndex(response.data['Stops_index']);
-            
+
         } catch (error) {
             console.error('Error fetching data:', error);
         }
@@ -356,7 +348,7 @@ function PromptForm() {
             setSubmitTrigger(!submitTrigger)
             setNodesPath(response.data['compressed_nodes_path'])
             setVisited(["0"])
-            
+
 
 
         } catch (error) {

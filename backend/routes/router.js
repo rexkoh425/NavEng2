@@ -345,6 +345,20 @@ function debug_log(input){
     }
 }
 
+async function get_type(node_id){
+
+    try {
+        const { data, error } = await supabase
+            .from('pictures')
+            .select('self_type')
+            .eq('node_id', node_id);
+          
+        return data[0]['self_type'];
+    } catch (error) {
+        return "NIL";
+    }
+}
+
 async function template_instructions(distance , arrow_direction , levels , node_id , track_floor){
     
     arrow_direction = await ENUM_to_left_right(arrow_direction);
@@ -361,11 +375,13 @@ async function template_instructions(distance , arrow_direction , levels , node_
         }
         return `Go ${arrow_direction} ${levels} level from level ${start_end.start} to level ${start_end.end}`;
     }else if(arrow_direction == 'Straight' || arrow_direction == 'None'){
+
         const type = await supa.get_type(node_id);
 
         if(type == 'Elevator' || type == 'Stairs'){
             return `Exit the ${type}`;
         }
+
         if ((distance / 10) > 1) {
             return `Walk Straight for ${distance / 10} metres` ;
         }
@@ -433,7 +449,7 @@ async function get_opposite(input){
         case "6" :
             return "5";
         default : 
-        
+
             return "no opposite";
     }
 }
@@ -612,7 +628,7 @@ async function full_query(source , destination , blocked_nodes , previous_node){
         
         cppProcess.stdout.on('data', async (cpp_data) => {
             try {
-               
+
                 const outputData = cpp_data.toString().split("|");
                 let nodes = outputData[0].split(",");
                 if(nodes.length == 1){
@@ -715,9 +731,9 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                     debug_array[debug_array_index] = result.unique_id;
                     debug_array_index++;
                 });
-                
+         
                 const final = fixedLengthArray.join(' ');
-                
+
                 const FinalResults = {
                     Expected : nodes.length ,
                     Queried : data_length , 
@@ -1075,7 +1091,7 @@ router.post('/feedback' , async(req,res) => {
         }
 
         await supa.insert_feedback(input);
-        
+      
     } catch (error) {
         res.status(500).send({ message : 'Failed to add data to database.' }); 
     }
@@ -1102,7 +1118,9 @@ router.post('/InsertFailedLocations', async (req, res) => {
     const AllFailedLocations = req.body;
     
     try {
+
         await supa.insert_failed_locations(AllFailedLocations);
+
         res.send({ message : 'Data added to database successfully.' }); 
     } catch (error) {
         res.status(500).send({ message : 'Failed to append data to database.'}); 
@@ -1112,23 +1130,24 @@ router.post('/InsertFailedLocations', async (req, res) => {
 router.post('/DeleteFailedLocations', async (req, res) => {
 
     try {
+
         await supa.delete_failed_locations();
+
         res.send({ message : 'Data deleted from database successfully.'}); 
     } catch (error) {
-        console.error('Error deleting data from database:', err);
         res.status(500).send({ message : 'Failed to delete data from database.'}); 
     }
 });
 
 router.post('/formPost' , async (req ,res) => { 
- 
+
     const inputData = req.body;
     
     let destinations = inputData.MultiStopArray;
     const first_room = destinations[0];
     let mergedArray = [];
     if(inputData.MultiStopArray.length < 2){
-        
+
         return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : false , message : "no destination"});
     }
 
@@ -1136,8 +1155,9 @@ router.post('/formPost' , async (req ,res) => {
         for(let i =  0; i < destinations.length ; i ++){
             destinations[i] = await supa.room_num_to_node_id(destinations[i]);
         }
-       
+   
         let blocked_array = await supa.get_blocked();
+
         for(let i = 0 ; i < inputData.blocked_array.length ; i++){
             blocked_array.push(inputData.blocked_array[i]);
         }
@@ -1150,7 +1170,7 @@ router.post('/formPost' , async (req ,res) => {
             stairs = await supa.get_stairs();
         }
         mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered , ...stairs]));
-        
+
     }catch(error){
         return res.send({HTML : database_down_url , passed : false , error_can_handle : false , message : "query error"});
     }
@@ -1172,7 +1192,7 @@ router.post('/formPost' , async (req ,res) => {
             }else{
                 await TotalResult.append_stops(TotalResult.Expected);
             }
-            
+
         } catch(error){
             
             if(error.message == "cannot find dest"){
@@ -1193,7 +1213,7 @@ router.post('/blockRefresh' , async (req ,res) => {
     let destinations = inputData.MultiStopArray;
     const first_room = destinations[0];
     if(inputData.MultiStopArray.length < 2){
-       
+
         return res.send({HTML : no_alt_path_url , passed : false , error_can_handle : false , message : "no destination"});
     }
     let blocked_node_component;
@@ -1222,7 +1242,9 @@ router.post('/blockRefresh' , async (req ,res) => {
         }
         destinations.unshift(parseInt(b4_blocked_node_id));
         
+
         let blocked_array = await supa.get_blocked();
+
         for(let i = 0 ; i < inputData.blocked_array.length ; i++){
             blocked_array.push(inputData.blocked_array[i]);
         }
@@ -1289,7 +1311,9 @@ router.post('/insertBlocked' , async (req ,res ) => {
     const node_id = parseInt(node_string[0]);
     
     try {
+
         await supa.update_blocked_node(node_id);
+
         res.send({ message : 'Data added to database successfully.' , node : node_id} ); 
     } catch (error) {
         res.status(500).send( { message : 'Failed to append data to database.'  , node : node_id}); 
@@ -1436,8 +1460,6 @@ router.post('/blocked_img', upload.single('photo'), async(req, res) => {
         if(error){
             throw error;
         }
-        console.log("data.path is : ");
-        console.log(data.path);
         const { data: image } = supabase.storage
             .from("Pictures")
             .getPublicUrl(data.path);
@@ -1501,7 +1523,6 @@ router.post('/convert__to_-' , async(req, res) => {
                     break;
                 }
             }
-            console.log(`${old_name} to ${new_name}`);
             const { data, error } = await supabase
             .storage
             .from('Pictures')

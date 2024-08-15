@@ -1,5 +1,7 @@
 import React from 'react';
 
+//Component to display instructions along path
+
 const DestinationNotification = ({ stopsIndex, arrayposition, MultiStopArray, pathInstructions, blockedIndicator}) => {
     console.log("ARRAY POSITION: " + arrayposition)
     console.log("STOPS INDEX: " + stopsIndex)

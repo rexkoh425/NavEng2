@@ -23,19 +23,6 @@ const Instructions = ({formSubmitted}) => {
     };
   }, []);
 
-  //No longer used, as auto closure is enabled
-  /*useEffect(() => {
-    if (isMobile) {
-      console.log("Mobile")
-      setArrowRotation(180)
-      setExpanded(false)
-     } else {
-      console.log("Desktop")
-      setArrowRotation(0)
-      setExpanded(true)
-     } 
-  }, [isMobile]) */
-
   useEffect(() => {
     if (formSubmitted) {
       setArrowRotation(180)
@@ -66,12 +53,12 @@ return (
           position: 'absolute',
           bottom: 0,
           left: '50%',
-          translate: '-20px ', // Center horizontally
+          translate: '-20px ', 
           backgroundColor: '#fff',
           bottom: '5px',
-          transition: 'transform 0.3s ease', // Add transition for smooth rotation
+          transition: 'transform 0.3s ease', 
           '&:hover': {
-            backgroundColor: 'white', // Ensure button remains clickable
+            backgroundColor: 'white', 
           },
           transform: `rotate(${arrowRotation+180}deg)`, // Rotate the arrow based on arrowRotation state
         }}

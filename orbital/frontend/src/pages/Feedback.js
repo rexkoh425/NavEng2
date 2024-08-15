@@ -5,8 +5,6 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import { Typography } from "@mui/material";
 import Autocomplete from '@mui/material/Autocomplete';
-import ArrowRightIcon from '@mui/icons-material/ArrowRight';
-import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
 import "@fontsource/lexend"; // Defaults to weight 400
 import "@fontsource/lexend/400.css";
 import "@fontsource/lexend/300.css";

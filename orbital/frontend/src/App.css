@@ -458,12 +458,12 @@
 }
 
 .two-columns-container {
-  display: flex; /* Use flexbox */
+  display: flex;
   align-items: top;
 }
 
 .column {
-  flex: 1; /* Grow to fill available space equally */
+  flex: 1; 
   padding: 2px;
   margin-bottom: -50px;
 }

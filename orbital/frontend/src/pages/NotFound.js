@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import ButtonAppBar from "../components/ButtonAppBar";
+
 export default function NotFound() {
     return (
         <>
