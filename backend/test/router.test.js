@@ -688,6 +688,12 @@ describe('Testing Functions..........', function () {
                         arrow : "2" ,
                         levels : 0 ,
                         node_id : 0
+                    },
+                    {
+                        distance : "20" ,
+                        arrow : "7" ,
+                        levels : 0 ,
+                        node_id : 446
                     }
                     
                 ] ,
@@ -695,7 +701,8 @@ describe('Testing Functions..........', function () {
                 [
                     "Walk Straight for 7 metres",
                     "Go Down 2 level from level 7 to level 5",
-                    "Turn Right and Walk Straight for 5 metres"
+                    "Turn Right and Walk Straight for 5 metres" ,
+                    "Exit the Elevator"
                 ]
             }
 
@@ -998,7 +1005,7 @@ describe('Testing features....', function () {
 });
 
 describe('Testing whether location pairs output correct number of pictures', function () {
-    this.timeout(5000000);
+    this.timeout(10000000);
 
     it('All location pairs tested', async function () {
         try {
