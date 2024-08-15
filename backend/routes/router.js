@@ -280,7 +280,7 @@ class database{
 
             return data[0]['self_type'];
         } catch (error) {
-            throw new Error("cannot get the type of node");
+            return "cannot get the type of node"
         }
     }
 
