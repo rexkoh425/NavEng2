@@ -1021,7 +1021,7 @@ class Result{
         const break_down_room_num = first_room.split("-");
         let building = 'EA';
         let floor = 0;
-        if(break_down_room_num.length == 1){
+        if(break_down_room_num.length <= 2){
             const components = await this.get_room_mapping(first_room);
             building = components.building;
             floor = components.floor;
