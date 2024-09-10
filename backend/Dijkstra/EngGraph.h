@@ -1,7 +1,7 @@
 #include "graph.h"
 
 Graph createEngGraph(vector<int> blocked_nodes , bool undirected){
-    Graph g(648  , blocked_nodes);
+    Graph g(707  , blocked_nodes);
     g.addEdge(0, 1, 50 , EAST , undirected);
     g.addEdge(1, 153, 70 , SOUTH , undirected);
     g.addEdge(153, 2, 40 , SOUTH , undirected);
@@ -718,6 +718,67 @@ Graph createEngGraph(vector<int> blocked_nodes , bool undirected){
     g.addEdge(638, 645, 65 , SOUTH, undirected);
     g.addEdge(645, 646, 20 , WEST, undirected);
     g.addEdge(646, 647, 20 , SOUTH, undirected);
-    
+    //////////////////////////////////
+    g.addEdge(392, 648, 245 , EAST , undirected);
+    g.addEdge(648, 649, 20 , EAST , undirected);
+    g.addEdge(648, 650, 100 , SOUTH , undirected);
+    g.addEdge(650, 651, 75 , EAST , undirected);
+    g.addEdge(651, 652, 75 , NORTH , undirected);
+    g.addEdge(652, 653, 20 , WEST , undirected);
+    g.addEdge(649, 654, 40 , DOWN , undirected);
+    g.addEdge(706, 655, 100 , SOUTH , undirected);
+    g.addEdge(655, 656, 75 , EAST , undirected);
+    g.addEdge(656, 657, 75 , NORTH , undirected);
+    g.addEdge(657, 658, 20 , WEST , undirected);
+    g.addEdge(653, 658, 40 , DOWN , undirected);
+    g.addEdge(658, 659, 40 , DOWN , undirected);
+    g.addEdge(659, 660, 20 , EAST , undirected);
+    g.addEdge(660, 661, 75 , NORTH , undirected);
+    g.addEdge(661, 662, 270 , EAST , undirected);
+    g.addEdge(662, 663, 20 , EAST , undirected);
+    g.addEdge(159, 664, 240 , EAST , undirected);
+    g.addEdge(664, 665, 435 , EAST , undirected);
+    g.addEdge(665, 666, 500 , EAST , undirected);
+    g.addEdge(666, 667, 250 , NORTH , undirected);
+    g.addEdge(667, 668, 90 , NORTH , undirected);
+    g.addEdge(668, 669, 110 , EAST , undirected);
+    g.addEdge(669, 670, 290 , NORTH , undirected);
+    g.addEdge(670, 671, 125 , WEST , undirected);
+    g.addEdge(671, 672, 240 , WEST , undirected);
+    g.addEdge(672, 673, 570 , WEST , undirected);
+    g.addEdge(673, 674, 340 , NORTH , undirected);
+    g.addEdge(674, 675, 410 , NORTH , undirected);
+    g.addEdge(675, 676, 20 , EAST , undirected);
+    g.addEdge(675, 677, 370 , NORTH , undirected);
+    g.addEdge(677, 678, 310 , NORTH , undirected);
+    g.addEdge(678, 679, 210 , WEST , undirected);
+    g.addEdge(679, 680, 230 , NORTH , undirected);
+    g.addEdge(680, 681, 20 , WEST , undirected);
+    g.addEdge(557, 682, 40 , DOWN , undirected);
+    g.addEdge(682, 683, 20 , NORTH , undirected);
+    g.addEdge(683, 684, 230 , NORTH , undirected);
+    g.addEdge(684, 685, 210 , NORTH , undirected);
+    g.addEdge(685, 686, 210 , WEST , undirected);
+    g.addEdge(686, 687, 530 , WEST , undirected);
+    g.addEdge(687, 688, 420 , WEST , undirected);
+    g.addEdge(688, 689, 20 , SOUTH , undirected);
+    g.addEdge(484, 690, 240 , EAST , undirected);
+    g.addEdge(690, 691, 20 , SOUTH , undirected);
+    g.addEdge(690, 692, 100 , EAST , undirected);
+    g.addEdge(692, 693, 240 , NORTH , undirected);
+    g.addEdge(693, 694, 80 , EAST , undirected);
+    g.addEdge(694, 695, 390 , NORTH , undirected);
+    g.addEdge(695, 696, 390 , NORTH , undirected);
+    g.addEdge(696, 697, 120 , EAST , undirected);
+    g.addEdge(697, 698, 130 , NORTH , undirected);
+    g.addEdge(698, 699, 20 , EAST , undirected);
+    g.addEdge(699, 700, 40 , DOWN , undirected);
+    g.addEdge(700, 701, 40 , DOWN , undirected);
+    g.addEdge(701, 702, 100 , EAST , undirected);
+    g.addEdge(702, 703, 40 , DOWN , undirected);
+    g.addEdge(703, 704, 220 , EAST , undirected);
+    g.addEdge(704, 705, 20 , SOUTH , undirected);
+    g.addEdge(654, 706, 20 , WEST , undirected);
+
     return g;
 }

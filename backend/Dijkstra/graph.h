@@ -44,12 +44,18 @@ class Graph {
  private:
 
   vector<forward_list<GraphEdge>> _vertices;
-  vector<int> blocked_nodes;
+  bool* blocked_nodes;
   
  public:
   // Create an empty graph with n vertices
   Graph(int n , vector<int> blocked_array) : _vertices(n) {
-    blocked_nodes = blocked_array;
+    blocked_nodes = new bool[n];
+    for(int i = 0 ; i < n ; i++){
+      blocked_nodes[i] = 0;
+    }
+    for(int i = 0 ; i < blocked_array.size() ; i++){
+      blocked_nodes[blocked_array[i]] = true;
+    }
   }
 
   int num_vertices() const { return _vertices.size(); }
