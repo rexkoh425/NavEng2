@@ -65,5 +65,11 @@ When add new nodes
 add to sql statement to database
 add edges to main , and update number of nodes
 update block sheltered table in data base
-run double edge.cpp
-start debug using get_diff
+run double edge.cpp to find two edges with same direction for same node
+update elevator_building and special room(if applicable) table in supabase
+run main and start debug route using get_diff
+run cycle correction.cpp and correct unmatched cycles
+generate arrows via python 
+check for weird junctions and correct arrow by looking through pictures
+sort into respective folders and upload to database
+run ImageTest to ensure all images are loadable

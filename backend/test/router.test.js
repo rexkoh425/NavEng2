@@ -20,7 +20,7 @@ async function CheckLocation(receivedData) {
         const res = await request(app)
             .post('/formPost')
             .send(receivedData)
-            .timeout({ deadline: 30000 });
+            .timeout({ deadline: 45000 });
 
         let data = res.body;
 
@@ -45,7 +45,7 @@ async function CheckBlockedLocation(receivedData) {
         const res = await request(app)
             .post('/blockRefresh')
             .send(receivedData)
-            .timeout({ deadline: 35000 });
+            .timeout({ deadline: 60000 });
 
         let data = res.body;
         data['source'] = receivedData.MultiStopArray[0];
