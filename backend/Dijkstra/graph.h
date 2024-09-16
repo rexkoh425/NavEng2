@@ -21,12 +21,6 @@ using std::ostream;
 using std::string;
 using std::vector;
 
-/**
- * @brief Representation of an edge in the graph.
- * Contains the destination vertex and the weight of the edge.
- * The source vertex is implicit in the index of the forward_list, and thus not
- * stored in the edge.
- */
 class GraphEdge {
  private:
   int _dir;
@@ -46,16 +40,9 @@ class GraphEdge {
   bool operator==(const GraphEdge& e) const { return _dest == e._dest; }
 };
 
-/**
- * @brief Representation of a graph.
- * The graph is represented as an adjacency list.
- * The vertices are numbered from 0 to n-1.
- */
 class Graph {
  private:
-  // This vector has a slot for each vertex in the graph.
-  // The forward_list (a singly-linked list) for each vertex
-  // contains all of the edges from that vertex.
+
   vector<forward_list<GraphEdge>> _vertices;
   vector<int> blocked_nodes;
   
@@ -79,4 +66,4 @@ class Graph {
 ostream& operator<<(ostream&, const GraphEdge&);
 ostream& operator<<(ostream&, const Graph&);
 
-#endif /* __GRAPH_H__ */
+#endif 

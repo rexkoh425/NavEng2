@@ -38,7 +38,6 @@ int main(){
     std::string inputData;
     std::getline(std::cin, inputData);
 
-    // Parse JSON string into a JSON document
     Document doc;
     if (doc.Parse(inputData.c_str()).HasParseError()) {
         std::cerr << "Error parsing JSON" << std::endl;
@@ -93,7 +92,6 @@ int main(){
       return 1;
     }
     
-    //vector<int> blocked_nodes;
     Graph test1 = createEngGraph(blocked_nodes , true);
     if(getMapObj){
       MapObj(test1 , nodes_array);
