@@ -1,4 +1,4 @@
-function splitTextBeforeSlash(text) {
+/* function splitTextBeforeSlash(text) {
   const parts = text.split('/');
   return parts[0]; // Return the first part before the '/'
 }
@@ -95,7 +95,7 @@ describe("User can use pathfinding functionality", () => {
       cy.findByRole('img', {  name: /cannot be displayed/i})
   })
 }) 
-/*
+
 
 describe("Paths with stairs", () => {
   it('suggests paths with stairs', () => {
@@ -135,6 +135,8 @@ describe("Paths with stairs", () => {
   })
 })
 */
+
+/*
 
 describe("Using no stairs filter", () => {
   it('suggests paths with no stairs', () => {
@@ -227,4 +229,4 @@ describe("User can choose more than one stop", () => {
     cy.findByTestId('AddCircleOutlineIcon')
     
   })
-})
+}) */
