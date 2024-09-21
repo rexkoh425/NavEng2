@@ -20,12 +20,9 @@ ostream& operator<<(ostream& os, const Graph& g) {
 
 void Graph::addEdge(int source, int dest, int weight , int dir , bool undirected) {
   
-  for(int i = 0 ; i < blocked_nodes.size() ; i++){
-    if(dest == blocked_nodes[i] || source == blocked_nodes[i]){
-      return;
-    }
+  if(blocked_nodes[dest] || blocked_nodes[source]){
+    return;
   }
-  
   
   _vertices[source].emplace_front(dest, weight , dir);
   if(undirected){

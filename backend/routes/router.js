@@ -11,6 +11,7 @@ const supabaseKey = process.env.SUPABASE_KEY
 const supabase = createClient(supabaseUrl, supabaseKey);
 const no_alt_path_url = 'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/Specials/No_alternate_path.png?t=2024-06-22T15%3A22%3A29.729Z' ;
 const database_down_url = 'https://bdnczrzgqfqqcoxefvqa.supabase.co/storage/v1/object/public/Pictures/Specials/No_alternate_path.png?t=2024-06-22T15%3A22%3A29.729Z';
+const testing  = false;
 
 class database{
     constructor(){
@@ -284,6 +285,20 @@ class database{
         }
     }
 
+    async get_type(node_id){
+
+        try {
+            const { data, error } = await this.db
+                .from('pictures')
+                .select('self_type')
+                .eq('node_id', node_id);
+              
+            return data[0]['self_type'];
+        } catch (error) {
+            return "NIL";
+        }
+    }
+
     log_changes(){
         if(!this.feedback.unaltered){
             console.log(`feedback table : `);
@@ -339,23 +354,8 @@ class database{
 const supa = new database();
 
 function debug_log(input){
-    let debug = false;
-    if(debug){
+    if(testing){
         console.log(input);
-    }
-}
-
-async function get_type(node_id){
-
-    try {
-        const { data, error } = await supabase
-            .from('pictures')
-            .select('self_type')
-            .eq('node_id', node_id);
-          
-        return data[0]['self_type'];
-    } catch (error) {
-        return "NIL";
     }
 }
 
@@ -367,6 +367,10 @@ async function template_instructions(distance , arrow_direction , levels , node_
     if(arrow_direction == 'Down' || arrow_direction == 'Up'){
 
         const start_end = await track_floor.get_floor(node_id , levels , arrow_direction);
+
+        if(start_end.start == 0 && start_end.end == 0){
+            return `Go ${arrow_direction} ${levels} level`;  /*****/
+        }
 
         if(start_end.start == 0){
             start_end.start = 'B1';
@@ -634,6 +638,25 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                 if(nodes.length == 1){
                     throw new Error("cannot find dest");
                 }
+                
+                if(testing){
+                    
+                    const containsValue = nodes.some(value => parseInt(value, 10) > 648);
+                    if(!containsValue){
+                        const skipFormat = {
+                            Expected : 0 ,
+                            Queried : 0 , 
+                            HTML : 0 ,
+                            Distance : 0 ,
+                            Dist_array : 0 , 
+                            nodes_path : 0 , 
+                            Instructions : 0 ,
+                            compressed_path : 0
+                        }
+                        resolve(skipFormat);
+                    }
+                }
+                
                 let nodes_path = [...nodes];
                 let compressed_path  = [...nodes];
                 const directions = outputData[1].split(",");
@@ -702,9 +725,18 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                         Instructions.push(instructions_obj);
                     }
                 }
+                
                 nodes[directions.length] += "67";
                 Instructions.push('');
-                
+
+                debug_log("nodes : ");
+                debug_log(nodes);
+                debug_log(directions);
+
+                debug_log("uncompressed path : ")
+                debug_log(nodes_path);
+                debug_log("compressed path : ")
+                debug_log(compressed_path)
                 const { data, error } = await supabase
                     .from('pictures')
                     .select('unique_id , filepath')
@@ -731,8 +763,10 @@ async function full_query(source , destination , blocked_nodes , previous_node){
                     debug_array[debug_array_index] = result.unique_id;
                     debug_array_index++;
                 });
-         
+                
                 const final = fixedLengthArray.join(' ');
+                debug_log("diff is ");
+                debug_log(get_diff(nodes , debug_array));
 
                 const FinalResults = {
                     Expected : nodes.length ,
@@ -781,6 +815,7 @@ async function transit_query(source , destination , blocked_nodes , previous_nod
                 let distance = outputData[2];
                 let dist_array = outputData[3].split(",");
                 const Instructions = [];
+
                 if(previous_node.have_previous){
                     const blocked_pov = await dir_string_to_ENUM(previous_node.blocked_pov);
                     const incoming_pov = await get_opposite(blocked_pov);
@@ -923,7 +958,7 @@ class building_floor{
     constructor(building , floor){
         this.current_building = building;
         this.current_floor = floor;
-        this.floor_map = { EA : 40 , E1 : 160 , E1A : 160 , E2 : 320 , E2A : 360 , E3 : 80 , E4 : 160 , E4A : 40}
+        this.floor_map = { EA : 40 , E1 : 160 , E1A : 160 , E2 : 320 , E2A : 360 , E3 : 80 , E4 : 160 , E4A : 40 , C1 : 200 , E5 : 280}
     }
 
     async get_floor(node_id , levels , ENUM_dir){
@@ -931,6 +966,11 @@ class building_floor{
         const node_building = await this.get_building(node_id);
 
         if(node_building == 'no such node'){
+            if(ENUM_dir == 'Up'){
+                this.current_floor += levels;
+            }else{
+                this.current_floor -= levels;
+            }
             return { start : 0 , end : 0};
         }else if(node_building == this.current_building){
             const old_floor = this.current_floor;
@@ -962,7 +1002,8 @@ class building_floor{
         if (error) {
             throw error;
         }
-        if(data[0].length == 0){
+
+        if(data.length == 0){
             return 'no such node'
         }
         return data[0]['building'];
@@ -1152,25 +1193,27 @@ router.post('/formPost' , async (req ,res) => {
     }
 
     try{
+        
         for(let i =  0; i < destinations.length ; i ++){
             destinations[i] = await supa.room_num_to_node_id(destinations[i]);
         }
-   
-        let blocked_array = await supa.get_blocked();
 
-        for(let i = 0 ; i < inputData.blocked_array.length ; i++){
-            blocked_array.push(inputData.blocked_array[i]);
-        }
-        let non_sheltered = [];
-        if(inputData.sheltered){
-            non_sheltered = await supa.get_non_sheltered();
-        }
-        let stairs = [];
-        if(inputData.NoStairs){
-            stairs = await supa.get_stairs();
-        }
-        mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered , ...stairs]));
+        if(!testing){
+            let blocked_array = await supa.get_blocked();
 
+            for(let i = 0 ; i < inputData.blocked_array.length ; i++){
+                blocked_array.push(inputData.blocked_array[i]);
+            }
+            let non_sheltered = [];
+            if(inputData.sheltered){
+                non_sheltered = await supa.get_non_sheltered();
+            }
+            let stairs = [];
+            if(inputData.NoStairs){
+                stairs = await supa.get_stairs();
+            }
+            mergedArray = Array.from(new Set([...blocked_array, ...non_sheltered , ...stairs]));
+        }
     }catch(error){
         return res.send({HTML : database_down_url , passed : false , error_can_handle : false , message : "query error"});
     }

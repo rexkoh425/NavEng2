@@ -9,7 +9,8 @@
     "failed": "node --expose-gc ./node_modules/mocha/bin/mocha test/Failed_test.test.js",
     "specific": "node --expose-gc ./node_modules/mocha/bin/mocha test/TestSpecificPath.test.js",
     "ImageTest": "node --expose-gc ./node_modules/mocha/bin/mocha test/ImageLoadable.test.js" , 
-    "rename_database" : "node --expose-gc ./node_modules/mocha/bin/mocha routes/rename_database.test.js"
+    "rename_database" : "node --expose-gc ./node_modules/mocha/bin/mocha routes/rename_database.test.js",
+    "TestNew" : "node --expose-gc ./node_modules/mocha/bin/mocha test/NewPathTest.test.js"
   },
   "keywords": [],
   "author": "",

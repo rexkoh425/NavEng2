@@ -193,9 +193,9 @@ int main(){
         }
     }
     //////////////////////////
-    bool get_vect = false;////
+    bool get_vect = false;////update this
     //////////////////////////
-    int starting_from = 400;
+    int starting_from = 0;
     if(get_vect){
         for(int i = starting_from ; i < num_of_nodes ; i++){
             Node node = node_details[i];
