@@ -1,7 +1,9 @@
 import Box from '@mui/material/Box';
 import React, { useState } from 'react';
 import axios from "axios"
-import { Button, Grid, Typography } from '@mui/material';
+import Button from '@mui/material';
+import Grid from '@mui/material';
+import Typography from '@mui/material';
 
 //Component to allow users to upload picture of blocked path
 
