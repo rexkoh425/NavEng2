@@ -3,7 +3,7 @@ import axios from "axios"
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
-import { Typography } from "@mui/material";
+import Typography from "@mui/material/Typography";
 import Autocomplete from '@mui/material/Autocomplete';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
@@ -25,9 +25,8 @@ import DestinationNotification from "./DestinationNotification";
 import { useSwipeable } from 'react-swipeable';
 import TopDownMapMobile from "./TopDownMapMobile";
 import ImageOutputMobile from "./ImageOutputMobile";
-import CircularProgress, {
-    circularProgressClasses,
-} from '@mui/material/CircularProgress';
+import CircularProgress from "@mui/material/CircularProgress";
+import circularProgressClasses from '@mui/material/CircularProgress';
 import SwipeIcon from '@mui/icons-material/Swipe';
 import Swipe from "@mui/icons-material/Swipe";
 

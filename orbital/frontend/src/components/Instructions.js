@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { Hidden } from '@mui/material';
+import Hidden from '@mui/material/Hidden';
 
 const Instructions = ({formSubmitted}) => {
     const [expanded, setExpanded] = useState(true);
