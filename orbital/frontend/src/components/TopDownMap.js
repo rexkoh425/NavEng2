@@ -11,6 +11,7 @@ const svgheight = 450;
 
 const TopDownMap = ({ nodes, visited, originNodeId, nodesPath, stopsIndex, Node_id_array, blockedIMGName }) => {
 
+  console.log(nodes);
   const [enableRotation, setEnableRotation] = useState(false);
   const [buttonContent, setButtonContent] = useState("Enable Map Rotation");
 
