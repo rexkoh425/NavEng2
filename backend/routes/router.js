@@ -354,7 +354,7 @@ class database{
 const supa = new database();
 
 function debug_log(input){
-    if(testing){
+    if(!testing){
         console.log(input);
     }
 }
@@ -1371,6 +1371,7 @@ router.post('/getfloor' , async (req , res) => {
     try {
         targeted_z = await supa.get_z_coordinate(inputData);
     } catch (error) {
+        console.log("error");
         res.status(500).json({ error: error.message });
     }
     
@@ -1392,6 +1393,7 @@ router.post('/getfloor' , async (req , res) => {
             throw error;
         }
     } catch (error) {
+        console.log("error");
         res.status(500).json({ error: error.message });
     }
 
@@ -1433,7 +1435,7 @@ router.post('/getfloor' , async (req , res) => {
             })
             res.send(FullMapObj);
         }catch(error){
-            
+            console.log("error");
         }
         
         cppProcess.on('error', (error) => {

@@ -855,7 +855,7 @@ describe('Testing Endpoints..........', function () {
     })
 
     it('/getfloor gets all other nodes with same floor as the input node', async function () {
-        const input = { node_id : 71 };
+        const input = { node_id : 706 };
         try {
             const response = await request(app)
                 .post('/getfloor')
