@@ -360,12 +360,18 @@ function PromptForm() {
                 node_id: blockedNodeID
             };
 
-            const response = await axios.post(websitelink + '/getfloor', postData);
+            const response = await axios.post(websitelink + '/getfloor', postData, {
+                timeout: 30000 
+            });
             setGraphnodes(response.data)
 
 
         } catch (error) {
-            console.error('Error getting floor:', error);
+            if (error.code === 'ECONNABORTED') {
+                console.error('Error getting floor: Request timed out');
+            } else {
+                console.error('Error getting floor:', error);
+            }
         }
     };
 
