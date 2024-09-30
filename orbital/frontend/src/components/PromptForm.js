@@ -76,11 +76,18 @@ function PromptForm() {
 
 
     const Local = process.env.REACT_APP_LOCAL;
+    const repo = process.env.REACT_APP_REPO;
+
     let websitelink = ""
     if (Local == "true") {
         websitelink = "http://localhost:4000"
     } else {
-        websitelink = "https://naveng-backend-vercel.vercel.app"
+        if(repo == "rex"){
+            websitelink = "https://orbital-website-cyan.vercel.app"
+        }else{
+            websitelink = "https://naveng-backend-vercel.vercel.app"
+        }
+        
     }
 
     function hasSameEntries(array) {
