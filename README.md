@@ -73,3 +73,4 @@ generate arrows via python
 check for weird junctions and correct arrow by looking through pictures
 sort into respective folders and upload to database
 run ImageTest to ensure all images are loadable
+Compile UNIX before uploading
