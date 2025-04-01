@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\NUS\Peronal_projects\Orbital\NavEng\build\_deps\googletest-subbuild\CMakeFiles\20374e2d045d054e2286174ea42cb149\googletest-populate-mkdir.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\NUS\Peronal_projects\Orbital\NavEng\build\_deps\googletest-subbuild\CMakeFiles\20374e2d045d054e2286174ea42cb149\googletest-populate-download.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\NUS\Peronal_projects\Orbital\NavEng\build\_deps\googletest-subbuild\CMakeFiles\20374e2d045d054e2286174ea42cb149\googletest-populate-update.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\NUS\Peronal_projects\Orbital\NavEng\build\_deps\googletest-subbuild\CMakeFiles\20374e2d045d054e2286174ea42cb149\googletest-populate-patch.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\NUS\Peronal_projects\Orbital\NavEng\build\_deps\googletest-subbuild\CMakeFiles\20374e2d045d054e2286174ea42cb149\googletest-populate-configure.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\NUS\Peronal_projects\Orbital\NavEng\build\_deps\googletest-subbuild\CMakeFiles\20374e2d045d054e2286174ea42cb149\googletest-populate-build.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\NUS\Peronal_projects\Orbital\NavEng\build\_deps\googletest-subbuild\CMakeFiles\20374e2d045d054e2286174ea42cb149\googletest-populate-install.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\NUS\Peronal_projects\Orbital\NavEng\build\_deps\googletest-subbuild\CMakeFiles\20374e2d045d054e2286174ea42cb149\googletest-populate-test.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\NUS\Peronal_projects\Orbital\NavEng\build\_deps\googletest-subbuild\CMakeFiles\1c9bdcd5e55fd31521239e1fd6b2191a\googletest-populate-complete.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\NUS\Peronal_projects\Orbital\NavEng\build\_deps\googletest-subbuild\CMakeFiles\040aac86df73b54bc31c6960fd77e35d\googletest-populate.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="C:\NUS\Peronal_projects\Orbital\NavEng\build\_deps\googletest-subbuild\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\NUS\Peronal_projects\Orbital\NavEng\build\_deps\googletest-subbuild\CMakeFiles\googletest-populate" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{978E857E-DD09-3D4E-935E-561808A1213D}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

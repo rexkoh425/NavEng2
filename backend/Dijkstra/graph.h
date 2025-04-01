@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <climits>
 
 #define NORTH 0
 #define EAST 90
@@ -45,6 +46,9 @@ class Graph {
 
   vector<forward_list<GraphEdge>> _vertices;
   bool* blocked_nodes;
+
+  // NEW: coordinates per node (unset == INT_MAX)
+  vector<int> _x, _y, _z;
   
  public:
   // Create an empty graph with n vertices
@@ -56,6 +60,10 @@ class Graph {
     for(int i = 0 ; i < blocked_array.size() ; i++){
       blocked_nodes[blocked_array[i]] = true;
     }
+
+    _x.assign(n, INT_MAX);
+    _y.assign(n, INT_MAX);
+    _z.assign(n, INT_MAX);
   }
 
   int num_vertices() const { return _vertices.size(); }
@@ -67,6 +75,14 @@ class Graph {
 
   // Add an edge from source vertex to dest vertex with weight weight
   void addEdge(int source, int dest, int weight , int dir , bool undirected);
+
+  void init_coords(int origin = 0, int ox = 0, int oy = 0, int oz = 0);
+  bool has_coord(int v) const { return _x[v] != INT_MAX; }
+  int x(int v) const { return _x[v]; }
+  int y(int v) const { return _y[v]; }
+  int z(int v) const { return _z[v]; }
+
+  int heuristic(int from, int to) const;
 };
 
 ostream& operator<<(ostream&, const GraphEdge&);

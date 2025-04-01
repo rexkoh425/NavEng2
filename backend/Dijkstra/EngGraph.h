@@ -779,6 +779,6 @@ Graph createEngGraph(vector<int> blocked_nodes , bool undirected){
     g.addEdge(703, 704, 220 , EAST , undirected);
     g.addEdge(704, 705, 20 , SOUTH , undirected);
     g.addEdge(654, 706, 20 , WEST , undirected);
-
+    g.init_coords(0, 0, 0, 0);
     return g;
 }

@@ -1,0 +1,5 @@
+if(EXISTS "C:/NUS/Peronal_projects/Orbital/NavEng/build/DijkstraTest[1]_tests.cmake")
+  include("C:/NUS/Peronal_projects/Orbital/NavEng/build/DijkstraTest[1]_tests.cmake")
+else()
+  add_test(DijkstraTest_NOT_BUILT DijkstraTest_NOT_BUILT)
+endif()

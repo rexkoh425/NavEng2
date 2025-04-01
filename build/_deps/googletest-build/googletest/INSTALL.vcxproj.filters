@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\NUS\Peronal_projects\Orbital\NavEng\build\CMakeFiles\7444a2ac6b9687d86b86bb1ee17a8568\INSTALL_force.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{930E7C83-4C4E-3658-9FB4-2F02B3714C80}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

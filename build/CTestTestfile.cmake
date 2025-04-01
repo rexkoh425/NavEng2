@@ -1,7 +1,8 @@
 # CMake generated Testfile for 
-# Source directory: C:/NUS/Orbital_website
-# Build directory: C:/NUS/Orbital_website/build
+# Source directory: C:/NUS/Peronal_projects/Orbital/NavEng
+# Build directory: C:/NUS/Peronal_projects/Orbital/NavEng/build
 # 
 # This file includes the relevant testing commands required for 
 # testing this directory and lists subdirectories to be tested as well.
-subdirs("googletest")
+include("C:/NUS/Peronal_projects/Orbital/NavEng/build/DijkstraTest[1]_include.cmake")
+subdirs("_deps/googletest-build")

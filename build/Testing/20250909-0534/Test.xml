@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Site BuildName="(empty)"
+	BuildStamp="20250909-0534-20240916-0859"
+	Name="(empty)"
+	Generator="ctest-4.1.0"
+	CompilerName=""
+	CompilerVersion=""
+	OSName="Windows"
+	Hostname="DESKTOP-KMBC48F"
+	OSRelease=" Professional"
+	OSVersion=" (Build 9200)"
+	OSPlatform="AMD64"
+	Is64Bits="1"
+	VendorString=""
+	VendorID="Unknown Manufacturer"
+	FamilyID="0"
+	ModelID="0"
+	ModelName=""
+	ProcessorCacheSize="0"
+	NumberOfLogicalCPU="24"
+	NumberOfPhysicalCPU="12"
+	TotalVirtualMemory="72349"
+	TotalPhysicalMemory="63133"
+	LogicalProcessorsPerPhysical="2"
+	ProcessorClockFrequency="4400"
+	>
+	<Testing>
+		<StartDateTime>Sep 09 13:48 Malay Peninsula Standard Time</StartDateTime>
+		<StartTestTime>1757396908</StartTestTime>
+		<TestList/>
+		<EndDateTime>Sep 09 13:48 Malay Peninsula Standard Time</EndDateTime>
+		<EndTestTime>1757396908</EndTestTime>
+		<ElapsedMinutes>0</ElapsedMinutes>
+	</Testing>
+</Site>

@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\NUS\Peronal_projects\Orbital\NavEng\build\_deps\googletest-subbuild\CMakeFiles\040aac86df73b54bc31c6960fd77e35d\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{978E857E-DD09-3D4E-935E-561808A1213D}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
