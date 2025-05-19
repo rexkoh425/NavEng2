@@ -1,0 +1,184 @@
+name: supabase-batch-infer-every-15m
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"   # every 15 minutes
+  workflow_dispatch: {}
+
+concurrency:
+  group: supabase-batch-infer
+  cancel-in-progress: false
+
+jobs:
+  run-inference:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install "onnxruntime>=1.17" numpy pillow "supabase>=2.4.0"
+
+
+      - name: Run batch inference (pull first 10, process, push results)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SUPABASE_BUCKET: ${{ secrets.SUPABASE_BUCKET }}        
+          INPUT_PREFIX: blocked/incoming                         # folder/path inside the bucket
+          OUTPUT_PREFIX: blocked/processed                       # folder/path for results
+          MODEL_PATH: models/segformer_fp.onnx                   # SegFormer ONNX path
+          MAX_FILES_PER_RUN: "10"                                # process first 10 only
+          INPUT_SIZE: "384"                                      # match your export/training size
+          CONF_THRESHOLD: "0.5"                                  
+        run: |
+          python - <<'PY'
+          import os, io, time, json
+          from pathlib import Path
+          import numpy as np
+          from PIL import Image
+          import onnxruntime as ort
+          from supabase import create_client
+
+          SUPABASE_URL = os.environ["SUPABASE_URL"]
+          SUPABASE_SERVICE_KEY = os.environ["SUPABASE_SERVICE_KEY"]
+          BUCKET = os.environ["SUPABASE_BUCKET"]
+          INPUT_PREFIX = os.getenv("INPUT_PREFIX", "blocked/incoming").strip("/")
+          OUTPUT_PREFIX = os.getenv("OUTPUT_PREFIX", "blocked/processed").strip("/")
+          MODEL_PATH = os.getenv("MODEL_PATH", "models/segformer_fp.onnx")
+          MAX_FILES = int(os.getenv("MAX_FILES_PER_RUN", "10"))
+          INPUT_SIZE = int(os.getenv("INPUT_SIZE", "384"))
+          CONF_THR = float(os.getenv("CONF_THRESHOLD", "0.5"))
+
+          IMG_EXTS = (".jpg", ".jpeg", ".png", ".webp", ".bmp")
+
+          Path("batch_logs").mkdir(exist_ok=True)
+          log_fp = Path("batch_logs") / f"run_{int(time.time())}.txt"
+          def log(msg: str):
+              print(msg, flush=True)
+              with open(log_fp, "a", encoding="utf-8") as f:
+                  f.write(msg + "\n")
+
+          supa = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+          storage = supa.storage.from_(BUCKET)
+
+          def list_first_n_images(prefix: str, n: int):
+              # Flat folder listing (no recursion). For nested dirs, call storage.list per subdir.
+              items = storage.list(path=prefix)
+              files = [it["name"] for it in items if isinstance(it, dict) and it.get("name", "").lower().endswith(IMG_EXTS)]
+              files.sort()
+              return files[:n]
+
+          def download_bytes(key: str) -> bytes:
+              return storage.download(key)
+
+          def upload_bytes(key: str, data: bytes, content_type: str):
+              storage.upload(key, io.BytesIO(data), {
+                  "content-type": content_type,
+                  "upsert": True
+              })
+
+          so = ort.SessionOptions()
+          so.intra_op_num_threads = 2
+          so.inter_op_num_threads = 1
+          session = ort.InferenceSession(MODEL_PATH, providers=["CPUExecutionProvider"], sess_options=so)
+          in_name = session.get_inputs()[0].name
+          out_name = session.get_outputs()[0].name
+
+          def letterbox_imagenet_norm(img: Image.Image, size: int) -> np.ndarray:
+              """LongestMaxSize + PadIfNeeded to square, then ImageNet mean/std normalization."""
+              img = img.convert("RGB")
+              w, h = img.size
+              scale = size / max(w, h)               # match training letterbox (longest side = size)
+              nw, nh = int(round(w * scale)), int(round(h * scale))
+              img_resized = img.resize((nw, nh), Image.BILINEAR)
+
+              canvas = Image.new("RGB", (size, size), (0, 0, 0))
+              left = (size - nw) // 2
+              top  = (size - nh) // 2
+              canvas.paste(img_resized, (left, top))
+
+              arr = np.asarray(canvas, dtype=np.float32) / 255.0
+              mean = np.array([0.485, 0.456, 0.406], dtype=np.float32)
+              std  = np.array([0.229, 0.224, 0.225], dtype=np.float32)
+              arr = (arr - mean) / std
+              arr = arr.transpose(2, 0, 1)[None, ...]   # NCHW
+              return arr
+
+          def mask_from_logits(logits: np.ndarray, out_size: int) -> Image.Image:
+              """Supports binary or multi-class (class 1 treated as 'path'). Upsamples to out_size."""
+              if logits.shape[1] == 1:
+                  probs = 1.0 / (1.0 + np.exp(-logits))
+                  mask_small = (probs[0, 0] >= CONF_THR).astype(np.uint8) * 255
+              else:
+                  cls = np.argmax(logits, axis=1)  # (1,h,w)
+                  mask_small = (cls[0] == 1).astype(np.uint8) * 255
+              mask_img = Image.fromarray(mask_small)
+              mask_img = mask_img.resize((out_size, out_size), Image.NEAREST)
+              return mask_img
+
+
+          t0 = time.time()
+          names = list_first_n_images(INPUT_PREFIX, MAX_FILES)
+          log(f"Found {len(names)} pending images in '{BUCKET}/{INPUT_PREFIX}' (processing first {MAX_FILES}).")
+
+          processed = 0
+          for name in names:
+              key_in = f"{INPUT_PREFIX}/{name}"
+              try:
+                  raw = download_bytes(key_in)
+                  img = Image.open(io.BytesIO(raw)).convert("RGB")
+
+                  x = letterbox_imagenet_norm(img, INPUT_SIZE)
+
+                  t1 = time.time()
+                  logits = session.run([out_name], {in_name: x})[0]  # (1,C,h,w) or (1,1,h,w)
+                  t2 = time.time()
+
+                  mask_img = mask_from_logits(logits, INPUT_SIZE)
+
+                  stem = Path(name).stem
+                  key_mask = f"{OUTPUT_PREFIX}/{stem}_mask.png"
+                  key_json = f"{OUTPUT_PREFIX}/{stem}.json"
+
+                  buf = io.BytesIO()
+                  mask_img.save(buf, format="PNG")
+                  upload_bytes(key_mask, buf.getvalue(), "image/png")
+
+                  meta = {
+                      "source": key_in,
+                      "mask": key_mask,
+                      "ts": int(time.time()),
+                      "model": Path(MODEL_PATH).name,
+                      "input_size": INPUT_SIZE,
+                      "runtime_ms": int((t2 - t1) * 1000)
+                  }
+                  upload_bytes(key_json, json.dumps(meta).encode("utf-8"), "application/json")
+
+                  log(f"OK {key_in} -> {key_mask} ({meta['runtime_ms']} ms)")
+                  processed += 1
+
+              except Exception as e:
+                  log(f"ERROR {key_in}: {e}")
+
+          t_end = time.time()
+          log(f"Done. Processed {processed}/{len(names)} in {int(t_end - t0)} s.")
+          PY
+
+      - name: Upload logs (artifact)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: supabase-batch-logs
+          path: batch_logs/*.txt
+          if-no-files-found: ignore
