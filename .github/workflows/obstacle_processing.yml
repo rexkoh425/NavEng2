@@ -14,13 +14,30 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+      MODEL_PATH: Models/FootPathDetector/segformer_fp.onnx
+      TABLE_IN: blocked_image
+      COL_ID: id
+      COL_IMG_BYTES: data
+      COL_IMG_URL: image_url
+      COL_CREATED_AT: created_at
+      TABLE_OUT: blocked_result
+      COL_OUT_IMAGE_ID: image_id
+      COL_OUT_MASK_B64: mask_b64
+      COL_OUT_META_JSON: meta
+      MAX_FILES_PER_RUN: "10"
+      INPUT_SIZE: "384"
+      CONF_THRESHOLD: "0.5"
+
     steps:
-      - name: Checkout (with LFS support)
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           lfs: true
 
-      - name: Set up Python (with pip cache)
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -32,64 +49,37 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Fetch model from Supabase (if missing)
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-          SUPABASE_BUCKET: ${{ secrets.SUPABASE_BUCKET }}
-          MODEL_OBJECT_KEY: models/segformer_fp.onnx   # path inside your bucket
+      - name: Verify model presence
+        run: |
+          test -f "$MODEL_PATH" || { echo "::error::Model not found at $MODEL_PATH"; exit 1; }
+          ls -lh "$MODEL_PATH"
+
+      - name: Run batch inference
         run: |
           python - <<'PY'
-          import os
-          from pathlib import Path
-          from supabase import create_client
-
-          out = Path("models/segformer_fp.onnx")
-          out.parent.mkdir(parents=True, exist_ok=True)
-          if out.exists():
-              print("Model already present:", out)
-          else:
-              url   = os.environ["SUPABASE_URL"]
-              key   = os.environ["SUPABASE_SERVICE_KEY"]
-              buck  = os.environ["SUPABASE_BUCKET"]
-              obj   = os.environ.get("MODEL_OBJECT_KEY","models/segformer_fp.onnx")
-              supa  = create_client(url, key)
-              data  = supa.storage.from_(buck).download(obj)
-              out.write_bytes(data)
-              print("Downloaded model to", out)
-          PY
-
-      - name: Run batch inference (pull first 10, process, push results)
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-          SUPABASE_BUCKET: ${{ secrets.SUPABASE_BUCKET }}
-          INPUT_PREFIX: blocked/incoming
-          OUTPUT_PREFIX: blocked/processed
-          MODEL_PATH: models/segformer_fp.onnx
-          MAX_FILES_PER_RUN: "10"
-          INPUT_SIZE: "384"
-          CONF_THRESHOLD: "0.5"
-        run: |
-          python - <<'PY'
-          import os, io, time, json
+          import os, io, time, json, base64
           from pathlib import Path
           import numpy as np
           from PIL import Image
           import onnxruntime as ort
+          import requests
           from supabase import create_client
 
           SUPABASE_URL = os.environ["SUPABASE_URL"]
           SUPABASE_SERVICE_KEY = os.environ["SUPABASE_SERVICE_KEY"]
-          BUCKET = os.environ["SUPABASE_BUCKET"]
-          INPUT_PREFIX = os.getenv("INPUT_PREFIX", "blocked/incoming").strip("/")
-          OUTPUT_PREFIX = os.getenv("OUTPUT_PREFIX", "blocked/processed").strip("/")
-          MODEL_PATH = os.getenv("MODEL_PATH", "models/segformer_fp.onnx")
-          MAX_FILES = int(os.getenv("MAX_FILES_PER_RUN", "10"))
-          INPUT_SIZE = int(os.getenv("INPUT_SIZE", "384"))
-          CONF_THR = float(os.getenv("CONF_THRESHOLD", "0.5"))
-
-          IMG_EXTS = (".jpg", ".jpeg", ".png", ".webp", ".bmp")
+          TABLE_IN = os.getenv("TABLE_IN")
+          COL_ID = os.getenv("COL_ID")
+          COL_IMG_BYTES = os.getenv("COL_IMG_BYTES") or None
+          COL_IMG_URL = os.getenv("COL_IMG_URL") or None
+          COL_CREATED_AT = os.getenv("COL_CREATED_AT") or None
+          TABLE_OUT = os.getenv("TABLE_OUT")
+          COL_OUT_IMAGE_ID = os.getenv("COL_OUT_IMAGE_ID")
+          COL_OUT_MASK_B64 = os.getenv("COL_OUT_MASK_B64")
+          COL_OUT_META_JSON = os.getenv("COL_OUT_META_JSON")
+          MODEL_PATH = os.getenv("MODEL_PATH")
+          MAX_FILES = int(os.getenv("MAX_FILES_PER_RUN","10"))
+          INPUT_SIZE = int(os.getenv("INPUT_SIZE","384"))
+          CONF_THR = float(os.getenv("CONF_THRESHOLD","0.5"))
 
           Path("batch_logs").mkdir(exist_ok=True)
           log_fp = Path("batch_logs") / f"run_{int(time.time())}.txt"
@@ -98,29 +88,26 @@ jobs:
               with open(log_fp, "a", encoding="utf-8") as f:
                   f.write(msg + "\n")
 
-          supa = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
-          storage = supa.storage.from_(BUCKET)
+          def decode_img_bytes(val):
+              if val is None: return None
+              if isinstance(val, (bytes, bytearray)): return bytes(val)
+              if isinstance(val, str):
+                  s = val.strip()
+                  if s.startswith("\\x"): return bytes.fromhex(s[2:])
+                  try: return base64.b64decode(s, validate=True)
+                  except Exception: return None
+              return None
 
-          def list_first_n_images(prefix: str, n: int):
-              items = storage.list(path=prefix)  # non-recursive
-              files = [it["name"] for it in items
-                       if isinstance(it, dict) and str(it.get("name","")).lower().endswith(IMG_EXTS)]
-              files.sort()
-              return files[:n]
-
-          def download_bytes(key: str) -> bytes:
-              return storage.download(key)
-
-          def upload_bytes(key: str, data: bytes, content_type: str):
-              storage.upload(key, io.BytesIO(data), {"content-type": content_type, "upsert": True})
-
-          # ONNX session
-          so = ort.SessionOptions()
-          so.intra_op_num_threads = 2
-          so.inter_op_num_threads = 1
-          session = ort.InferenceSession(MODEL_PATH, providers=["CPUExecutionProvider"], sess_options=so)
-          in_name = session.get_inputs()[0].name
-          out_name = session.get_outputs()[0].name
+          def fetch_image_from_row(row):
+              if COL_IMG_BYTES and (COL_IMG_BYTES in row):
+                  b = decode_img_bytes(row[COL_IMG_BYTES])
+                  if b: return Image.open(io.BytesIO(b)).convert("RGB")
+              if COL_IMG_URL and (COL_IMG_URL in row) and row[COL_IMG_URL]:
+                  url = str(row[COL_IMG_URL])
+                  r = requests.get(url, timeout=30)
+                  r.raise_for_status()
+                  return Image.open(io.BytesIO(r.content)).convert("RGB")
+              return None
 
           def letterbox_imagenet_norm(img: Image.Image, size: int) -> np.ndarray:
               img = img.convert("RGB")
@@ -136,7 +123,7 @@ jobs:
               mean = np.array([0.485, 0.456, 0.406], dtype=np.float32)
               std  = np.array([0.229, 0.224, 0.225], dtype=np.float32)
               arr = (arr - mean) / std
-              arr = arr.transpose(2, 0, 1)[None, ...]   # NCHW
+              arr = arr.transpose(2, 0, 1)[None, ...]
               return arr
 
           def mask_from_logits(logits: np.ndarray, out_size: int) -> Image.Image:
@@ -150,61 +137,79 @@ jobs:
               mask_img = mask_img.resize((out_size, out_size), Image.NEAREST)
               return mask_img
 
-          # Process
-          t0 = time.time()
-          names = list_first_n_images(INPUT_PREFIX, MAX_FILES)
-          log(f"Found {len(names)} pending images in '{BUCKET}/{INPUT_PREFIX}' (processing first {MAX_FILES}).")
+          supa = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+          db = supa.table(TABLE_IN)
+          so = ort.SessionOptions()
+          so.intra_op_num_threads = 2
+          so.inter_op_num_threads = 1
+          session = ort.InferenceSession(MODEL_PATH, providers=["CPUExecutionProvider"], sess_options=so)
+          in_name = session.get_inputs()[0].name
+          out_name = session.get_outputs()[0].name
 
-          processed = 0
-          for name in names:
-              key_in = f"{INPUT_PREFIX}/{name}"
-              stem = Path(name).stem
-              key_mask = f"{OUTPUT_PREFIX}/{stem}_mask.png"
-              key_json = f"{OUTPUT_PREFIX}/{stem}.json"
+          if COL_CREATED_AT:
+              q = db.select("*").order(COL_CREATED_AT, desc=False).limit(MAX_FILES)
+          else:
+              q = db.select("*").limit(MAX_FILES)
+          res = q.execute()
+          rows = res.data or []
+          out_tbl = supa.table(TABLE_OUT)
 
-              # Idempotency: skip if JSON already exists
+          def already_done(img_id):
               try:
-                  _ = storage.download(key_json)
-                  log(f"SKIP {key_in} (already processed)")
-                  continue
+                  chk = out_tbl.select(COL_OUT_IMAGE_ID).eq(COL_OUT_IMAGE_ID, img_id).limit(1).execute()
+                  return bool(chk.data)
               except Exception:
-                  pass
+                  return False
 
+          t0 = time.time()
+          processed = 0
+          log(f"Fetched {len(rows)} candidate rows from {TABLE_IN}")
+
+          for row in rows:
+              img_id = row.get(COL_ID)
+              if img_id is None:
+                  log("SKIP row without id")
+                  continue
+              if already_done(img_id):
+                  log(f"SKIP {img_id} (already in {TABLE_OUT})")
+                  continue
               try:
-                  raw = download_bytes(key_in)
-                  img = Image.open(io.BytesIO(raw)).convert("RGB")
+                  img = fetch_image_from_row(row)
+                  if img is None:
+                      log(f"ERROR {img_id}: no usable image in row")
+                      continue
                   x = letterbox_imagenet_norm(img, INPUT_SIZE)
-
                   t1 = time.time()
                   logits = session.run([out_name], {in_name: x})[0]
                   t2 = time.time()
-
                   mask_img = mask_from_logits(logits, INPUT_SIZE)
-
                   buf = io.BytesIO()
                   mask_img.save(buf, format="PNG")
-                  upload_bytes(key_mask, buf.getvalue(), "image/png")
-
+                  mask_b64 = base64.b64encode(buf.getvalue()).decode("ascii")
                   meta = {
-                      "source": key_in,
-                      "mask": key_mask,
-                      "ts": int(time.time()),
+                      "source_table": TABLE_IN,
+                      "row_id": img_id,
                       "model": Path(MODEL_PATH).name,
                       "input_size": INPUT_SIZE,
                       "runtime_ms": int((t2 - t1) * 1000),
+                      "ts": int(time.time())
                   }
-                  upload_bytes(key_json, json.dumps(meta).encode("utf-8"), "application/json")
-
-                  log(f"OK {key_in} -> {key_mask} ({meta['runtime_ms']} ms)")
+                  payload = {
+                      COL_OUT_IMAGE_ID: img_id,
+                      COL_OUT_MASK_B64: mask_b64,
+                      COL_OUT_META_JSON: meta
+                  }
+                  out_tbl.insert(payload).execute()
+                  log(f"OK {img_id} -> stored result in {TABLE_OUT} ({meta['runtime_ms']} ms)")
                   processed += 1
               except Exception as e:
-                  log(f"ERROR {key_in}: {e}")
+                  log(f"ERROR {img_id}: {e}")
 
           t_end = time.time()
-          log(f"Done. Processed {processed}/{len(names)} in {int(t_end - t0)} s.")
+          log(f"Done. Processed {processed}/{len(rows)} in {int(t_end - t0)} s.")
           PY
 
-      - name: Upload logs (artifact)
+      - name: Upload logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
