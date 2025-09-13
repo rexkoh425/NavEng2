@@ -17,7 +17,7 @@ jobs:
     env:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-      MODEL_PATH: Models/FootPathDetector/segformer_fp.onnx
+      MODEL_PATH: backend/Models/FootPathDetector/segformer_fp.onnx
       TABLE_IN: blocked_image
       COL_ID: id
       COL_IMG_BYTES: data
