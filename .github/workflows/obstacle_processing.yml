@@ -19,14 +19,10 @@ jobs:
       SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
       MODEL_PATH: backend/Models/FootPathDetector/segformer_fp.onnx
       TABLE_IN: blocked_image
-      COL_ID: id
-      COL_IMG_BYTES: data
-      COL_IMG_URL: image_url
-      COL_CREATED_AT: created_at
+      COL_NODE_ID: node_id
+      COL_CREATED_ON: created_on
+      COL_FILEPATH: filepath
       TABLE_OUT: blocked_result
-      COL_OUT_IMAGE_ID: image_id
-      COL_OUT_MASK_B64: mask_b64
-      COL_OUT_META_JSON: meta
       MAX_FILES_PER_RUN: "10"
       INPUT_SIZE: "384"
       CONF_THRESHOLD: "0.5"
@@ -57,7 +53,7 @@ jobs:
       - name: Run batch inference
         run: |
           python - <<'PY'
-          import os, io, time, json, base64
+          import os, io, time, json, base64, hashlib
           from pathlib import Path
           import numpy as np
           from PIL import Image
@@ -67,78 +63,48 @@ jobs:
 
           SUPABASE_URL = os.environ["SUPABASE_URL"]
           SUPABASE_SERVICE_KEY = os.environ["SUPABASE_SERVICE_KEY"]
-          TABLE_IN = os.getenv("TABLE_IN")
-          COL_ID = os.getenv("COL_ID")
-          COL_IMG_BYTES = os.getenv("COL_IMG_BYTES") or None
-          COL_IMG_URL = os.getenv("COL_IMG_URL") or None
-          COL_CREATED_AT = os.getenv("COL_CREATED_AT") or None
-          TABLE_OUT = os.getenv("TABLE_OUT")
-          COL_OUT_IMAGE_ID = os.getenv("COL_OUT_IMAGE_ID")
-          COL_OUT_MASK_B64 = os.getenv("COL_OUT_MASK_B64")
-          COL_OUT_META_JSON = os.getenv("COL_OUT_META_JSON")
-          MODEL_PATH = os.getenv("MODEL_PATH")
-          MAX_FILES = int(os.getenv("MAX_FILES_PER_RUN","10"))
-          INPUT_SIZE = int(os.getenv("INPUT_SIZE","384"))
-          CONF_THR = float(os.getenv("CONF_THRESHOLD","0.5"))
+          TABLE_IN = os.environ["TABLE_IN"]
+          COL_NODE_ID = os.environ["COL_NODE_ID"]
+          COL_CREATED_ON = os.environ["COL_CREATED_ON"]
+          COL_FILEPATH = os.environ["COL_FILEPATH"]
+          TABLE_OUT = os.environ["TABLE_OUT"]
+          MODEL_PATH = os.environ["MODEL_PATH"]
+          MAX_FILES = int(os.environ.get("MAX_FILES_PER_RUN","10"))
+          INPUT_SIZE = int(os.environ.get("INPUT_SIZE","384"))
+          CONF_THR = float(os.environ.get("CONF_THRESHOLD","0.5"))
 
           Path("batch_logs").mkdir(exist_ok=True)
           log_fp = Path("batch_logs") / f"run_{int(time.time())}.txt"
-          def log(msg: str):
-              print(msg, flush=True)
-              with open(log_fp, "a", encoding="utf-8") as f:
-                  f.write(msg + "\n")
+          def log(m): print(m, flush=True); open(log_fp,"a",encoding="utf-8").write(m+"\n")
 
-          def decode_img_bytes(val):
-              if val is None: return None
-              if isinstance(val, (bytes, bytearray)): return bytes(val)
-              if isinstance(val, str):
-                  s = val.strip()
-                  if s.startswith("\\x"): return bytes.fromhex(s[2:])
-                  try: return base64.b64decode(s, validate=True)
-                  except Exception: return None
-              return None
-
-          def fetch_image_from_row(row):
-              if COL_IMG_BYTES and (COL_IMG_BYTES in row):
-                  b = decode_img_bytes(row[COL_IMG_BYTES])
-                  if b: return Image.open(io.BytesIO(b)).convert("RGB")
-              if COL_IMG_URL and (COL_IMG_URL in row) and row[COL_IMG_URL]:
-                  url = str(row[COL_IMG_URL])
-                  r = requests.get(url, timeout=30)
-                  r.raise_for_status()
-                  return Image.open(io.BytesIO(r.content)).convert("RGB")
-              return None
-
-          def letterbox_imagenet_norm(img: Image.Image, size: int) -> np.ndarray:
+          def letterbox(img, size):
               img = img.convert("RGB")
-              w, h = img.size
-              scale = size / max(w, h)
-              nw, nh = int(round(w * scale)), int(round(h * scale))
-              img_resized = img.resize((nw, nh), Image.BILINEAR)
-              canvas = Image.new("RGB", (size, size), (0, 0, 0))
-              left = (size - nw) // 2
-              top  = (size - nh) // 2
-              canvas.paste(img_resized, (left, top))
-              arr = np.asarray(canvas, dtype=np.float32) / 255.0
-              mean = np.array([0.485, 0.456, 0.406], dtype=np.float32)
-              std  = np.array([0.229, 0.224, 0.225], dtype=np.float32)
-              arr = (arr - mean) / std
-              arr = arr.transpose(2, 0, 1)[None, ...]
-              return arr
+              W,H = img.size
+              s = size / max(W,H)
+              nW,nH = int(round(W*s)), int(round(H*s))
+              r = img.resize((nW,nH), Image.BILINEAR)
+              c = Image.new("RGB",(size,size),(0,0,0))
+              c.paste(r, ((size-nW)//2,(size-nH)//2))
+              a = np.asarray(c,dtype=np.float32)/255.0
+              mean = np.array([0.485,0.456,0.406],dtype=np.float32)
+              std  = np.array([0.229,0.224,0.225],dtype=np.float32)
+              a = (a-mean)/std
+              return a.transpose(2,0,1)[None,...]
 
-          def mask_from_logits(logits: np.ndarray, out_size: int) -> Image.Image:
-              if logits.shape[1] == 1:
-                  probs = 1.0 / (1.0 + np.exp(-logits))
-                  mask_small = (probs[0, 0] >= CONF_THR).astype(np.uint8) * 255
+          def mask_from_logits(logits, out_size):
+              if logits.shape[1]==1:
+                  probs = 1/(1+np.exp(-logits))
+                  m = (probs[0,0] >= CONF_THR).astype(np.uint8)*255
               else:
                   cls = np.argmax(logits, axis=1)
-                  mask_small = (cls[0] == 1).astype(np.uint8) * 255
-              mask_img = Image.fromarray(mask_small)
-              mask_img = mask_img.resize((out_size, out_size), Image.NEAREST)
-              return mask_img
+                  m = (cls[0]==1).astype(np.uint8)*255
+              im = Image.fromarray(m).resize((out_size,out_size), Image.NEAREST)
+              return im
 
           supa = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
           db = supa.table(TABLE_IN)
+          out_tbl = supa.table(TABLE_OUT)
+
           so = ort.SessionOptions()
           so.intra_op_num_threads = 2
           so.inter_op_num_threads = 1
@@ -146,67 +112,73 @@ jobs:
           in_name = session.get_inputs()[0].name
           out_name = session.get_outputs()[0].name
 
-          if COL_CREATED_AT:
-              q = db.select("*").order(COL_CREATED_AT, desc=False).limit(MAX_FILES)
-          else:
-              q = db.select("*").limit(MAX_FILES)
-          res = q.execute()
-          rows = res.data or []
-          out_tbl = supa.table(TABLE_OUT)
+          q = db.select("*").order(COL_CREATED_ON, desc=False).limit(MAX_FILES)
+          rows = q.execute().data or []
+          if not rows:
+              log("No rows to process.")
+              print("Done.")
+              raise SystemExit(0)
 
-          def already_done(img_id):
+          def key_for(row):
+              nid = str(row.get(COL_NODE_ID))
+              con = str(row.get(COL_CREATED_ON))
+              fp  = str(row.get(COL_FILEPATH))
+              raw = f"{nid}|{con}|{fp}".encode("utf-8")
+              return hashlib.sha1(raw).hexdigest()
+
+          def already_done(k):
               try:
-                  chk = out_tbl.select(COL_OUT_IMAGE_ID).eq(COL_OUT_IMAGE_ID, img_id).limit(1).execute()
-                  return bool(chk.data)
+                  r = out_tbl.select("image_key").eq("image_key", k).limit(1).execute()
+                  return bool(r.data)
               except Exception:
                   return False
 
-          t0 = time.time()
           processed = 0
-          log(f"Fetched {len(rows)} candidate rows from {TABLE_IN}")
-
           for row in rows:
-              img_id = row.get(COL_ID)
-              if img_id is None:
-                  log("SKIP row without id")
+              nid = row.get(COL_NODE_ID)
+              con = row.get(COL_CREATED_ON)
+              fp  = row.get(COL_FILEPATH)
+              if not fp:
+                  log("SKIP row without filepath")
                   continue
-              if already_done(img_id):
-                  log(f"SKIP {img_id} (already in {TABLE_OUT})")
+              k = key_for(row)
+              if already_done(k):
+                  log(f"SKIP {k} (already processed)")
                   continue
               try:
-                  img = fetch_image_from_row(row)
-                  if img is None:
-                      log(f"ERROR {img_id}: no usable image in row")
-                      continue
-                  x = letterbox_imagenet_norm(img, INPUT_SIZE)
+                  r = requests.get(str(fp), timeout=30)
+                  r.raise_for_status()
+                  img = Image.open(io.BytesIO(r.content)).convert("RGB")
+                  xin = letterbox(img, INPUT_SIZE)
                   t1 = time.time()
-                  logits = session.run([out_name], {in_name: x})[0]
+                  logits = session.run([out_name], {in_name: xin})[0]
                   t2 = time.time()
                   mask_img = mask_from_logits(logits, INPUT_SIZE)
                   buf = io.BytesIO()
                   mask_img.save(buf, format="PNG")
                   mask_b64 = base64.b64encode(buf.getvalue()).decode("ascii")
                   meta = {
-                      "source_table": TABLE_IN,
-                      "row_id": img_id,
+                      "node_id": nid,
+                      "created_on": str(con),
+                      "filepath": fp,
                       "model": Path(MODEL_PATH).name,
                       "input_size": INPUT_SIZE,
-                      "runtime_ms": int((t2 - t1) * 1000),
+                      "runtime_ms": int((t2-t1)*1000),
                       "ts": int(time.time())
                   }
-                  payload = {
-                      COL_OUT_IMAGE_ID: img_id,
-                      COL_OUT_MASK_B64: mask_b64,
-                      COL_OUT_META_JSON: meta
-                  }
-                  out_tbl.insert(payload).execute()
-                  log(f"OK {img_id} -> stored result in {TABLE_OUT} ({meta['runtime_ms']} ms)")
+                  out_tbl.upsert({
+                      "image_key": k,
+                      "node_id": nid,
+                      "created_on": con,
+                      "filepath": fp,
+                      "mask_b64": mask_b64,
+                      "meta": meta
+                  }).execute()
+                  log(f"OK {k} ({meta['runtime_ms']} ms)")
                   processed += 1
               except Exception as e:
-                  log(f"ERROR {img_id}: {e}")
-
-          t_end = time.time()
-          log(f"Done. Processed {processed}/{len(rows)} in {int(t_end - t0)} s.")
+                  log(f"ERROR {k}: {e}")
+          print(f"Done. Processed {processed}/{len(rows)}.")
           PY
 
       - name: Upload logs
